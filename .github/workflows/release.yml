@@ -43,6 +43,9 @@ jobs:
             if ($matches.Count -eq 0) { throw "No successful $workflow main run at $commit. Wait for both checks before pushing a tag." }
             $runs[$workflow] = $matches[0].databaseId
           }
+          $checks = (gh api "repos/$env:GITHUB_REPOSITORY/commits/$commit/check-runs" | ConvertFrom-Json).check_runs
+          $codeql = @($checks | Where-Object { $_.name -eq 'CodeQL' -and $_.app.id -eq 57789 })
+          if ($codeql.Count -eq 0 -or @($codeql | Where-Object { $_.conclusion -ne 'success' }).Count) { throw 'CodeQL result check has not passed.' }
           gh run download $runs['verify.yml'] --name "AppSwitcher-$commit" --dir artifacts/release-upload
           ./scripts/check-release-artifacts.ps1 -Path artifacts/release-upload -Version $version -Commit $commit
           $changelog = Get-Content CHANGELOG.md -Raw

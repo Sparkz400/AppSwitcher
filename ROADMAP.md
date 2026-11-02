@@ -32,4 +32,4 @@ See all [good first issues](https://github.com/Sparkz400/AppSwitcher/labels/good
 
 ## Propose later work
 
-Cross-platform support, automatic application updates and a stable 1.0-style support commitment are not scheduled. Use a [feature request](https://github.com/Sparkz400/AppSwitcher/issues/new?template=feature_request.yml) to explain a concrete operator need and deployment constraints. Preserve the offline installation and explicit update/rollback model when proposing distribution changes.
+Cross-platform support, automatic application updates and a stable-release support commitment are not scheduled. Use a [feature request](https://github.com/Sparkz400/AppSwitcher/issues/new?template=feature_request.yml) to explain a concrete operator need and deployment constraints. Preserve the offline installation and explicit update/rollback model when proposing distribution changes.
