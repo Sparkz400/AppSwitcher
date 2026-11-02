@@ -2,6 +2,8 @@
 
 Start with an issue for a substantial behavior change; small fixes can go straight to a pull request. Explain the operator's problem, the expected result and how you checked it. Keep each change focused. By submitting a contribution, you agree that your contribution is licensed under the repository's MIT license and that you have the right to contribute it.
 
+Read the [code of conduct](CODE_OF_CONDUCT.md). The [roadmap](ROADMAP.md) links priorities and starter tasks; [Support](SUPPORT.md) explains where to ask questions.
+
 ## Build on Windows
 
 Install Git, PowerShell 7, the SDK specified by `global.json` and Node.js 24. From a clean checkout:
@@ -32,4 +34,10 @@ Close AppSwitcher and other process-check runs first because the isolated real a
 - Do not modify a bundled signed Firefox payload. Extension source changes require a new extension version and new Mozilla signing before an offline production package can be released. Store submission sources are a separate, unsigned preparation artifact.
 - Include test evidence and remaining limitations. Simulated hardware, native UI automation and hosted CI do not establish workstation or machine acceptance.
 
-Please be respectful, describe disagreements concretely, and keep discussions focused on the project. Maintainers may close abusive or unrelated discussions. Use the [private security route](SECURITY.md) for vulnerabilities.
+## Updating dependencies
+
+All four projects belong to `AppSwitcher.sln`. After changing a package version, run `dotnet restore AppSwitcher.sln --force-evaluate` to refresh every affected lockfile, including the UI-check project's transitive references. Commit the project changes and all affected `packages.lock.json` files together. Then run the normal locked verification; do not remove locked mode or weaken vulnerability checks to make an update pass.
+
+For shipped dependencies, inspect the new package's license, source commit and notices. Update `third-party/dependencies.json`, the retained upstream notices and `THIRD_PARTY_NOTICES.md` before building the release package. Test-tool major updates also need a successful full test run. Dependabot groups NuGet updates across project directories into one proposal; its PR is a proposal, not an automatic approval of versions or licenses.
+
+Changes reach `main` through a pull request with up-to-date Windows verification and both CodeQL language checks. Resolve review conversations before merging. A second reviewer is welcome but is not mandatory for this single-maintainer project; administrators follow the same checks. Release automation is documented in [Maintenance](MAINTENANCE.md).

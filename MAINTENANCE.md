@@ -20,3 +20,13 @@ The extension manifests declare Chrome/Edge 120+ and Firefox 142+ compatibility.
 6. Keep the previous release and a pre-update configuration backup for rollback. Publish a correction or replacement version if a release is faulty; never silently replace a published asset.
 
 Dependency update proposals are checked weekly by automation. That cadence is a check, not a promise that updates will be merged weekly. Security reports and user-visible regressions take priority over feature work.
+
+## Automated beta publication
+
+1. Update `Directory.Build.props` and the matching version section in `CHANGELOG.md` in a normal pull request. Review dependency notices and complete the checks above.
+2. Merge through the protected branch. Wait for **Windows verification** and **CodeQL** to succeed on the exact resulting `main` commit, not just the pull-request merge preview.
+3. Create and push the matching `vX.Y.Z-beta.N` tag at that commit. The **Publish verified beta** workflow checks the version and main ancestry, refuses open critical/high-security or error-level code-scanning findings on `main`, then downloads the six assets from that commit's successful Windows run. It verifies package/source manifests and all checksums before creating a prerelease with links to the verification runs.
+
+The workflow publishes the tested artifact without rebuilding it. Artifacts are retained for 30 days; if the artifact expired, rerun Windows verification for the exact commit before tagging. A tag pushed before checks finish fails publication; after resolving the cause, rerun the failed release workflow without moving the tag. Existing releases are never overwritten. If an upload fails partway, inspect the release and retained artifacts before taking corrective action; automation deliberately does not replace assets on retry.
+
+The workflow currently accepts beta versions only and produces unsigned packages. Stable releases, publisher signing and store submission require the separate work tracked in [the roadmap](ROADMAP.md). Keep the old installer and a pre-update configuration backup when upgrading.

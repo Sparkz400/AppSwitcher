@@ -24,7 +24,7 @@ try {
         Copy-Item -LiteralPath (Join-Path $repoPath $doc) -Destination $packagePath
     }
     Get-ChildItem -LiteralPath (Join-Path $repoPath 'docs') -File | Copy-Item -Destination (Join-Path $packagePath 'docs')
-    foreach ($doc in @('LICENSE', 'THIRD_PARTY_NOTICES.md', 'CHANGELOG.md', 'SECURITY.md', 'CONTRIBUTING.md', 'MAINTENANCE.md')) {
+    foreach ($doc in @('LICENSE', 'THIRD_PARTY_NOTICES.md', 'CHANGELOG.md', 'SECURITY.md', 'CONTRIBUTING.md', 'MAINTENANCE.md', 'SUPPORT.md', 'CODE_OF_CONDUCT.md', 'ROADMAP.md')) {
         if (Test-Path -LiteralPath (Join-Path $repoPath $doc)) { Copy-Item -LiteralPath (Join-Path $repoPath $doc) -Destination $packagePath }
     }
     $files = @(Get-ChildItem -LiteralPath $packagePath -File -Recurse | Sort-Object FullName | ForEach-Object {

@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppSwitcher.Tests", "AppSwi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppSwitcher.BrowserHost", "AppSwitcher.BrowserHost\AppSwitcher.BrowserHost.csproj", "{27ACDD42-CEF3-40E9-A56D-9FA7403AAEEB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppSwitcher.UiChecks", "AppSwitcher.UiChecks\AppSwitcher.UiChecks.csproj", "{CE228A62-F95D-4DAA-8165-1079CDC69898}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,18 @@ Global
 		{27ACDD42-CEF3-40E9-A56D-9FA7403AAEEB}.Release|x64.Build.0 = Release|Any CPU
 		{27ACDD42-CEF3-40E9-A56D-9FA7403AAEEB}.Release|x86.ActiveCfg = Release|Any CPU
 		{27ACDD42-CEF3-40E9-A56D-9FA7403AAEEB}.Release|x86.Build.0 = Release|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Debug|x64.Build.0 = Debug|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Debug|x86.Build.0 = Debug|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Release|x64.ActiveCfg = Release|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Release|x64.Build.0 = Release|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Release|x86.ActiveCfg = Release|Any CPU
+		{CE228A62-F95D-4DAA-8165-1079CDC69898}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

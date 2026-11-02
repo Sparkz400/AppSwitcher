@@ -1,0 +1,66 @@
+name: Publish verified beta
+
+on:
+  push:
+    tags: ['v*-beta.*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref_type == 'tag'
+    runs-on: windows-2025
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+      security-events: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Retrieve verified artifacts for the tagged main revision
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $version = ([xml](Get-Content Directory.Build.props -Raw)).Project.PropertyGroup.Version
+          if ($version -notmatch '^\d+\.\d+\.\d+-beta\.\d+$' -or $env:RELEASE_TAG -cne "v$version") { throw 'Tag and beta version must match.' }
+          $commit = (git rev-parse HEAD).Trim()
+          git merge-base --is-ancestor $commit origin/main
+          if (git status --porcelain --untracked-files=normal) { throw 'Release checkout is dirty.' }
+          $runs = @{}
+          foreach ($workflow in @('verify.yml', 'codeql.yml')) {
+            $matches = @(gh run list --workflow $workflow --event push --branch main --commit $commit --status success --json databaseId,headSha,conclusion | ConvertFrom-Json)
+            if ($matches.Count -eq 0) { throw "No successful $workflow main run at $commit. Wait for both checks before pushing a tag." }
+            $runs[$workflow] = $matches[0].databaseId
+          }
+          $blockingAlerts = @(gh api --paginate "repos/$env:GITHUB_REPOSITORY/code-scanning/alerts?state=open&ref=refs/heads/main" --jq '.[] | select(.rule.security_severity_level == "critical" or .rule.security_severity_level == "high" or .rule.severity == "error") | .number')
+          if ($blockingAlerts.Count) { throw "Unresolved serious code-scanning findings on main: $($blockingAlerts -join ', ')" }
+          gh run download $runs['verify.yml'] --name "AppSwitcher-$commit" --dir artifacts/release-upload
+          ./scripts/check-release-artifacts.ps1 -Path artifacts/release-upload -Version $version -Commit $commit
+          $changelog = Get-Content CHANGELOG.md -Raw
+          $section = [regex]::Match($changelog, '(?ms)^## ' + [regex]::Escape($version) + ' [^\r\n]*\r?\n(?<notes>.*?)(?=^## |\z)')
+          if (-not $section.Success) { throw 'Versioned release notes missing.' }
+          $notes = $section.Groups['notes'].Value.Trim() + "`n`nSource: $commit`nWindows verification: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$($runs['verify.yml'])`nCodeQL: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$($runs['codeql.yml'])"
+          $notes | Set-Content artifacts/release-notes.md
+      - name: Publish immutable versioned assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $assets = @(Get-ChildItem artifacts/release-upload -File | ForEach-Object FullName)
+          # create refuses an existing release; never upload with --clobber or move a tag.
+          gh release create $env:RELEASE_TAG @assets --verify-tag --prerelease --latest=false --title "AppSwitcher $env:RELEASE_TAG" --notes-file artifacts/release-notes.md
