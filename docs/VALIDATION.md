@@ -1,17 +1,19 @@
 # Beta software validation
 
-Recorded on 2026-11-02. The release page identifies the final public source commit and its Windows CI run. The local evidence below covers the implemented beta features and distribution mechanism; it does not establish production workstation acceptance.
+Recorded on 2026-11-02. [Public beta v1.2.0-beta.1](https://github.com/Sparkz400/AppSwitcher-public/releases/tag/v1.2.0-beta.1) was built at clean public commit `5ebac9b9dcc538349e3ec143375635cf031f316d`; its [Windows CI run](https://github.com/Sparkz400/AppSwitcher-public/actions/runs/41513508379) passed. The released artifacts remain tied to that tag; later documentation updates do not replace them. The evidence below covers the implemented beta features and distribution mechanism; it does not establish production workstation acceptance.
 
 | Check | Observed result | Boundary |
 | --- | --- | --- |
 | Application regression suite | 253 passing .NET tests | Synthetic service/configuration scenarios |
 | Browser/driver regression suite | 32 passing Node tests, including unrelated-profile rejection | Fault-injection and isolated broker tests |
-| Native UI milestone | 9,948 assertions, zero binding warnings/errors | Native controls, keyboard, UI Automation and simulated contrast palettes; not actual Narrator speech or glove use |
+| Native UI | 9,949 assertions in public release CI; 9,948 in the local milestone, zero binding warnings/errors | Native controls, keyboard, UI Automation and simulated contrast palettes; checks enumerate visible controls, not actual Narrator speech or glove use |
 | Startup recovery | Damaged configuration recovered only after backup PIN and confirmation; original bytes preserved; launcher stayed closed | Isolated real startup host |
 | Installer | 23 checks pass: fresh install, app/bridge lock rejection, upgrade, rollback, all payload hashes, uninstall and unchanged production configuration | Unique product ID and disposable installation, actual complete payload |
-| Archive integrity | All 878 payload files matched manifest hashes/lengths; no extra archive files; clean source `e1584156`; installer status `NotSigned` | Local pre-publication package; final release is built again at its published source |
+| Archive integrity | All 879 payload files and 35 store-bundle files match manifest hashes; payload lengths match; no extra/duplicate archive files; all three asset checksums match; clean source `5ebac9b9`; installer status `NotSigned` | Independently checked after downloading the final public CI artifacts and before release publication |
 | Dependency notices | All 13 exact dependencies/runtime entries match; unknown/stale inventory tests reject | License inventory and integrity, not an independent legal opinion |
 | Firefox submission lint | Zero errors, warnings and notices for unsigned upload version 1.1.1 | Automated add-on lint, not store approval or Mozilla signing |
+
+A separate private-repository run at the identical initial source tree timed out during fresh installer startup before any payload-copy log entry or completed assertion. Its setup log opened more than two minutes after launch. The retained failed report is not counted as a pass. The test harness subsequently allows a bounded five minutes per setup process while retaining all 23 assertions and the workflow's overall 30-minute limit; this changes no released application or installer behavior. The public release run above passed the original three-minute bound.
 
 ## Sustained real-host run
 

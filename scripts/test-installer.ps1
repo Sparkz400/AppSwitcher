@@ -24,8 +24,8 @@ function Invoke-Setup([string]$Executable, [string]$Label, [switch]$Blocked, [sw
     $arguments = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /NOICONS /LOG="' + $log + '"'
     if (-not $Uninstall) { $arguments += ' /DIR="' + $installPath + '"' }
     $process = Start-Process -FilePath $Executable -ArgumentList $arguments -WindowStyle Hidden -PassThru
-    # Cold hosted runners can spend over a minute starting/scanning the full unsigned payload.
-    if (-not $process.WaitForExit(180000)) { $process.Kill($true); throw "$Label timed out; test processes were stopped." }
+    # A cold hosted run took over two minutes just to open its setup log; keep a bounded allowance for startup and installation.
+    if (-not $process.WaitForExit(300000)) { $process.Kill($true); throw "$Label timed out; test processes were stopped." }
     Assert-Check ($Blocked ? ($process.ExitCode -ne 0) : ($process.ExitCode -eq 0)) "$Label exit code ($($process.ExitCode))"
 }
 function Assert-Payload([string]$Source, [string]$Label) {
