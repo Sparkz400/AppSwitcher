@@ -6,11 +6,11 @@ Name: AppSwitcher Browser Bridge
 
 Category: Productivity
 
-Website: https://github.com/Sparkz400/AppSwitcher-public
+Website: https://github.com/Sparkz400/AppSwitcher
 
-Support: https://github.com/Sparkz400/AppSwitcher-public/issues
+Support: https://github.com/Sparkz400/AppSwitcher/issues
 
-Privacy policy: https://github.com/Sparkz400/AppSwitcher-public/blob/main/docs/store/PRIVACY.md
+Privacy policy: https://github.com/Sparkz400/AppSwitcher/blob/main/docs/store/PRIVACY.md
 
 Platforms: Windows (requires the separately installed AppSwitcher desktop application and native browser bridge).
 
