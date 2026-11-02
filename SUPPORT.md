@@ -1,6 +1,6 @@
 # Getting help
 
-Start with the [installation guide](docs/INSTALLATION.md), [browser setup](docs/BROWSER_INTEGRATION.md), [operations guide](docs/OPERATIONS.md) and [safe examples](examples/README.md).
+Start with [common setup problems](docs/TROUBLESHOOTING.md) and the [keyboard reference](docs/KEYBOARD.md). For more detail, use the [installation guide](docs/INSTALLATION.md), [browser setup](docs/BROWSER_INTEGRATION.md), [operations guide](docs/OPERATIONS.md) and [safe examples](examples/README.md).
 
 If you are still stuck, search [existing issues](https://github.com/Sparkz400/AppSwitcher/issues). Then choose the appropriate route:
 

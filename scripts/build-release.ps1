@@ -47,6 +47,7 @@ try {
     Compress-Archive -Path (Join-Path $submissionPath '*') -DestinationPath $submissionZip
     "$((Get-FileHash -LiteralPath $submissionZip).Hash)  $name-store-submission.zip" |
         Set-Content -LiteralPath (Join-Path $releasePath "$name-store-submission.sha256") -Encoding ascii
+    & (Join-Path $PSScriptRoot 'write-release-sbom.ps1') -ReleasePath $releasePath -Version $version -Commit $commit
     Write-Output "Release ready: $zipPath (source dirty: $dirty)"
 } finally {
     Pop-Location

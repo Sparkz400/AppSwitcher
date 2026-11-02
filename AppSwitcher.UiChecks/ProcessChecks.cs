@@ -68,6 +68,8 @@ internal static partial class ProcessChecks
                     var response = await app.Dispatcher.InvokeAsync(() =>
                     {
                         var settings = app.Windows.OfType<SettingsWindow>().FirstOrDefault();
+                        // Make the isolated launcher discoverable to interactive capture tools.
+                        if (command == "show-launcher") { app.MainWindow.ShowInTaskbar = true; app.MainWindow.Activate(); }
                         if (command == "settings") _ = app.Dispatcher.BeginInvoke(() => vm.OpenSettingsCommand.Execute(null));
                         if (command == "minimize" && settings != null) settings.WindowState = WindowState.Minimized;
                         if (command == "close-settings" && settings != null) settings.Close();

@@ -1,8 +1,14 @@
 # AppSwitcher
 
+[![Windows verification](https://github.com/Sparkz400/AppSwitcher/actions/workflows/verify.yml/badge.svg?branch=main)](https://github.com/Sparkz400/AppSwitcher/actions/workflows/verify.yml)
+[![CodeQL](https://github.com/Sparkz400/AppSwitcher/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/Sparkz400/AppSwitcher/actions/workflows/codeql.yml)
+[![Latest beta](https://img.shields.io/github/v/release/Sparkz400/AppSwitcher?include_prereleases&label=beta)](https://github.com/Sparkz400/AppSwitcher/releases)
+
 A native Windows launcher for operator and maintenance workstations. Keep assigned applications within reach, return to the same browser tab, inspect software health and restore window layouts from one compact interface.
 
 [Download the unsigned beta](https://github.com/Sparkz400/AppSwitcher/releases) · [Installation and rollback](docs/INSTALLATION.md) · [Examples](examples/README.md) · [Get help](SUPPORT.md) · [Roadmap](ROADMAP.md) · [Contribute](CONTRIBUTING.md)
+
+[Watch the short demo](docs/images/quick-tour.gif) · [Demo walkthrough](docs/DEMO.md) · [Keyboard reference](docs/KEYBOARD.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
 
 ![AppSwitcher maintenance workspace with synthetic demonstration applications](docs/images/maintenance-light.png)
 
@@ -41,7 +47,7 @@ On Windows, install PowerShell 7, Node.js 24 and the .NET SDK pinned in `global.
 ./scripts/build-release.ps1
 ```
 
-Verification runs locked-dependency builds, .NET and browser-extension tests, native UI checks and isolated process/recovery scenarios. The release builder produces a self-contained ZIP, unsigned per-user installer, store-submission bundle, file manifest and checksums. It checks the installer through fresh install, blocked in-use updates, upgrade, rollback and uninstall. Build-time downloads require internet access.
+Verification runs locked-dependency builds, .NET and browser-extension tests, native UI checks and isolated process/recovery scenarios. The release builder produces a self-contained ZIP, unsigned per-user installer, store-submission bundle, file manifest, checksums and SPDX dependency inventory. Published betas include [verifiable build and release records](docs/VERIFY_DOWNLOADS.md). It checks the installer through fresh install, blocked in-use updates, upgrade, rollback and uninstall. Build-time downloads require internet access.
 
 The native checks open synthetic windows and preserve the real saved configuration. They do not establish real-machine qualification. See [Contributing](CONTRIBUTING.md) for focused tests, longer runs and browser checks, and [delivery evidence](docs/DELIVERY_CHECKLIST.md) for the recorded scope and remaining acceptance work.
 
