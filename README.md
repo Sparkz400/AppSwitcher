@@ -1,10 +1,16 @@
 # AppSwitcher
 
+[![Windows verification](https://github.com/Sparkz400/AppSwitcher/actions/workflows/verify.yml/badge.svg?branch=main)](https://github.com/Sparkz400/AppSwitcher/actions/workflows/verify.yml)
+[![CodeQL](https://github.com/Sparkz400/AppSwitcher/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/Sparkz400/AppSwitcher/actions/workflows/codeql.yml)
+[![Latest beta](https://img.shields.io/github/v/release/Sparkz400/AppSwitcher?include_prereleases&label=beta)](https://github.com/Sparkz400/AppSwitcher/releases)
+
 A native Windows launcher for operator and maintenance workstations. Keep assigned applications within reach, return to the same browser tab, inspect software health and restore window layouts from one compact interface.
 
 [Download the unsigned beta](https://github.com/Sparkz400/AppSwitcher/releases) · [Installation and rollback](docs/INSTALLATION.md) · [Examples](examples/README.md) · [Get help](SUPPORT.md) · [Roadmap](ROADMAP.md) · [Contribute](CONTRIBUTING.md)
 
-![AppSwitcher maintenance workspace with synthetic demonstration applications](docs/images/maintenance-light.png)
+[Watch the short demo](docs/images/quick-tour.gif) · [Demo walkthrough](docs/DEMO.md) · [Keyboard reference](docs/KEYBOARD.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
+
+![AppSwitcher monitoring two synthetic demonstration applications](docs/images/demo-monitoring.jpg)
 
 ## What it does
 
@@ -21,7 +27,7 @@ AppSwitcher is a **beta**. It is not a machine safety controller. PIN access pro
 
 1. Download the `win-x64-…-setup.exe` or complete portable ZIP and its adjacent checksum from [Releases](https://github.com/Sparkz400/AppSwitcher/releases). This beta is unsigned; follow the [download verification instructions](docs/INSTALLATION.md).
 2. Install as the intended Windows user, or extract the complete ZIP and open `app\AppSwitcher.exe`. The .NET runtime is included; no SDK or internet connection is needed on the target PC for installation.
-3. Choose an administrator PIN and follow **Settings → Setup**. Add an application, use **Add from an open window**, or import a [safe starter example](examples/README.md).
+3. Choose an administrator PIN and follow **Settings → Setup checklist**. Add an application, use **Add from an open window**, or import a [safe starter example](examples/README.md).
 4. For websites, follow [browser setup](docs/BROWSER_INTEGRATION.md) and select the connected profile. The offline package includes unpacked Chrome/Edge extensions and the Mozilla-signed Firefox 1.1.0 extension. Browser session restoration must also be enabled in the chosen profile.
 
 The installer does not launch applications, enable kiosk or install browser extensions automatically. Once you start AppSwitcher, your saved automatic-launch/kiosk settings apply. Back up existing configuration before an update; keep the previous release for rollback.
@@ -41,7 +47,7 @@ On Windows, install PowerShell 7, Node.js 24 and the .NET SDK pinned in `global.
 ./scripts/build-release.ps1
 ```
 
-Verification runs locked-dependency builds, .NET and browser-extension tests, native UI checks and isolated process/recovery scenarios. The release builder produces a self-contained ZIP, unsigned per-user installer, store-submission bundle, file manifest and checksums. It checks the installer through fresh install, blocked in-use updates, upgrade, rollback and uninstall. Build-time downloads require internet access.
+Verification runs locked-dependency builds, .NET and browser-extension tests, native UI checks and isolated process/recovery scenarios. The release builder produces a self-contained ZIP, unsigned per-user installer, store-submission bundle, file manifest, checksums and SPDX dependency inventory. Beta.3 and later include [verifiable build and release records](docs/VERIFY_DOWNLOADS.md). It checks the installer through fresh install, blocked in-use updates, upgrade, rollback and uninstall. Build-time downloads require internet access.
 
 The native checks open synthetic windows and preserve the real saved configuration. They do not establish real-machine qualification. See [Contributing](CONTRIBUTING.md) for focused tests, longer runs and browser checks, and [delivery evidence](docs/DELIVERY_CHECKLIST.md) for the recorded scope and remaining acceptance work.
 

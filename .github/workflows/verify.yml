@@ -17,6 +17,10 @@ jobs:
   verify:
     runs-on: windows-2025
     timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -38,6 +42,30 @@ jobs:
           ./scripts/build-release.ps1
           $version = ([xml](Get-Content Directory.Build.props -Raw)).Project.PropertyGroup.Version
           ./scripts/check-release-artifacts.ps1 -Path artifacts/releases -Version $version -Commit (git rev-parse HEAD).Trim()
+      - name: Attest the verified main build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: artifacts/releases/*
+          create-storage-record: false
+      - name: Locate desktop inventory
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: inventory
+        shell: pwsh
+        run: |
+          $sbom = @(Get-ChildItem artifacts/releases/*.spdx.json)
+          if ($sbom.Count -ne 1) { throw 'Expected one desktop SBOM.' }
+          "path=$($sbom[0].FullName)" >> $env:GITHUB_OUTPUT
+          "stem=$($sbom[0].FullName -replace '\.spdx\.json$', '')" >> $env:GITHUB_OUTPUT
+      - name: Attest the desktop dependency inventory
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: |
+            ${{ steps.inventory.outputs.stem }}.zip
+            ${{ steps.inventory.outputs.stem }}-setup.exe
+          sbom-path: ${{ steps.inventory.outputs.path }}
+          create-storage-record: false
       - name: Retain test reports and native captures
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

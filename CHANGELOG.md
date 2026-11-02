@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0-beta.3 — 2026-11-02
+
+- Lock newly published releases and protect version tags against updates and deletion; retain earlier release bytes unchanged.
+- Generate and validate an SPDX 2.3 desktop dependency inventory, with hashes for the ZIP and installer.
+- Attest the exact main build and its desktop inventory; verify those records before uploading, checking and publishing a release draft.
+- Add download verification, troubleshooting and keyboard guides, plus a real-app walkthrough with synthetic applications and README build/release badges.
+
+This remains an **unsigned Windows x64 beta**. GitHub attestations do not replace Windows publisher signing. The SBOM covers desktop packages at package level, not the separate store-submission bundle or every assembly inside runtime packs. Browser-store publication, full Narrator testing and target-workstation acceptance remain open. No production application behavior or configuration format changes are introduced.
+
 ## 1.2.0-beta.2 — 2026-11-02
 
 - Update the proposed NuGet runtime and test dependencies, refresh all four projects' lockfiles, and review shipped dependency notices.

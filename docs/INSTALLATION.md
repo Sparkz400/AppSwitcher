@@ -2,14 +2,14 @@
 
 Use a versioned release from the project's GitHub Releases page. The setup executable and portable ZIP contain the application, .NET Windows runtime, native browser bridge, offline extensions, guides and examples. The target PC needs no SDK, publisher account or internet connection for installation. A browser must already be installed; websites retain their own connectivity requirements.
 
-This beta is **unsigned**, as selected for the first public release. Windows may display an unknown-publisher or reputation warning. Check the release source and compare the downloaded file with its adjacent SHA-256 file (`Get-FileHash -Algorithm SHA256 <download>`). A matching checksum detects a changed download; it does not replace publisher authentication. Follow your organization's software approval policy.
+This beta is **unsigned**, as selected for the first public release. Windows may display an unknown-publisher or reputation warning. Check the release source and compare the downloaded file with its adjacent SHA-256 file (`Get-FileHash -Algorithm SHA256 <download>`). A matching checksum detects a changed download; it does not replace publisher authentication. Follow your organization's software approval policy. Beta.3 and later also provide [signed build/release records and a dependency inventory](VERIFY_DOWNLOADS.md). For common warnings, connection and display problems, see [Troubleshooting](TROUBLESHOOTING.md).
 
 ## Install
 
 1. Keep a copy of the release ZIP/setup and its checksum on your deployment media.
 2. Close AppSwitcher and paired browser profiles. Setup never closes managed applications for you. Running AppSwitcher or a locked browser bridge blocks installation before payload changes.
 3. Run the setup executable as the intended Windows user. It installs per user to `%LOCALAPPDATA%\Programs\AppSwitcher` without requiring administrator access. The Start menu shortcut opens AppSwitcher; setup does not launch it automatically.
-4. Open AppSwitcher, set an administrator PIN, and follow **Settings → Setup**. Add applications or import one of the examples. Review automatic launch, scripts and kiosk choices before enabling them.
+4. Open AppSwitcher, set an administrator PIN, and follow **Settings → Setup checklist**. Add applications or import one of the examples. Review automatic launch, scripts and kiosk choices before enabling them.
 5. Pair browser profiles using the in-app setup. An application install does not change browser preferences or install extensions automatically.
 
 The ZIP is an alternative: extract the entire directory and run `app\AppSwitcher.exe`. Do not copy only the EXE or overlay different versions of a portable directory. Keep old and new portable packages in separate directories. The setup installer and portable copy share the current Windows user's application data; run only one at a time.

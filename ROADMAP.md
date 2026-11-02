@@ -4,10 +4,10 @@ AppSwitcher is a usable unsigned beta. This roadmap distinguishes software maint
 
 ## Current foundation
 
-- Versioned offline ZIP, per-user installer, checksums, dependency notices and rollback guidance.
+- Versioned offline ZIP, per-user installer, checksums, SPDX inventory, dependency notices and rollback guidance.
 - Windows application, browser, native UI, recovery and installer checks.
 - Protected pull requests, C#/JavaScript CodeQL, secret scanning and push protection.
-- Weekly grouped dependency proposals and automated publication of verified tagged betas.
+- Weekly grouped dependency proposals, signed build records and automated publication of immutable verified betas.
 - [Contribution guidance](CONTRIBUTING.md), [support](SUPPORT.md) and [community expectations](CODE_OF_CONDUCT.md).
 
 ## Next priorities
@@ -23,10 +23,7 @@ CI does not close hardware acceptance. Prepared store files do not mean store ap
 
 ## Start contributing
 
-These documentation tasks have bounded acceptance criteria and do not require signing accounts or changes to application behavior:
-
-- [Explain three common setup problems #13](https://github.com/Sparkz400/AppSwitcher/issues/13).
-- [Add a compact keyboard reference #14](https://github.com/Sparkz400/AppSwitcher/issues/14).
+The initial documentation tasks are covered by [troubleshooting](docs/TROUBLESHOOTING.md) ([#13](https://github.com/Sparkz400/AppSwitcher/issues/13)) and the [keyboard reference](docs/KEYBOARD.md) ([#14](https://github.com/Sparkz400/AppSwitcher/issues/14)). Small, reproducible corrections to these guides are welcome.
 
 See all [good first issues](https://github.com/Sparkz400/AppSwitcher/labels/good%20first%20issue) and [help wanted](https://github.com/Sparkz400/AppSwitcher/labels/help%20wanted). Comment on an issue before a substantial contribution so others can coordinate. Maintainers review scope and evidence; there is no guaranteed response time.
 

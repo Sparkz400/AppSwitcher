@@ -18,6 +18,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       actions: read
+      attestations: read
       contents: write
       security-events: read
     steps:
@@ -48,6 +49,13 @@ jobs:
           if ($blockingAlerts.Count) { throw "Unresolved serious code-scanning findings on main: $($blockingAlerts -join ', ')" }
           gh run download $runs['verify.yml'] --name "AppSwitcher-$commit" --dir artifacts/release-upload
           ./scripts/check-release-artifacts.ps1 -Path artifacts/release-upload -Version $version -Commit $commit
+          foreach ($asset in Get-ChildItem artifacts/release-upload -File) {
+            gh attestation verify $asset.FullName --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/verify.yml" --source-ref refs/heads/main --source-digest $commit --deny-self-hosted-runners
+          }
+          $stem = "AppSwitcher-$version-win-x64-$($commit.Substring(0, 8))"
+          foreach ($file in @("$stem.zip", "$stem-setup.exe")) {
+            gh attestation verify "artifacts/release-upload/$file" --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/verify.yml" --source-ref refs/heads/main --source-digest $commit --deny-self-hosted-runners --predicate-type https://spdx.dev/Document/v2.3
+          }
           $changelog = Get-Content CHANGELOG.md -Raw
           $section = [regex]::Match($changelog, '(?ms)^## ' + [regex]::Escape($version) + ' [^\r\n]*\r?\n(?<notes>.*?)(?=^## |\z)')
           if (-not $section.Success) { throw 'Versioned release notes missing.' }
@@ -62,5 +70,16 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
           $assets = @(Get-ChildItem artifacts/release-upload -File | ForEach-Object FullName)
-          # create refuses an existing release; never upload with --clobber or move a tag.
-          gh release create $env:RELEASE_TAG @assets --verify-tag --prerelease --latest=false --title "AppSwitcher $env:RELEASE_TAG" --notes-file artifacts/release-notes.md
+          # Upload and verify while draft; publication locks the assets and tag.
+          gh release create $env:RELEASE_TAG @assets --draft --verify-tag --prerelease --latest=false --title "AppSwitcher $env:RELEASE_TAG" --notes-file artifacts/release-notes.md
+          $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$env:RELEASE_TAG" | ConvertFrom-Json
+          if (-not $release.draft -or $release.assets.Count -ne $assets.Count) { throw 'Draft asset inventory mismatch.' }
+          foreach ($file in $assets) {
+            $asset = @($release.assets | Where-Object name -CEQ (Split-Path $file -Leaf))
+            $digest = 'sha256:' + (Get-FileHash -LiteralPath $file).Hash.ToLowerInvariant()
+            if ($asset.Count -ne 1 -or $asset[0].digest -cne $digest) { throw "Uploaded asset mismatch: $file" }
+          }
+          gh release edit $env:RELEASE_TAG --draft=false --latest=false
+          $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$env:RELEASE_TAG" | ConvertFrom-Json
+          if ($release.draft -or -not $release.immutable) { throw 'Published release is not immutable.' }
+          gh release verify $env:RELEASE_TAG
