@@ -1,0 +1,15 @@
+# Keep the exact source bytes used by the signed Firefox 1.1.0 payload.
+# Its two main scripts were signed with CRLF; the remaining assets used LF.
+browser-extension/core.js text eol=crlf
+browser-extension/background.js text eol=crlf
+browser-extension/profile.js text eol=lf
+browser-extension/identity.html text eol=lf
+browser-extension/profile.html text eol=lf
+browser-extension/pages.css text eol=lf
+browser-extension/manifest.*.json text eol=lf
+*.xpi binary
+
+# Retain upstream license/notice whitespace verbatim.
+third-party/*.txt -whitespace
+*.png binary
+*.ico binary

@@ -1,0 +1,49 @@
+{
+  "Version": 10,
+  "Settings": {
+    "ButtonSize": 80,
+    "Shape": "RoundedSquare",
+    "BgColor": "#202429",
+    "FgColor": "#FFFFFF",
+    "IconStyle": "Hamburger",
+    "BorderColor": "#60666D",
+    "ButtonOpacity": 1,
+    "GlowEnabled": false,
+    "MenuWidth": 390,
+    "MenuItemHeight": 64,
+    "AutoClose": true,
+    "PosX": 100,
+    "PosY": 100,
+    "PositionLocked": true,
+    "KioskMode": false,
+    "AdminPasswordHash": "",
+    "OperatorPasswordHash": "",
+    "OperatorScope": {
+      "AllowedAppNames": [],
+      "AllowedGroupKeys": []
+    },
+    "ConfigEncryption": false,
+    "SessionTimeoutMinutes": 0,
+    "Theme": "Dark",
+    "Language": "en",
+    "MaxConfigBackups": 5,
+    "PreferredMonitor": 0
+  },
+  "Groups": [],
+  "Apps": [
+    {
+      "Name": "Notepad",
+      "Path": "notepad.exe",
+      "PreLaunchHookPath": "",
+      "PreLaunchHookArgs": "",
+      "PostLaunchHookPath": "",
+      "PostLaunchHookArgs": "",
+      "PreStopHookPath": "",
+      "PreStopHookArgs": "",
+      "PostStopHookPath": "",
+      "PostStopHookArgs": "",
+      "RequireConfirmation": true
+    }
+  ],
+  "Layouts": []
+}

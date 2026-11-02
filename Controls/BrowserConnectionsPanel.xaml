@@ -1,0 +1,25 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="AppSwitcher.Controls.BrowserConnectionsPanel">
+ <DockPanel>
+  <StackPanel DockPanel.Dock="Top">
+   <DockPanel Margin="0,0,0,12"><Button DockPanel.Dock="Right" Content="{DynamicResource Browser_RefreshOverview}" Command="{Binding RefreshBrowserConnectionsCommand}" Margin="12,0,0,0"/><TextBlock Text="{DynamicResource UI_Browsers}" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/></DockPanel>
+   <TextBlock Text="{Binding BrowserOverviewStatus}" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,12" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+  </StackPanel>
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+   <StackPanel>
+    <ItemsControl ItemsSource="{Binding BrowserConnections}"><ItemsControl.ItemTemplate><DataTemplate>
+     <Border Background="{DynamicResource PanelBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="16" Margin="0,0,8,12">
+      <StackPanel>
+       <WrapPanel><TextBlock Text="{Binding Heading}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,10,16,8"/>
+       <Button Content="{Binding ActionLabel}" Command="{Binding DataContext.ConfigureBrowserConnectionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" HorizontalAlignment="Left" Margin="0,0,0,4"/>
+      </WrapPanel><TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite"/>
+       <Expander Header="{DynamicResource UI_Details}" Margin="0,6,0,0"><StackPanel><TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="0,6,0,0"/><TextBlock Text="{Binding Detail}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+       <TextBlock Text="{Binding HostStatus}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+       <TextBlock Text="{Binding ActionHint}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+       </StackPanel></Expander></StackPanel>
+     </Border>
+    </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+    <Expander Header="{DynamicResource Browser_SetupInstructions}" IsExpanded="{Binding BrowserSetupExpanded}" Margin="0,0,8,12"><TextBlock Text="{DynamicResource Browser_SetupSteps}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,10,0,0"/></Expander>
+   </StackPanel>
+  </ScrollViewer>
+ </DockPanel>
+</UserControl>

@@ -1,0 +1,28 @@
+<Application x:Class="AppSwitcher.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:AppSwitcher"
+             xmlns:conv="clr-namespace:AppSwitcher.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/DarkTheme.xaml"/>
+                <ResourceDictionary Source="Languages/en.xaml"/>
+                <ResourceDictionary Source="Themes/Controls.xaml"/>
+                <ResourceDictionary Source="Themes/EditorTemplates.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <local:BoolToThicknessConverter x:Key="BoolToThickness"/>
+            <conv:PathToIconConverter x:Key="PathToIconConv"/>
+            <conv:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVis"/>
+            <conv:BoolToExpanderIconConverter x:Key="BoolToExpanderIcon"/>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+            <conv:SectionVisibilityConverter x:Key="SectionVisibility"/>
+            <conv:AppStateTextConverter x:Key="AppStateText"/>
+            <conv:CountToVisibilityConverter x:Key="CountToVis"/>
+            <conv:InvertBoolConverter x:Key="InvertBool"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

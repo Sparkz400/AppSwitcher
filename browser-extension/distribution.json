@@ -1,0 +1,6 @@
+{
+  "allowOnlineInstall": false,
+  "chrome": { "extensionId": "afmmehaldghpcccgholfklbeemokekoj", "installUrl": null },
+  "edge": { "extensionId": "afmmehaldghpcccgholfklbeemokekoj", "installUrl": null },
+  "firefox": { "extensionId": "browser@appswitcher.local", "installUrl": null }
+}

@@ -1,0 +1,87 @@
+<Window x:Class="AppSwitcher.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:conv="clr-namespace:AppSwitcher.Converters" xmlns:controls="clr-namespace:AppSwitcher.Controls" xmlns:models="clr-namespace:AppSwitcher.Models"
+ Title="AppSwitcher" Style="{StaticResource AppWindowBaseStyle}" WindowStyle="None" AllowsTransparency="True" Background="Transparent" Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+ <Window.Resources>
+  <conv:ShapeToGeometryConverter x:Key="ShapeConv"/>
+  <DataTemplate x:Key="AppRow">
+   <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Margin="0,2">
+    <Grid>
+     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <Button Click="LaunchApp_Click" MinHeight="{Binding DataContext.Settings.MenuItemHeight, RelativeSource={RelativeSource AncestorType=DockPanel}}" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="12,10" AutomationProperties.Name="{Binding Name}" ToolTip="{Binding Name}">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="4"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+       <Border Background="{Binding BgColor}" CornerRadius="2" Margin="0,2,0,2"/>
+       <Image x:Name="AppIcon" Grid.Column="1" Width="28" Height="28" Margin="12,0" RenderOptions.BitmapScalingMode="HighQuality"><Image.Source><MultiBinding Converter="{StaticResource PathToIconConv}"><Binding Path="Path"/><Binding Path="CustomIconPath"/></MultiBinding></Image.Source></Image>
+       <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0">
+        <TextBlock x:Name="AppName" Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/>
+        <TextBlock FontSize="12" Margin="0,4,0,0"><TextBlock.Text><MultiBinding Converter="{StaticResource AppStateText}"><Binding Path="State"/><Binding Path="IsResponding"/></MultiBinding></TextBlock.Text>
+         <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/><Style.Triggers>
+          <DataTrigger Binding="{Binding State}" Value="Running"><Setter Property="Foreground" Value="{DynamicResource SuccessFg}"/></DataTrigger>
+          <DataTrigger Binding="{Binding State}" Value="Crashed"><Setter Property="Foreground" Value="{DynamicResource DangerFg}"/></DataTrigger>
+          <DataTrigger Binding="{Binding State}" Value="Unhealthy"><Setter Property="Foreground" Value="{DynamicResource WarningFg}"/></DataTrigger>
+          <DataTrigger Binding="{Binding IsResponding}" Value="False"><Setter Property="Foreground" Value="{DynamicResource WarningFg}"/></DataTrigger>
+         </Style.Triggers></Style></TextBlock.Style>
+        </TextBlock>
+       </StackPanel>
+      </Grid>
+     </Button>
+     <Button Grid.Column="1" Content="⋯" FontSize="22" Width="48" Margin="4,8" Click="Actions_Click" AutomationProperties.Name="{DynamicResource UI_Actions}" ToolTip="{DynamicResource UI_Actions}">
+      <Button.ContextMenu><ContextMenu Opened="ActionsMenu_Opened" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+       <MenuItem Tag="SignIn" Header="{DynamicResource UI_SignInForActions}" Click="SignIn_Click"/><MenuItem Header="{DynamicResource Main_BringToFront}" Click="BringToFront_Click" IsEnabled="{Binding IsRunning}"/>
+       <MenuItem Tag="Manage" Click="Pin_Click"><MenuItem.Style><Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}"><Setter Property="Header" Value="{DynamicResource Main_Pin}"/><Style.Triggers><DataTrigger Binding="{Binding IsPinned}" Value="True"><Setter Property="Header" Value="{DynamicResource Main_Unpin}"/></DataTrigger></Style.Triggers></Style></MenuItem.Style></MenuItem>
+       <MenuItem Tag="Manage" Header="{DynamicResource Main_AcknowledgeWatchdog}" Click="Acknowledge_Click" Visibility="{Binding RequiresWatchdogAcknowledgement, Converter={StaticResource BoolToVis}}"/>
+       <Separator/>
+       <MenuItem Tag="ManageRunning" Header="{DynamicResource Main_KillApp}" Click="KillApp_Click" IsEnabled="{Binding IsRunning}" Foreground="{DynamicResource DangerFg}"/>
+      </ContextMenu></Button.ContextMenu>
+     </Button>
+    </Grid>
+   </Border>
+   <DataTemplate.Triggers><DataTrigger Binding="{Binding Mode}" Value="{x:Static models:DisplayMode.IconOnly}"><Setter TargetName="AppIcon" Property="Width" Value="36"/><Setter TargetName="AppIcon" Property="Height" Value="36"/><Setter TargetName="AppName" Property="FontSize" Value="12"/></DataTrigger><DataTrigger Binding="{Binding Mode}" Value="{x:Static models:DisplayMode.TextOnly}"><Setter TargetName="AppIcon" Property="Visibility" Value="Collapsed"/></DataTrigger></DataTemplate.Triggers>
+  </DataTemplate>
+ </Window.Resources>
+ <Grid>
+  <Button x:Name="MainGrid" AutomationProperties.Name="{DynamicResource UI_ToggleLauncher}" ToolTip="{DynamicResource UI_ToggleLauncher}" Margin="0" Padding="0" Background="Transparent" BorderThickness="0" FocusVisualStyle="{x:Null}" Tag="{DynamicResource HighContrastEnabled}"
+   PreviewMouseLeftButtonDown="MainBtn_MouseDown" PreviewMouseMove="MainBtn_MouseMove" PreviewMouseLeftButtonUp="MainBtn_MouseUp" Click="Launcher_Click">
+   <Button.Style><Style TargetType="Button" BasedOn="{StaticResource ConsoleButton}"><Setter Property="Opacity" Value="{Binding Settings.ButtonOpacity}"/><Style.Triggers><DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True"><Setter Property="Opacity" Value="1"/></DataTrigger></Style.Triggers></Style></Button.Style>
+   <Button.Template><ControlTemplate TargetType="Button"><Border Background="Transparent"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+    <Grid><controls:LauncherVisual DataContext="{Binding Settings}"/>
+            <Path Stroke="{DynamicResource AccentBrush}" StrokeThickness="2" IsHitTestVisible="False">
+                <Path.Data><MultiBinding Converter="{StaticResource ShapeConv}"><Binding Path="Settings.Shape"/><Binding Path="Settings.ButtonSize"/></MultiBinding></Path.Data>
+                <Path.Style><Style TargetType="Path"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Path.Style>
+            </Path>
+</Grid>
+  </Button>
+  <Popup x:Name="AppMenu" IsOpen="{Binding IsMenuOpen}" PlacementTarget="{Binding ElementName=MainGrid}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True" Closed="OnPopupClosed" Opened="OnPopupOpened">
+   <Border x:Name="MenuSurface" Background="{DynamicResource PopupBg}" BorderBrush="{DynamicResource PopupBorder}" BorderThickness="1" CornerRadius="4" Padding="16" Margin="4" Width="{Binding Settings.MenuWidth}" MinWidth="360" MaxWidth="600">
+    <DockPanel>
+     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12"><TextBlock Text="{DynamicResource UI_Operator}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/><TextBlock Text="{DynamicResource UI_LauncherHint}" FontSize="12" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,4,0,0"/></StackPanel>
+     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+      <TextBlock Text="{Binding MaintenanceStatus}" Visibility="{Binding IsMaintenancePaused, Converter={StaticResource BoolToVis}}" Foreground="{DynamicResource WarningFg}" TextWrapping="Wrap" Margin="0,0,0,8" />
+      <TextBox x:Name="QuickFilterBox" PreviewKeyDown="QuickFilter_KeyDown" Text="{Binding QuickFilter, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{DynamicResource Launcher_Filter}" ToolTip="{DynamicResource Launcher_Filter}" />
+      <TextBlock Text="{DynamicResource Launcher_NoMatches}" Margin="0,6,0,0"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding HasLauncherMatches}" Value="False"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+     </StackPanel>
+     <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+      <Button Content="{DynamicResource UI_Monitoring}" Command="{Binding OpenDashboardCommand}" Margin="0,0,0,8"/>
+      <Button Content="{DynamicResource UI_Maintenance}" Command="{Binding OpenSettingsCommand}"/>
+     </StackPanel>
+     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+      <StackPanel>
+       <TextBlock Text="{DynamicResource UI_NoApps}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,8"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding DashboardApps.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+       <TextBlock Text="{DynamicResource UI_Favorites}" Foreground="{DynamicResource TextSecondary}" Margin="12,8" Visibility="{Binding PinnedApps.Count, Converter={StaticResource CountToVis}}"/>
+       <ItemsControl ItemsSource="{Binding PinnedApps}" ItemTemplate="{StaticResource AppRow}"/>
+       <ItemsControl ItemsSource="{Binding GroupedApps}"><ItemsControl.ItemTemplate><DataTemplate>
+        <StackPanel>
+         <DockPanel Margin="0,12,0,4" Visibility="{Binding Name, Converter={StaticResource StringNotEmptyToVis}}">
+          <Button DockPanel.Dock="Right" Content="⋯" FontSize="22" Width="48" Click="Actions_Click" AutomationProperties.Name="{DynamicResource UI_GroupActions}" ToolTip="{DynamicResource UI_GroupActions}">
+           <Button.ContextMenu><ContextMenu Opened="ActionsMenu_Opened" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"><MenuItem Tag="SignIn" Header="{DynamicResource UI_SignInForActions}" Click="SignIn_Click"/><MenuItem Tag="Manage" Header="{DynamicResource Main_StartAll}" Click="StartGroup_Click"/><MenuItem Tag="Manage" Header="{DynamicResource Main_StopAll}" Click="StopGroup_Click" Foreground="{DynamicResource DangerFg}"/></ContextMenu></Button.ContextMenu>
+          </Button>
+          <Button Command="{Binding ToggleExpandedCommand}" HorizontalContentAlignment="Left" BorderThickness="0" Background="Transparent" Padding="12,8"><StackPanel Orientation="Horizontal"><TextBlock Text="{Binding IsExpanded, Converter={StaticResource BoolToExpanderIcon}}" Margin="0,0,8,0"/><TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontWeight="SemiBold"/></StackPanel></Button>
+         </DockPanel>
+         <ItemsControl ItemsSource="{Binding Apps}" ItemTemplate="{StaticResource AppRow}" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}"/>
+        </StackPanel>
+       </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+      </StackPanel>
+     </ScrollViewer>
+    </DockPanel>
+   </Border>
+  </Popup>
+ </Grid>
+</Window>

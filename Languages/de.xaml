@@ -1,0 +1,672 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="Monitoring_NeedsAttention">Nur Handlungsbedarf</sys:String>
+    <sys:String x:Key="Monitoring_NoAttention">Keine aktuellen Fehler in den für Sie sichtbaren Anwendungen. Gestoppte Anwendungen werden bei ausgeschaltetem Filter angezeigt.</sys:String>
+    <sys:String x:Key="UI_Setup">Einrichtung</sys:String>
+    <sys:String x:Key="Display_Unavailable">Gespeicherter Bildschirm fehlt — Hauptbildschirm aktiv</sys:String>
+    <sys:String x:Key="Display_Primary">Hauptbildschirm</sys:String>
+    <sys:String x:Key="Display_InvalidIdentity">Die gespeicherte Bildschirm-Identität ist ungültig. Wählen Sie einen verbundenen Bildschirm erneut aus oder stellen Sie eine geprüfte Konfiguration wieder her.</sys:String>
+    <sys:String x:Key="Setup_Intro">Prüfen Sie diese Schritte vor dem Einsatz am Arbeitsplatz. Vorhandene Einstellungen müssen auf diesem Computer getestet werden. Sie können jederzeit zu dieser Checkliste zurückkehren.</sys:String>
+    <sys:String x:Key="Setup_Configured">Einstellungen vorhanden — prüfen und testen</sys:String>
+    <sys:String x:Key="Setup_Review">Prüfung erforderlich</sys:String>
+    <sys:String x:Key="Setup_Optional">Je nach Arbeitsplatz optional</sys:String>
+    <sys:String x:Key="Setup_Available">Sicherungen vorhanden — Wiederherstellung testen</sys:String>
+    <sys:String x:Key="Setup_TestRequired">Auf diesem Computer testen</sys:String>
+    <sys:String x:Key="Setup_Open">Schritt prüfen</sys:String>
+    <sys:String x:Key="Setup_Apps">1. Anwendungen auswählen</sys:String>
+    <sys:String x:Key="Setup_AppsHint">Ersetzen Sie das Beispiel durch Ihre Anwendungen oder übernehmen Sie ein geöffnetes Fenster. Prüfen Sie Pfade, Website-Adressen und Startoptionen.</sys:String>
+    <sys:String x:Key="Setup_Access">2. Konfigurationsänderungen schützen</sys:String>
+    <sys:String x:Key="Setup_AccessHint">Legen Sie eine Administrator-PIN und ein Sitzungslimit fest. Ergänzen Sie bei Bedarf Bediener-PIN und Sichtbereich. Halten Sie vor dem Kiosk-Einsatz einen separaten Windows-Administratorzugang zur Wiederherstellung bereit.</sys:String>
+    <sys:String x:Key="Setup_Browsers">3. Websites verbinden</sys:String>
+    <sys:String x:Key="Setup_BrowsersHint">Installieren Sie für verwaltete Websites die Browser-Verbindung und koppeln Sie das gewünschte Profil. Aktualisieren Sie den Verbindungsstatus und testen Sie zweimal den Wechsel zum selben Tab.</sys:String>
+    <sys:String x:Key="Setup_Workspace">4. Arbeitsplatz anordnen</sys:String>
+    <sys:String x:Key="Setup_WorkspaceHint">Öffnen und ordnen Sie die Anwendungsfenster. Speichern Sie bei Bedarf einen Arbeitsbereich. Prüfen Sie den gewählten Monitor und stellen Sie den Arbeitsbereich einmal wieder her.</sys:String>
+    <sys:String x:Key="Setup_Backups">5. Wiederherstellung vorbereiten</sys:String>
+    <sys:String x:Key="Setup_BackupsHint">Speichern Sie Ihre Einstellungen und exportieren Sie eine Sicherung an einen sicheren Ort. Prüfen Sie die Wiederherstellungsvorschau und testen Sie die Wiederherstellung in einer separaten Installation. Verschlüsselte Konfiguration gehört zu diesem Windows-Konto.</sys:String>
+    <sys:String x:Key="Setup_Test">6. Täglichen Betrieb testen</sys:String>
+    <sys:String x:Key="Setup_TestHint">Starten und wechseln Sie jede Anwendung, prüfen Sie Tastatur und Touch, testen Sie einen Offline-Neustart und die Überwachung. Testen Sie Kiosk-Einstieg und Ausstieg vor dem Einsatz an einem separaten Arbeitsplatz.</sys:String>
+    <sys:String x:Key="Browser_RepairReady">Prüfen Sie mit dem Wechseltest der Website, ob der gewünschte Tab aktiviert wird.</sys:String>
+    <sys:String x:Key="Browser_RepairJournal">Schließen Sie AppSwitcher und sichern Sie dessen Datenordner. Stellen Sie mit Ihrem Administrator ein geprüftes Browser-Zuordnungsjournal wieder her. Löschen Sie das Journal nicht und setzen Sie keine Identitäten zurück, um einen neuen Tab zu erzwingen.</sys:String>
+    <sys:String x:Key="Browser_RepairUrl">Prüfen Sie die Website-Adresse. Verwenden Sie http oder https ohne eingebetteten Benutzernamen oder Passwort.</sys:String>
+    <sys:String x:Key="Browser_RepairAbsent">Die verwaltete Website ist geschlossen. Verwenden Sie Öffnen im Starter, um sie erneut zu starten.</sys:String>
+    <sys:String x:Key="Browser_RepairProfileConflict">Schließen Sie das kopierte Browser-Profil. Öffnen Sie nur das ursprünglich gekoppelte Profil und aktualisieren Sie. Behalten Sie dessen Identität bei und erstellen Sie keinen weiteren Website-Eintrag.</sys:String>
+    <sys:String x:Key="Browser_RepairIdentity">Stellen Sie die ursprüngliche AppSwitcher-Tabgruppe mit genau einem verwalteten Tab für diese Anwendung wieder her und aktualisieren Sie. Starten oder duplizieren Sie den Eintrag nicht wiederholt, solange die Identität unklar ist.</sys:String>
+    <sys:String x:Key="Browser_RepairInvalidIdentity">Stellen Sie eine geprüfte Konfigurationssicherung wieder her. Anwendungs-IDs identifizieren verwaltete Tabs. Ändern Sie diese nicht manuell und verwenden Sie keine ID für einen anderen Eintrag.</sys:String>
+    <sys:String x:Key="Browser_RepairProfileChanged">Verbinden Sie das bisherige Profil erneut und schließen Sie die verwaltete Website über AppSwitcher. Wählen Sie anschließend das neue Profil in den Website-Einstellungen.</sys:String>
+    <sys:String x:Key="Browser_RepairPairing">Wählen Sie Einrichtung, öffnen Sie das gewünschte Browser-Profil und bestätigen Sie die AppSwitcher-Erweiterung. Wählen Sie dieses verbundene Profil für die Website aus und aktualisieren Sie.</sys:String>
+
+    <sys:String x:Key="Browser_TargetKind">Typ</sys:String>
+    <sys:String x:Key="Browser_Convert">Vorhandene URL in Website umwandeln</sys:String>
+    <sys:String x:Key="Browser_Url">Website-Adresse</sys:String>
+    <sys:String x:Key="Browser_Browser">Browser</sys:String>
+    <sys:String x:Key="Browser_RefreshProfiles">Profile aktualisieren</sys:String>
+    <sys:String x:Key="Browser_Profile">Browserprofil</sys:String>
+    <sys:String x:Key="Browser_Executable">Browser-Programm</sys:String>
+    <sys:String x:Key="Browser_ProfileDirectory">Profilordner</sys:String>
+    <sys:String x:Key="Browser_SetupHint">Einrichten bereitet die Windows-Verbindung vor und führt durch die Erweiterungsinstallation.</sys:String>
+    <sys:String x:Key="Browser_ConnectionUnavailable">Das zugeordnete Browserprofil ist nicht verbunden. Öffnen Sie das Profil und prüfen Sie Erweiterung und nativen Host. Es wurde kein doppelter Tab geöffnet.</sys:String>
+    <sys:String x:Key="Browser_Recovering">Der Browser muss den vorhandenen Tab wiederherstellen oder zuordnen. Lassen Sie die AppSwitcher-Gruppe unverändert. Solange der Zustand unklar ist, wird kein Ersatz geöffnet.</sys:String>
+    <sys:String x:Key="Browser_IdentityConflict">Mehrere Tabs oder eine veränderte Gruppe verhindern die eindeutige Zuordnung. Stellen Sie die ursprüngliche AppSwitcher-Gruppe wieder her. Kein Tab wurde ausgewählt oder erstellt.</sys:String>
+    <sys:String x:Key="Browser_ProfileConflict">Mehrere Verbindungen verwenden dieselbe Profilidentität. Schließen Sie das kopierte Profil und verbinden Sie das Original erneut.</sys:String>
+    <sys:String x:Key="Browser_ProfileChanged">Diese Website ist noch einem anderen Browserprofil zugeordnet. Schließen Sie sie zuerst über AppSwitcher mit diesem Profil, bevor Sie die Zuordnung ändern.</sys:String>
+    <sys:String x:Key="Browser_ProfileRequired">Wählen Sie vor dem Öffnen ein verbundenes Browserprofil aus.</sys:String>
+    <sys:String x:Key="Browser_InvalidUrl">Geben Sie genau eine gültige HTTP- oder HTTPS-URL ohne eingebettete Zugangsdaten ein.</sys:String>
+    <sys:String x:Key="Browser_InvalidRequest">Die Browseranfrage wurde abgelehnt. Prüfen Sie, ob Erweiterung und AppSwitcher kompatibel sind.</sys:String>
+    <sys:String x:Key="Browser_InvalidIdentity">Anwendungs-IDs müssen gültig und eindeutig sein. Stellen Sie bei einer geänderten Identität die Konfigurationssicherung wieder her.</sys:String>
+    <sys:String x:Key="Browser_JournalUnavailable">Das Browser-Zuordnungsjournal kann nicht gelesen werden. Stellen Sie dessen Sicherung wieder her. Automatisches Erstellen ist deaktiviert.</sys:String>
+    <sys:String x:Key="Browser_FocusDenied">Der Website-Tab ist vorhanden, sein Fenster konnte aber nicht aktiviert werden. Wählen Sie das Browserfenster oder versuchen Sie es erneut. Kein weiterer Tab wurde geöffnet.</sys:String>
+    <sys:String x:Key="Browser_CreatedFocusDenied">Die Website wurde einmal geöffnet, ihr Fenster konnte jedoch nicht aktiviert werden. Wählen Sie das Browserfenster.</sys:String>
+    <sys:String x:Key="Browser_ConvertRequired">Konfigurieren Sie diesen Eintrag als Website und verbinden Sie die Browsererweiterung. Die Zuordnung über das Browserprogramm kann vorhandene Tabs nicht zuverlässig wiederverwenden.</sys:String>
+    <sys:String x:Key="Browser_UseWebsiteControls">Verwenden Sie die Website-Steuerung zum Aktivieren oder Schließen des Tabs. Gemeinsam verwendete Browserprozesse werden nicht beendet.</sys:String>
+    <sys:String x:Key="Browser_KioskUnsupported">Website-Einträge benötigen einen separat eingeschränkten Browserbetrieb und sind mit der AppSwitcher-Kiosksperre nicht kombinierbar.</sys:String>
+    <sys:String x:Key="Browser_PlacementUnsupported">Website-Tabs teilen sich Browserfenster. Deaktivieren Sie Fensterpositionierung, Monitorzwang und Immer-im-Vordergrund für Websites.</sys:String>
+    <sys:String x:Key="State_Recovering">Verbindung wird hergestellt</sys:String>
+    <!-- MainWindow -->
+    <sys:String x:Key="Main_Title">AppSwitcher</sys:String>
+    <sys:String x:Key="Main_Settings">Einstellungen</sys:String>
+
+    <!-- PasswordDialog -->
+    <sys:String x:Key="Password_Title">Anmelden</sys:String>
+    <sys:String x:Key="Password_Heading">PIN eingeben</sys:String>
+    <sys:String x:Key="Password_Cancel">Abbrechen</sys:String>
+    <sys:String x:Key="Password_Confirm">Bestätigen</sys:String>
+    <sys:String x:Key="Password_MinDigits">Mindestens 4 Ziffern eingeben</sys:String>
+    <sys:String x:Key="Password_RepeatPin">PIN erneut eingeben</sys:String>
+    <sys:String x:Key="Password_Mismatch">PINs stimmen nicht überein</sys:String>
+    <sys:String x:Key="Confirm_Title">Bestätigung</sys:String>
+
+    <!-- Settings: Window & Sidebar -->
+    <sys:String x:Key="Settings_Title">AppSwitcher Einstellungen</sys:String>
+    <sys:String x:Key="Settings_Configuration">Konfiguration</sys:String>
+    <sys:String x:Key="Settings_GeneralAndButton">Allgemein &amp; Button</sys:String>
+    <sys:String x:Key="Settings_MyApps">MEINE APPS</sys:String>
+    <sys:String x:Key="Settings_AddApp">+ App Hinzufügen</sys:String>
+
+    <!-- Settings: Global -->
+    <sys:String x:Key="Settings_GlobalSettings">Globale Einstellungen</sys:String>
+    <sys:String x:Key="Settings_ButtonDesign">Hauptbutton Design</sys:String>
+    <sys:String x:Key="Settings_Shape">Form:</sys:String>
+    <sys:String x:Key="Settings_IconStyle">Icon-Stil:</sys:String>
+    <sys:String x:Key="Settings_Size">Größe:</sys:String>
+    <sys:String x:Key="Settings_Color">Farbe:</sys:String>
+    <sys:String x:Key="Settings_BgColor">Hintergrund:</sys:String>
+    <sys:String x:Key="Settings_FgColor">Icon-Farbe:</sys:String>
+    <sys:String x:Key="Settings_BorderColor">Rahmenfarbe:</sys:String>
+    <sys:String x:Key="Settings_Opacity">Transparenz:</sys:String>
+    <sys:String x:Key="Settings_GlowEffect">Leuchteffekt aktivieren</sys:String>
+    <sys:String x:Key="Settings_BehaviorPosition">Verhalten &amp; Position</sys:String>
+    <sys:String x:Key="Settings_LockPosition">Position sperren (Button nicht verschiebbar)</sys:String>
+    <sys:String x:Key="Settings_AutoCloseMenu">Menü automatisch schließen nach App-Start</sys:String>
+    <sys:String x:Key="Settings_Design">Design</sys:String>
+    <sys:String x:Key="Settings_ColorScheme">Farbschema:</sys:String>
+    <sys:String x:Key="Settings_Language">Sprache:</sys:String>
+
+    <!-- Settings: Security -->
+    <sys:String x:Key="Settings_Security">Sicherheit</sys:String>
+    <sys:String x:Key="Settings_AdminPin">Admin-PIN</sys:String>
+    <sys:String x:Key="Settings_PinDescription">Schützt den Zugang zu den Einstellungen mit einer PIN.</sys:String>
+    <sys:String x:Key="Settings_SetChangePin">PIN setzen / ändern</sys:String>
+    <sys:String x:Key="Settings_RemovePin">PIN entfernen</sys:String>
+    <sys:String x:Key="Settings_EncryptConfig">Konfiguration verschlüsseln (DPAPI)</sys:String>
+    <sys:String x:Key="Settings_EncryptWarning">Verschlüsselte Konfiguration ist maschinengebunden. Nutzen Sie Export/Import für die Übertragung.</sys:String>
+
+    <!-- Settings: Groups -->
+    <sys:String x:Key="Settings_Groups">Gruppen</sys:String>
+    <sys:String x:Key="Settings_GroupsDescription">Gruppennamen je Sprache.</sys:String>
+    <sys:String x:Key="Settings_AddGroup">+ Hinzufügen</sys:String>
+
+    <!-- Settings: Kiosk -->
+    <sys:String x:Key="Settings_KioskMode">Kiosk-Modus (Admin)</sys:String>
+    <sys:String x:Key="Settings_KioskEnable">Kiosk-Modus aktivieren</sys:String>
+    <sys:String x:Key="Settings_KioskDescription">Sperrt gängige Shell-Tastenkombinationen (Alt+Tab, Win, Alt+F4, Strg+Esc, Strg+Umschalt+Esc), blendet die Windows-Taskleiste auf allen Monitoren aus, holt den Fokus von Windows-Shell-Flächen wie Startmenü oder Task-View zurück und versucht auf unterstützten Windows-Editionen zusätzlich eine Keyboard-Filter-Sperre für Strg+Alt+Entf, Strg+Umschalt+Esc und Win+L.</sys:String>
+    <sys:String x:Key="Settings_KioskWarning">Hinweis: Die sichere Tasten-Sperre auf Maschinenebene benötigt einen erhöhten Hilfsprozess, wird nur unter Enterprise, Education und IoT Enterprise unterstützt und kann beim ersten Aktivieren des Keyboard Filters einen Neustart erfordern.</sys:String>
+    <sys:String x:Key="Settings_KioskDiagnostics">Kiosk-Diagnose</sys:String>
+    <sys:String x:Key="Settings_KioskDiagnosticsDescription">Aktueller Schutzstatus</sys:String>
+    <sys:String x:Key="Settings_KioskDeploymentNotes">AppSwitcher aktiviert die App-interne Kiosk-Härtung sofort und versucht auf unterstützten Editionen über einen erhöhten Hilfsprozess zusätzlich Windows Keyboard Filter zu konfigurieren. Das erste Aktivieren von Keyboard Filter kann einen Neustart erfordern.</sys:String>
+
+    <!-- Settings: Import/Export -->
+    <sys:String x:Key="Settings_TransferConfig">Konfiguration übertragen</sys:String>
+    <sys:String x:Key="Settings_TransferDescription">Konfiguration als JSON-Datei exportieren oder von einer anderen Station importieren.</sys:String>
+    <sys:String x:Key="Settings_Export">Exportieren</sys:String>
+    <sys:String x:Key="Settings_Import">Importieren</sys:String>
+
+    <!-- Settings: Per-App -->
+    <sys:String x:Key="Settings_DeleteApp">App Löschen</sys:String>
+    <sys:String x:Key="Settings_DisplayName">Name</sys:String>
+    <sys:String x:Key="Settings_ExePath">Pfad zur .exe Datei</sys:String>
+    <sys:String x:Key="Settings_StartArgs">Start-Argumente (Optional)</sys:String>
+    <sys:String x:Key="Settings_WorkDir">Arbeitsverzeichnis (Optional)</sys:String>
+    <sys:String x:Key="Settings_WorkDirHint">Leer = Programmordner</sys:String>
+    <sys:String x:Key="Settings_WinTitle">Fenstertitel-Erkennung (Optional)</sys:String>
+    <sys:String x:Key="Settings_WinTitleHint">Falls leer, wird nach dem Prozessnamen gesucht.</sys:String>
+    <sys:String x:Key="Settings_Group">Gruppe (Optional)</sys:String>
+    <sys:String x:Key="Settings_GroupHint">Apps mit gleicher Gruppe werden im Menü zusammengefasst.</sys:String>
+    <sys:String x:Key="Settings_DisplayMode">Anzeigemodus</sys:String>
+    <sys:String x:Key="Settings_CustomIcon">Eigenes Icon (Optional)</sys:String>
+    <sys:String x:Key="Settings_ButtonColor">Button Farbe (im Menü)</sys:String>
+    <sys:String x:Key="Settings_AutoLaunch">Beim Start automatisch starten</sys:String>
+    <sys:String x:Key="Settings_Watchdog">Automatisch neu starten bei Absturz (Watchdog)</sys:String>
+    <sys:String x:Key="Settings_MaxRestarts">Max. Neustarts:</sys:String>
+    <sys:String x:Key="Settings_LifecycleHooks">Lifecycle-Hooks</sys:String>
+    <sys:String x:Key="Settings_PreLaunchHook">Pre-Launch Hook</sys:String>
+    <sys:String x:Key="Settings_PostLaunchHook">Post-Launch Hook</sys:String>
+    <sys:String x:Key="Settings_PreStopHook">Pre-Stop Hook</sys:String>
+    <sys:String x:Key="Settings_PostStopHook">Post-Stop Hook</sys:String>
+    <sys:String x:Key="Settings_HookPath">Skriptpfad:</sys:String>
+    <sys:String x:Key="Settings_HookArgs">Argumente:</sys:String>
+    <sys:String x:Key="Settings_HookHint">Leer lassen, um diesen Hook zu deaktivieren. Argumente sind optional.</sys:String>
+    <sys:String x:Key="Settings_WindowPolicy">Fensterrichtlinie</sys:String>
+    <sys:String x:Key="Settings_PlacementMode">Platzierungsmodus:</sys:String>
+    <sys:String x:Key="Settings_ForcedMonitor">Monitor erzwingen:</sys:String>
+    <sys:String x:Key="Settings_WindowPolicyMonitorNone">Nicht erzwingen</sys:String>
+    <sys:String x:Key="Settings_AlwaysOnTop">Immer im Vordergrund halten</sys:String>
+    <sys:String x:Key="Settings_ReapplyPlacementContinuously">Platzierung fortlaufend erneut anwenden</sys:String>
+    <sys:String x:Key="Settings_WindowPolicyHint">Vollbild verwendet ein generisches rahmenloses Füllen des Monitors und ist kein exklusiver Vollbildmodus.</sys:String>
+
+    <!-- Tooltips -->
+    <sys:String x:Key="Tooltip_BrowseFile">Datei suchen</sys:String>
+    <sys:String x:Key="Tooltip_BrowseDir">Verzeichnis wählen</sys:String>
+    <sys:String x:Key="Tooltip_BrowseImage">Bild suchen</sys:String>
+
+    <!-- Notifications / Messages (used from C#) -->
+    <sys:String x:Key="Msg_AlreadyRunning">AppSwitcher läuft bereits.</sys:String>
+    <sys:String x:Key="Msg_PinReset">Admin-PIN wurde zurückgesetzt.</sys:String>
+    <sys:String x:Key="Msg_KioskActivated">Kiosk-Modus aktiviert</sys:String>
+    <sys:String x:Key="Msg_KioskDeactivated">Kiosk-Modus deaktiviert</sys:String>
+    <sys:String x:Key="Msg_AutostartFailed">Autostart von {0} fehlgeschlagen: {1}</sys:String>
+    <sys:String x:Key="Msg_LaunchFailed">Fehler beim Starten von {0}: {1}</sys:String>
+    <sys:String x:Key="Msg_StopFailed">Fehler beim Beenden von {0}: {1}</sys:String>
+    <sys:String x:Key="Msg_StopStillRunning">die App läuft nach dem Beenden weiterhin</sys:String>
+    <sys:String x:Key="Msg_LifecycleHookFailed">Lifecycle-Hook für {0} fehlgeschlagen ({1}): {2}</sys:String>
+    <sys:String x:Key="Msg_LifecycleHookNoProcess">der Hook-Prozess konnte nicht gestartet werden</sys:String>
+    <sys:String x:Key="Msg_LifecycleHookTimedOut">Zeitüberschreitung nach {0} Sekunden</sys:String>
+    <sys:String x:Key="Msg_LifecycleHookExitCode">mit Exit-Code {0} beendet</sys:String>
+    <sys:String x:Key="Msg_WrongPassword">Falsches Passwort</sys:String>
+    <sys:String x:Key="Msg_PinSet">Admin-PIN gesetzt</sys:String>
+    <sys:String x:Key="Msg_PinRemoved">Admin-PIN entfernt</sys:String>
+    <sys:String x:Key="Msg_ConfigExported">Konfiguration exportiert</sys:String>
+    <sys:String x:Key="Msg_ConfigImported">Konfiguration importiert</sys:String>
+    <sys:String x:Key="Msg_ImportFailed">Import fehlgeschlagen</sys:String>
+    <sys:String x:Key="Msg_SaveFailed">Konfiguration konnte nicht gespeichert werden</sys:String>
+    <sys:String x:Key="Msg_ConfigValidationFailed">Die Konfiguration enthält blockierende Fehler: {0}</sys:String>
+    <sys:String x:Key="Msg_AppCrashRestart">{0} abgestürzt — Neustart ({1}/{2})</sys:String>
+    <sys:String x:Key="Msg_MaxRestartsReached">{0} — Max. Neustarts erreicht!</sys:String>
+    <sys:String x:Key="Msg_MaxRestartsExhausted">{0} — Alle {1} Neustartversuche erschöpft! Manueller Eingriff erforderlich.</sys:String>
+    <sys:String x:Key="Msg_NewApp">Neue App</sys:String>
+    <sys:String x:Key="Msg_SelectWorkDir">Arbeitsverzeichnis wählen</sys:String>
+
+    <!-- Settings: Schedule / Dependencies / Monitor -->
+    <sys:String x:Key="Settings_Schedule">Zeitplan</sys:String>
+    <sys:String x:Key="Settings_ScheduleTime">Starten</sys:String>
+    <sys:String x:Key="Settings_ScheduleHint">Täglich · HH:mm · leer = aus</sys:String>
+    <sys:String x:Key="Settings_Dependencies">Abhängigkeiten</sys:String>
+    <sys:String x:Key="Settings_DependsOn">Abhängig von App:</sys:String>
+    <sys:String x:Key="Settings_DependsOnHint">Diese Anwendung zuerst starten.</sys:String>
+    <sys:String x:Key="Settings_LaunchDelay">Startverzögerung (ms):</sys:String>
+    <sys:String x:Key="Settings_LaunchDelayHint">Nach dem Start der benötigten Anwendung.</sys:String>
+    <sys:String x:Key="Settings_Monitor">Monitor</sys:String>
+    <sys:String x:Key="Settings_PreferredMonitor">Bevorzugter Monitor:</sys:String>
+    <sys:String x:Key="Settings_MonitorAuto">Automatisch (letzte Position)</sys:String>
+    <sys:String x:Key="Settings_MonitorHint">Platziert den Button beim Start auf dem gewählten Monitor.</sys:String>
+    <sys:String x:Key="Settings_AppHealth">App-Gesundheit</sys:String>
+    <sys:String x:Key="Settings_NotResponding">(reagiert nicht)</sys:String>
+
+    <!-- New notification messages -->
+    <sys:String x:Key="Msg_ScheduledLaunch">{0} wurde planmäßig um {1} gestartet</sys:String>
+    <sys:String x:Key="Msg_ConfigHotReloaded">Konfiguration wurde extern aktualisiert</sys:String>
+    <sys:String x:Key="Msg_ConfigHotReloadRejected">Externe Konfigurationsänderung wurde verworfen: {0}</sys:String>
+    <sys:String x:Key="Msg_ConfigHotReloadSkippedDirty">Externe Konfigurationsänderung wurde übersprungen, weil lokale ungespeicherte Änderungen vorhanden sind</sys:String>
+    <sys:String x:Key="Msg_PinSetupRequired">Bitte richten Sie eine Admin-PIN ein, um die Einstellungen zu schützen.</sys:String>
+    <sys:String x:Key="Msg_KioskPartial">Kiosk-Modus ist mit Einschränkungen aktiv: {0}</sys:String>
+    <sys:String x:Key="Msg_KioskWarnKeyboardHook">Der Tastatur-Hook konnte nicht installiert werden.</sys:String>
+    <sys:String x:Key="Msg_KioskWarnEdgeSwipe">Die Wischgesten-Richtlinie konnte weder systemweit noch für den aktuellen Benutzer angewendet werden.</sys:String>
+    <sys:String x:Key="Msg_KioskWarnKeyboardFilterUnsupported">Die sichere Tasten-Sperre per Keyboard Filter wird auf dieser Windows-Edition nicht unterstützt.</sys:String>
+    <sys:String x:Key="Msg_KioskWarnKeyboardFilterRestartRequired">Keyboard Filter wurde aktiviert, aber ein Neustart ist erforderlich, bevor die sichere Tasten-Sperre aktiv wird.</sys:String>
+    <sys:String x:Key="Msg_KioskWarnKeyboardFilterCancelled">Die Änderungen an Keyboard Filter wurden an der UAC-Abfrage abgebrochen.</sys:String>
+    <sys:String x:Key="Msg_KioskWarnKeyboardFilterFailed">Die Änderungen an Keyboard Filter konnten nicht angewendet werden.</sys:String>
+    <sys:String x:Key="Msg_KioskKeyboardFilterConfigured">Die sichere Tasten-Sperre per Keyboard Filter ist aktiv.</sys:String>
+    <sys:String x:Key="Msg_KioskKeyboardFilterExternal">Die sichere Tasten-Sperre per Keyboard Filter ist außerhalb von AppSwitcher aktiv.</sys:String>
+    <sys:String x:Key="Msg_KioskKeyboardFilterNotConfigured">Die sichere Tasten-Sperre per Keyboard Filter ist derzeit nicht konfiguriert.</sys:String>
+    <sys:String x:Key="Msg_KioskKeyboardFilterRemoved">Die von AppSwitcher gesetzten Keyboard-Filter-Regeln wurden entfernt.</sys:String>
+
+    <!-- Role-based access -->
+    <sys:String x:Key="Msg_OperatorAccess">Zugang als Bediener (eingeschränkt)</sys:String>
+    <sys:String x:Key="Msg_OperatorPinSet">Bediener-PIN gesetzt</sys:String>
+    <sys:String x:Key="Msg_OperatorPinRemoved">Bediener-PIN entfernt</sys:String>
+    <sys:String x:Key="Settings_OperatorPin">Bediener-PIN</sys:String>
+    <sys:String x:Key="Settings_OperatorPinDescription">Bediener können Apps neu starten und grundlegende Einstellungen sehen, aber keine Sicherheits-, Kiosk- oder Import/Export-Einstellungen ändern.</sys:String>
+    <sys:String x:Key="Settings_SetChangeOperatorPin">Bediener-PIN setzen / ändern</sys:String>
+    <sys:String x:Key="Settings_RemoveOperatorPin">Bediener-PIN entfernen</sys:String>
+    <sys:String x:Key="Settings_OperatorAccess">Bediener-Zugriff</sys:String>
+    <sys:String x:Key="Settings_OperatorAccessDescription">Wählen Sie aus, welche Apps oder Gruppen Bediener steuern dürfen.</sys:String>
+    <sys:String x:Key="Settings_OperatorAccessHint">Wenn beide Listen leer bleiben, dürfen Bediener alle Apps steuern.</sys:String>
+    <sys:String x:Key="Settings_OperatorAccessGroups">Erlaubte Gruppen</sys:String>
+    <sys:String x:Key="Settings_OperatorAccessApps">Erlaubte Apps</sys:String>
+    <sys:String x:Key="Settings_AdminOnly">Nur für Admin</sys:String>
+
+    <!-- File dialog filters -->
+    <sys:String x:Key="Filter_ImagesIcons">Bilder &amp; Icons (*.ico;*.png;*.jpg)|*.ico;*.png;*.jpg;*.jpeg|Alle Dateien (*.*)|*.*</sys:String>
+    <sys:String x:Key="Filter_JsonConfig">JSON Konfiguration (*.json)|*.json</sys:String>
+    <sys:String x:Key="Filter_Executables">Ausführbare Dateien (*.exe)|*.exe</sys:String>
+    <sys:String x:Key="Filter_HookScripts">Skripte &amp; Programme (*.ps1;*.cmd;*.bat;*.exe)|*.ps1;*.cmd;*.bat;*.exe|Alle Dateien (*.*)|*.*</sys:String>
+
+    <!-- Session Timeout -->
+    <sys:String x:Key="Settings_SessionTimeout">Sitzungs-Timeout</sys:String>
+    <sys:String x:Key="Settings_SessionTimeoutMinutes">Timeout (Minuten):</sys:String>
+    <sys:String x:Key="Settings_SessionTimeoutHint">Automatische Abmeldung nach Inaktivität. 0 = deaktiviert.</sys:String>
+    <sys:String x:Key="Msg_SessionTimedOut">Sitzung abgelaufen — automatisch abgemeldet</sys:String>
+    <sys:String x:Key="Diag_KioskEnabled">Kiosk aktiviert</sys:String>
+    <sys:String x:Key="Diag_KeyboardHook">Tastatur-Hook installiert</sys:String>
+    <sys:String x:Key="Diag_TaskbarHidden">Taskleiste ausgeblendet</sys:String>
+    <sys:String x:Key="Diag_EdgeSwipe">Wischgesten-Richtlinie angewendet</sys:String>
+    <sys:String x:Key="Diag_KeyboardFilterSupported">Keyboard Filter unterstützt</sys:String>
+    <sys:String x:Key="Diag_KeyboardFilterConfigured">Keyboard Filter konfiguriert</sys:String>
+    <sys:String x:Key="Diag_KeyboardFilterRestart">Neustart für Keyboard Filter erforderlich</sys:String>
+    <sys:String x:Key="Diag_KeyboardFilterStatus">Keyboard-Filter-Status</sys:String>
+    <sys:String x:Key="Diag_EnforcementLoop">Überwachungs-Loop aktiv</sys:String>
+    <sys:String x:Key="Diag_AccessLevel">Aktuelle Berechtigungsstufe</sys:String>
+    <sys:String x:Key="Diag_SessionTimeout">Sitzungs-Timeout</sys:String>
+    <sys:String x:Key="Diag_LastAction">Letzte Selbstheilungsaktion</sys:String>
+    <sys:String x:Key="Diag_LastResult">Letztes Selbstheilungsergebnis</sys:String>
+    <sys:String x:Key="Diag_LastBlockedSurface">Zuletzt blockierte Fläche</sys:String>
+    <sys:String x:Key="Diag_LastAllowedForeground">Zuletzt erlaubter Vordergrund</sys:String>
+    <sys:String x:Key="Diag_ShellInterventions">Shell-Eingriffe</sys:String>
+    <sys:String x:Key="Diag_AccessAdmin">Admin</sys:String>
+    <sys:String x:Key="Diag_AccessOperator">Bediener</sys:String>
+    <sys:String x:Key="Diag_AccessNone">Nicht angemeldet</sys:String>
+    <sys:String x:Key="Diag_SessionTimeoutDisabled">Deaktiviert</sys:String>
+    <sys:String x:Key="Diag_SessionTimeoutActive">Aktiv ({0} Min.)</sys:String>
+    <sys:String x:Key="Diag_OperatorScopeAppNotFound">Bedienerbereich verweist auf unbekannte App: {0}</sys:String>
+    <sys:String x:Key="Diag_OperatorScopeGroupNotFound">Bedienerbereich verweist auf unbekannte Gruppe: {0}</sys:String>
+
+    <!-- Health Check -->
+    <sys:String x:Key="Settings_HealthCheck">Gesundheitsprüfung</sys:String>
+    <sys:String x:Key="Settings_HealthCheckUrl">Health-Check URL:</sys:String>
+    <sys:String x:Key="Settings_HealthCheckHint">HTTP(S)-Adresse · leer = aus</sys:String>
+
+    <!-- Scheduled Maintenance -->
+    <sys:String x:Key="Settings_ScheduledMaintenance">Geplante Wartung</sys:String>
+    <sys:String x:Key="Settings_ScheduleRestartTime">Neustarten</sys:String>
+    <sys:String x:Key="Settings_ScheduleRestartHint">Täglicher automatischer Neustart (Beenden + Starten).</sys:String>
+    <sys:String x:Key="Settings_ScheduleShutdownTime">Beenden</sys:String>
+    <sys:String x:Key="Settings_ScheduleShutdownHint">Tägliches automatisches Beenden der App.</sys:String>
+    <sys:String x:Key="Msg_ScheduledRestart">{0} wurde planmäßig um {1} neu gestartet</sys:String>
+    <sys:String x:Key="Msg_ScheduledShutdown">{0} wurde planmäßig um {1} beendet</sys:String>
+
+    <!-- Resource Monitoring -->
+    <sys:String x:Key="Settings_ResourceMonitoring">Ressourcenüberwachung</sys:String>
+    <sys:String x:Key="Settings_MemoryThreshold">Speicher-Schwelle (MB):</sys:String>
+    <sys:String x:Key="Settings_MemoryThresholdHint">MB · 0 = aus</sys:String>
+    <sys:String x:Key="Msg_MemoryThresholdExceeded">{0} überschreitet Speicherlimit: {1} MB / {2} MB</sys:String>
+
+    <!-- Confirmation -->
+    <sys:String x:Key="Settings_RequireConfirmation">Bestätigung vor Beenden erforderlich</sys:String>
+    <sys:String x:Key="Msg_ConfirmKillTitle">App beenden?</sys:String>
+    <sys:String x:Key="Msg_ConfirmKillApp">Möchten Sie "{0}" wirklich beenden?</sys:String>
+    <sys:String x:Key="Msg_ConfirmKillWarning">Die App wird sofort beendet. Nicht gespeicherte Daten können verloren gehen.</sys:String>
+
+    <!-- Favorites -->
+    <sys:String x:Key="Settings_PinToTop">Im Menü oben anheften (Favorit)</sys:String>
+    <sys:String x:Key="Main_Pin">Anheften</sys:String>
+    <sys:String x:Key="Main_Unpin">Loslösen</sys:String>
+
+    <!-- Dashboard -->
+    <sys:String x:Key="Main_Dashboard">Dashboard</sys:String>
+    <sys:String x:Key="Dashboard_Title">Gesundheits-Dashboard</sys:String>
+    <sys:String x:Key="Dashboard_Uptime">Laufzeit</sys:String>
+    <sys:String x:Key="Dashboard_CrashesToday">Abstürze</sys:String>
+    <sys:String x:Key="Dashboard_TotalRestarts">Neustarts</sys:String>
+    <sys:String x:Key="Dashboard_BringToFront">In den Vordergrund</sys:String>
+    <sys:String x:Key="Dashboard_AcknowledgeWatchdog">Quittieren</sys:String>
+    <sys:String x:Key="Label_CPU">CPU</sys:String>
+    <sys:String x:Key="Label_RAM">RAM</sys:String>
+
+    <!-- Context Menu -->
+    <sys:String x:Key="Main_BringToFront">In den Vordergrund</sys:String>
+    <sys:String x:Key="Main_KillApp">App beenden</sys:String>
+    <sys:String x:Key="Main_AcknowledgeWatchdog">Watchdog quittieren</sys:String>
+    <sys:String x:Key="Msg_WatchdogAcknowledged">Watchdog für {0} wieder aktiviert</sys:String>
+    <sys:String x:Key="Watchdog_StatusPendingRestart">Watchdog-Neustart in {0}s ({1}/{2})</sys:String>
+    <sys:String x:Key="Watchdog_StatusAcknowledgementRequired">Watchdog pausiert - Quittierung erforderlich ({0}/{1})</sys:String>
+
+    <!-- Screen Layouts -->
+    <sys:String x:Key="Settings_ScreenLayouts">Bildschirm-Layouts</sys:String>
+    <sys:String x:Key="Settings_ScreenLayoutsDescription">Fensterpositionen aller laufenden Apps speichern und mit einem Klick wiederherstellen.</sys:String>
+    <sys:String x:Key="Settings_SaveLayout">Layout speichern</sys:String>
+    <sys:String x:Key="Settings_RestoreLayout">Wiederherstellen</sys:String>
+    <sys:String x:Key="Settings_DeleteLayout">Löschen</sys:String>
+    <sys:String x:Key="Msg_LayoutSaved">Layout "{0}" gespeichert</sys:String>
+    <sys:String x:Key="Msg_LayoutRestored">Layout "{0}" wiederhergestellt</sys:String>
+    <sys:String x:Key="Msg_LayoutDeleted">Layout "{0}" gelöscht</sys:String>
+    <sys:String x:Key="Msg_NoRunningApps">Keine laufenden Apps zum Speichern</sys:String>
+
+    <!-- Group Batch Operations -->
+    <sys:String x:Key="Main_StartAll">Alle starten</sys:String>
+    <sys:String x:Key="Main_StopAll">Alle beenden</sys:String>
+
+    <!-- Config Backup Management -->
+    <sys:String x:Key="Settings_ConfigBackups">Konfigurations-Backups</sys:String>
+    <sys:String x:Key="Settings_ConfigBackupsDescription">Automatische Konfigurationssicherungen.</sys:String>
+    <sys:String x:Key="Settings_MaxConfigBackups">Max. Backups:</sys:String>
+    <sys:String x:Key="Settings_RestoreBackup">Wiederherstellen</sys:String>
+    <sys:String x:Key="Msg_BackupRestored">Backup vom {0} wiederhergestellt</sys:String>
+    <sys:String x:Key="Msg_BackupRestoreFailed">Backup-Wiederherstellung fehlgeschlagen</sys:String>
+    <sys:String x:Key="Msg_BackupDeleted">Backup gelöscht</sys:String>
+    <sys:String x:Key="Msg_BackupDeleteFailed">Backup konnte nicht gelöscht werden</sys:String>
+
+    <!-- Audit Log -->
+    <sys:String x:Key="Settings_AuditLog">Audit-Protokoll</sys:String>
+    <sys:String x:Key="Settings_AuditLogDescription">Letzte administrativen Aktionen zu Konfigurationsänderungen, Backup-Wiederherstellungen, Kiosk-Umschaltungen und manuellen App-Stopps.</sys:String>
+    <sys:String x:Key="Audit_Timestamp">Zeitpunkt</sys:String>
+    <sys:String x:Key="Audit_Actor">Akteur</sys:String>
+    <sys:String x:Key="Audit_Action">Aktion</sys:String>
+    <sys:String x:Key="Audit_Outcome">Ergebnis</sys:String>
+    <sys:String x:Key="Audit_Target">Ziel</sys:String>
+
+    <!-- Startup Diagnostics -->
+    <sys:String x:Key="Msg_DiagErrors">Startdiagnose: {0} Fehler gefunden — Details im Log</sys:String>
+    <sys:String x:Key="Msg_DiagWarnings">Startdiagnose: {0} Warnungen — Details im Log</sys:String>
+    <sys:String x:Key="Diag_ExeNotFound">Programm nicht gefunden: {0}</sys:String>
+    <sys:String x:Key="Diag_EmptyAppName">Ein App-Name ist erforderlich</sys:String>
+    <sys:String x:Key="Diag_NoExePath">Kein Programmpfad konfiguriert</sys:String>
+    <sys:String x:Key="Diag_DuplicateAppName">Doppelter App-Name: {0}</sys:String>
+    <sys:String x:Key="Diag_DependencyNotFound">Abhängigkeit nicht gefunden: {0}</sys:String>
+    <sys:String x:Key="Diag_SelfDependency">Eine App kann nicht von sich selbst abhängen: {0}</sys:String>
+    <sys:String x:Key="Diag_InvalidHealthUrl">Ungültige Health-Check URL: {0}</sys:String>
+    <sys:String x:Key="Diag_IconNotFound">Icon nicht gefunden: {0}</sys:String>
+    <sys:String x:Key="Diag_WorkDirNotFound">Arbeitsverzeichnis nicht gefunden: {0}</sys:String>
+    <sys:String x:Key="Diag_HookArgsWithoutPath">Für {0} sind Argumente konfiguriert, aber kein Skriptpfad</sys:String>
+    <sys:String x:Key="Diag_HookNotFound">Pfad für {0} nicht gefunden: {1}</sys:String>
+    <sys:String x:Key="Diag_InvalidTimeFormat">Ungültiges Zeitformat für {0}: {1}</sys:String>
+    <sys:String x:Key="Diag_CircularDependency">Zirkuläre Abhängigkeit erkannt: {0}</sys:String>
+    <sys:String x:Key="Diag_DuplicateGroupKey">Doppelter Gruppenschlüssel: {0}</sys:String>
+    <sys:String x:Key="Diag_DuplicateLayoutName">Doppelter Layout-Name: {0}</sys:String>
+    <sys:String x:Key="Diag_EmptyGroupKey">Der Gruppenschlüssel darf nicht leer sein</sys:String>
+    <sys:String x:Key="Diag_NegativeValue">Ungültiger negativer Wert für {0}: {1}</sys:String>
+    <sys:String x:Key="Diag_InvalidPreferredMonitor">Ungültiger bevorzugter Monitorindex: {0}</sys:String>
+    <sys:String x:Key="Diag_InvalidForcedMonitor">Ungültiger erzwungener Monitorindex: {0}</sys:String>
+    <sys:String x:Key="Diag_InvalidWindowPlacementMode">Ungültiger Fensterplatzierungsmodus: {0}</sys:String>
+
+    <!-- App Version Checking -->
+    <sys:String x:Key="Msg_AppUpdated">{0} — Programmdatei wurde aktualisiert</sys:String>
+    <sys:String x:Key="Msg_StartupFailed">AppSwitcher konnte nicht gestartet werden.{0}{1}</sys:String>
+
+    <!-- Status -->
+    <sys:String x:Key="Status_Unknown">Unbekannt</sys:String>
+    <sys:String x:Key="Status_Ok">OK</sys:String>
+    <sys:String x:Key="Status_Stopped">Beendet</sys:String>
+    <sys:String x:Key="Status_Healthy">Gesund</sys:String>
+    <sys:String x:Key="Status_Unhealthy">Ungesund</sys:String>
+
+    <!-- Units -->
+    <sys:String x:Key="Unit_Bytes">Byte</sys:String>
+
+    <!-- Option Labels -->
+    <sys:String x:Key="Shape_Hexagon">Sechseck</sys:String>
+    <sys:String x:Key="Shape_Circle">Kreis</sys:String>
+    <sys:String x:Key="Shape_Square">Quadrat</sys:String>
+    <sys:String x:Key="Shape_RoundedSquare">Abgerundetes Quadrat</sys:String>
+    <sys:String x:Key="Shape_Diamond">Raute</sys:String>
+    <sys:String x:Key="Shape_Pentagon">Fünfeck</sys:String>
+    <sys:String x:Key="Shape_Octagon">Achteck</sys:String>
+    <sys:String x:Key="Shape_Star">Stern</sys:String>
+    <sys:String x:Key="IconStyle_Hamburger">Hamburger</sys:String>
+    <sys:String x:Key="IconStyle_Dots">Punkte</sys:String>
+    <sys:String x:Key="IconStyle_Arrow">Pfeil</sys:String>
+    <sys:String x:Key="IconStyle_Ring">Ring</sys:String>
+    <sys:String x:Key="IconStyle_Power">Power</sys:String>
+    <sys:String x:Key="Theme_Dark">Dunkel</sys:String>
+    <sys:String x:Key="Theme_Light">Hell</sys:String>
+    <sys:String x:Key="DisplayMode_Combined">Icon + Text</sys:String>
+    <sys:String x:Key="DisplayMode_IconOnly">Icon betont (mit Beschriftung)</sys:String>
+    <sys:String x:Key="DisplayMode_TextOnly">Nur Text</sys:String>
+    <sys:String x:Key="PlacementMode_None">Keine</sys:String>
+    <sys:String x:Key="PlacementMode_Maximize">Maximieren</sys:String>
+    <sys:String x:Key="PlacementMode_Fullscreen">Vollbild</sys:String>
+
+
+    <!-- Industrial workspace -->
+    <sys:String x:Key="UI_Maintenance">Wartungsbereich</sys:String>
+    <sys:String x:Key="UI_Workspace">ARBEITSBEREICH</sys:String>
+    <sys:String x:Key="UI_Applications">Anwendungen</sys:String>
+    <sys:String x:Key="UI_Monitoring">Überwachung</sys:String>
+    <sys:String x:Key="UI_Layouts">Fensterlayouts</sys:String>
+    <sys:String x:Key="UI_Access">Zugriff &amp; Kiosk</sys:String>
+    <sys:String x:Key="UI_Audit">Ereignisprotokoll</sys:String>
+    <sys:String x:Key="UI_System">System</sys:String>
+    <sys:String x:Key="UI_General">Allgemein</sys:String>
+    <sys:String x:Key="UI_Startup">Startverhalten</sys:String>
+    <sys:String x:Key="UI_Recovery">Wiederherstellung</sys:String>
+    <sys:String x:Key="UI_WindowPlacement">Fensterposition</sys:String>
+    <sys:String x:Key="UI_Advanced">Erweitert</sys:String>
+    <sys:String x:Key="UI_Launcher">App-Auswahl</sys:String>
+    <sys:String x:Key="UI_Appearance">Darstellung</sys:String>
+    <sys:String x:Key="UI_Groups">Gruppen</sys:String>
+    <sys:String x:Key="UI_Backups">Konfiguration &amp; Sicherungen</sys:String>
+    <sys:String x:Key="UI_Security">Zugriff</sys:String>
+    <sys:String x:Key="UI_Kiosk">Kiosk &amp; Diagnose</sys:String>
+    <sys:String x:Key="UI_MoveUp">Nach oben</sys:String>
+    <sys:String x:Key="UI_MoveDown">Nach unten</sys:String>
+    <sys:String x:Key="UI_SelectApp">Anwendung auswählen</sys:String>
+    <sys:String x:Key="UI_SelectAppHint">Wählen Sie eine Anwendung aus, um ihre Einstellungen zu prüfen. Administratoren können links Anwendungen hinzufügen.</sys:String>
+    <sys:String x:Key="UI_Save">Speichern</sys:String>
+    <sys:String x:Key="UI_Close">Schließen</sys:String>
+    <sys:String x:Key="UI_SaveHint">Angewendet · noch nicht gespeichert</sys:String>
+    <sys:String x:Key="UI_Saved">Gespeichert {0}</sys:String>
+    <sys:String x:Key="UI_SaveFailed">Nicht gespeichert. Prüfen Sie die Fehlermeldung, korrigieren Sie die Einstellungen und versuchen Sie es erneut.</sys:String>
+    <sys:String x:Key="UI_DeleteBackup">Sicherung löschen</sys:String>
+    <sys:String x:Key="UI_DeleteLayout">Layout löschen</sys:String>
+    <sys:String x:Key="UI_DeleteGroup">Gruppe löschen</sys:String>
+    <sys:String x:Key="UI_Browse">Durchsuchen…</sys:String>
+    <sys:String x:Key="UI_MonitoringHint">Anwendungsstatus und Wiederherstellung. Die Anzeigen beschreiben Software, keine Maschinensicherheit.</sys:String>
+    <sys:String x:Key="UI_NoApps">Keine Anwendungen verfügbar. Öffnen Sie den Wartungsbereich, um Anwendungen einzurichten oder Ihren Zugriff zu prüfen.</sys:String>
+    <sys:String x:Key="UI_OpenApp">Anwendung öffnen</sys:String>
+    <sys:String x:Key="UI_Actions">Aktionen</sys:String>
+    <sys:String x:Key="UI_GroupActions">Gruppenaktionen</sys:String>
+    <sys:String x:Key="UI_Operator">Anwendungsauswahl</sys:String>
+    <sys:String x:Key="UI_Favorites">Favoriten</sys:String>
+    <sys:String x:Key="UI_LauncherHint">Wählen Sie eine Anwendung zum Öffnen.</sys:String>
+    <sys:String x:Key="UI_ToggleLauncher">Anwendungsauswahl öffnen oder schließen</sys:String>
+    <sys:String x:Key="State_Stopped">Beendet</sys:String>
+    <sys:String x:Key="State_Running">Läuft</sys:String>
+    <sys:String x:Key="State_Crashed">Abgestürzt</sys:String>
+    <sys:String x:Key="State_Restarting">Startet neu</sys:String>
+    <sys:String x:Key="State_Unhealthy">Prüfung erforderlich</sys:String>
+    <sys:String x:Key="State_NotResponding">Keine Rückmeldung</sys:String>
+    <sys:String x:Key="State_Unknown">Unbekannt</sys:String>
+    <sys:String x:Key="UI_PinHelp">Ziffernblock verwenden oder 4–8 Ziffern eingeben.</sys:String>
+    <sys:String x:Key="UI_Clear">Leeren</sys:String>
+    <sys:String x:Key="UI_Backspace">Letzte Ziffer löschen</sys:String>
+    <sys:String x:Key="UI_PIN">PIN-Eingabe</sys:String>
+    <sys:String x:Key="UI_Notification">Benachrichtigung</sys:String>
+    <sys:String x:Key="UI_Warning">Prüfung erforderlich</sys:String>
+    <sys:String x:Key="UI_Error">Aktion fehlgeschlagen</sys:String>
+    <sys:String x:Key="UI_Dismiss">Benachrichtigung schließen</sys:String>
+    <sys:String x:Key="UI_DeleteAppConfirm">„{0}“ aus der Konfiguration entfernen? Die Anwendungsdatei bleibt auf dem Datenträger.</sys:String>
+    <sys:String x:Key="UI_ConfirmAcknowledge">Automatische Wiederherstellung für „{0}“ fortsetzen? Prüfen Sie zuerst die gemeldete Störung.</sys:String>
+    <sys:String x:Key="UI_ConfirmStartGroup">Anwendungen in „{0}“ starten?</sys:String>
+    <sys:String x:Key="UI_ConfirmStopGroup">Anwendungen in „{0}“ beenden? Ungespeicherte Anwendungsdaten können verloren gehen.</sys:String>
+    <sys:String x:Key="UI_ImportTitle">Konfigurationsänderungen prüfen</sys:String>
+    <sys:String x:Key="UI_Confirm">Fortfahren</sys:String>
+    <sys:String x:Key="UI_Delete">Entfernen</sys:String>
+    <sys:String x:Key="UI_EmptyHistory">Noch keine Protokolleinträge.</sys:String>
+    <sys:String x:Key="UI_EmptyLayouts">Keine gespeicherten Layouts. Ordnen Sie die Anwendungsfenster an und speichern Sie ein Layout.</sys:String>
+    <sys:String x:Key="UI_EmptyBackups">Noch keine Sicherungen verfügbar. Beim Ersetzen einer gespeicherten Konfiguration wird eine Sicherung erstellt.</sys:String>
+    <sys:String x:Key="UI_RestoreLayoutConfirm">Fensterlayout „{0}“ wiederherstellen? Laufende Anwendungsfenster werden verschoben.</sys:String>
+    <sys:String x:Key="UI_DeleteLayoutConfirm">Gespeichertes Layout „{0}“ entfernen?</sys:String>
+    <sys:String x:Key="UI_ImportConfirm">Aktuelle Konfiguration durch {0} Anwendungen, {1} Gruppen und {2} Layouts ersetzen? Die aktuellen PINs bleiben erhalten. Prüfen Sie die Änderungen unten.</sys:String>
+    <sys:String x:Key="UI_RestoreBackupConfirm">Konfiguration vom {0} wiederherstellen? Aktuelle Einstellungen werden ersetzt; die PINs bleiben erhalten.</sys:String>
+    <sys:String x:Key="UI_DeleteBackupConfirm">Sicherung „{0}“ endgültig löschen?</sys:String>
+    <sys:String x:Key="UI_FieldErrors">Korrigieren Sie die markierten Felder vor dem Speichern oder Schließen.</sys:String>
+    <sys:String x:Key="UI_ReadOnly">Schreibgeschützte Einstellungen · Änderungen erfordern Administratorzugriff.</sys:String>
+    <sys:String x:Key="UI_SetPIN">Neue PIN festlegen</sys:String>
+    <sys:String x:Key="UI_SignInForActions">Für weitere Aktionen anmelden…</sys:String>
+    <sys:String x:Key="UI_SessionStatus">Sitzung: {0}</sys:String>
+    <sys:String x:Key="Browser_Native">Desktop-Anwendung</sys:String>
+    <sys:String x:Key="Browser_Website">Website-Tab</sys:String>
+    <sys:String x:Key="Browser_Absent">Diese Webseite ist geschlossen. Verwenden Sie Öffnen, um sie erneut zu starten.</sys:String>
+    <sys:String x:Key="Readiness_Title">Auf Bereitschaft warten</sys:String>
+    <sys:String x:Key="Readiness_None">Keine zusätzliche Bereitschaftsprüfung</sys:String>
+    <sys:String x:Key="Readiness_Process">Prozess oder verwaltete Webseite läuft</sys:String>
+    <sys:String x:Key="Readiness_Window">Fenster der nativen Anwendung ist verfügbar</sys:String>
+    <sys:String x:Key="Readiness_Http">Health-URL liefert HTTP-Erfolg (2xx)</sys:String>
+    <sys:String x:Key="Readiness_Seconds">Zeitlimit für Bereitschaft (Sekunden, 1–600)</sys:String>
+    <sys:String x:Key="Readiness_Hint">Benötigte Apps müssen zuerst bereit sein. HTTP nutzt die URL unter Wiederherstellung.</sys:String>
+    <sys:String x:Key="Readiness_Timeout">{0} war nach {1} Sekunden nicht bereit. Abhängige Anwendungen wurden nicht gestartet.</sys:String>
+    <sys:String x:Key="Readiness_Invalid">Wählen Sie eine gültige Bereitschaftsprüfung und ein Zeitlimit von 1 bis 600 Sekunden. HTTP benötigt eine HTTP(S)-Health-URL ohne Zugangsdaten; Fensterbereitschaft benötigt eine native Anwendung.</sys:String>
+    <sys:String x:Key="Maintenance_Active">Automatische Aktionen pausiert · noch {0} Min.</sys:String>
+    <sys:String x:Key="Maintenance_Inactive">Automatische Aktionen aktiviert</sys:String>
+    <sys:String x:Key="Maintenance_Pause">30 Minuten pausieren</sys:String>
+    <sys:String x:Key="Maintenance_Resume">Jetzt fortsetzen</sys:String>
+    <sys:String x:Key="Maintenance_Hint">Pausiert Wiederherstellung, Autostart und Zeitpläne. Überwachung und Kioskschutz bleiben aktiv.</sys:String>
+    <sys:String x:Key="Workspace_Start">Arbeitsbereich starten</sys:String>
+    <sys:String x:Key="Workspace_Group">Gruppe einschließen (optional)</sys:String>
+    <sys:String x:Key="Workspace_Hint">Erfasst laufende Apps und Positionen. Enthaltene Gruppen starten auch ihre beendeten Apps.</sys:String>
+    <sys:String x:Key="Workspace_Missing">Eine Anwendung oder Gruppe des Arbeitsbereichs fehlt. Speichern Sie den Arbeitsbereich vor dem Start erneut.</sys:String>
+    <sys:String x:Key="Workspace_Scope">Dieser Arbeitsbereich enthält Anwendungen außerhalb Ihrer Berechtigung.</sys:String>
+    <sys:String x:Key="Workspace_Started">Arbeitsbereich gestartet: {0}</sys:String>
+    <sys:String x:Key="Shortcut_Enable">Starter mit Strg+Alt+Leertaste öffnen</sys:String>
+    <sys:String x:Key="Shortcut_Unavailable">Strg+Alt+Leertaste ist bereits belegt oder nicht verfügbar. Die Starter-Schaltfläche funktioniert weiterhin.</sys:String>
+    <sys:String x:Key="Launcher_Filter">Anwendungen oder Gruppen filtern</sys:String>
+    <sys:String x:Key="Launcher_NoMatches">Keine passenden Anwendungen</sys:String>
+    <sys:String x:Key="Support_Title">Supportbericht anzeigen</sys:String>
+    <sys:String x:Key="Support_Save">Bericht speichern…</sys:String>
+    <sys:String x:Key="Support_Redaction">Prüfen Sie den vollständigen Bericht vor dem lokalen Speichern. Namen, Benutzer-/Profilkennungen, URLs, Pfade, Argumente, Zugangsdaten und Rohprotokolle sind ausgeschlossen. Es wird nichts automatisch versendet.</sys:String>
+    <sys:String x:Key="Browser_Check">Verbindung prüfen</sys:String>
+    <sys:String x:Key="Browser_TestSwitch">Tabwechsel testen</sys:String>
+    <sys:String x:Key="Browser_HostInstalled">Native-Host-Registrierung und Programm gefunden.</sys:String>
+    <sys:String x:Key="Browser_HostMissing">Native Host ist nicht registriert. Führen Sie Install-BrowserHost.ps1 aus dem Browserpaket für diesen Windows-Benutzer aus.</sys:String>
+    <sys:String x:Key="Browser_HostBroken">Native-Host-Dateien oder Registrierung konnten nicht gelesen werden. Installieren Sie den Host aus dem Browserpaket erneut.</sys:String>
+    <sys:String x:Key="Browser_Connected">Das gewählte Profil ist verbunden. Öffnen Sie diese Webseite einmal über den Starter und testen Sie dann den Wechsel.</sys:String>
+    <sys:String x:Key="Browser_Ready">Das gewählte Profil ist verbunden und der ursprüngliche verwaltete Tab wurde gefunden.</sys:String>
+    <sys:String x:Key="Browser_SwitchPassed">Wechsel bestätigt: Der vorhandene Tab ist aktiv und sein Browserfenster ist wiederhergestellt.</sys:String>
+    <sys:String x:Key="Browser_SetupSteps">Einrichten beim gewünschten Browser wählen. Erweiterung bestätigen, Browser geöffnet lassen, Fertig wählen und speichern. Sitzungswiederherstellung aktivieren und verwaltete Tabgruppen zusammenlassen.</sys:String>
+    <sys:String x:Key="Maintenance_ReadError">Der gespeicherte Wartungsstatus konnte nicht gelesen werden. Prüfen Sie die Automatik vor dem Fortsetzen.</sys:String>
+    <sys:String x:Key="Browser_SetupInstructions">Einrichtungshinweise</sys:String>
+    <sys:String x:Key="UI_Minimize">Minimieren</sys:String>
+    <sys:String x:Key="UI_Maximize">Maximieren</sys:String>
+    <sys:String x:Key="UI_Restore">Wiederherstellen</sys:String>
+    <sys:String x:Key="UI_NoChanges">Gespeichert</sys:String>
+    <sys:String x:Key="UI_RestartLauncher">AppSwitcher neu starten</sys:String>
+    <sys:String x:Key="UI_RestartLauncherHint">Anwendungen bleiben unverändert.</sys:String>
+    <sys:String x:Key="Msg_ActivationFailed">AppSwitcher läuft bereits, das Fenster konnte jedoch nicht erreicht werden. Prüfen Sie offene Dialoge oder unterschiedliche Administratorrechte.</sys:String>
+    <sys:String x:Key="Msg_RestartFailed">AppSwitcher konnte nicht neu gestartet werden: {0}</sys:String>
+    <sys:String x:Key="UI_Undo">Rückgängig</sys:String>
+    <sys:String x:Key="UI_UndoFailed">Diese Änderung konnte nicht zurückgenommen werden: {0}</sys:String>
+    <sys:String x:Key="UI_SettingsSearch">Einstellung suchen</sys:String>
+    <sys:String x:Key="UI_SearchResults">Passende Einstellungen</sys:String>
+    <sys:String x:Key="UI_Browsers">Browser</sys:String>
+    <sys:String x:Key="Browser_Checking">Browser-Verbindungen werden geprüft…</sys:String>
+    <sys:String x:Key="Browser_NotConfigured">Für diesen Browser ist keine Webseite eingerichtet.</sys:String>
+    <sys:String x:Key="Browser_NoProfile">Kein gekoppeltes Profil</sys:String>
+    <sys:String x:Key="Browser_OverviewDetail">{0} eingerichtete Webseiten · Erweiterung {1}</sys:String>
+    <sys:String x:Key="Browser_RefreshOverview">Aktualisieren</sys:String>
+    <sys:String x:Key="Browser_ConfigureConnection">Einrichten / konfigurieren</sys:String>
+    <sys:String x:Key="Browser_RepairHost">Einrichten wählen, um die Windows-Verbindung zu reparieren.</sys:String>
+    <sys:String x:Key="Browser_RepairConnection">Öffnen Sie das gekoppelte Browser-Profil und aktivieren Sie dessen AppSwitcher-Erweiterung.</sys:String>
+    <sys:String x:Key="Browser_RepairWebsite">Öffnen Sie die Webseiten-Einstellungen, um Kopplung, Identität oder Tab-Wechsel zu prüfen.</sys:String>
+    <sys:String x:Key="Browser_CheckTimeout">Der Browser hat nicht rechtzeitig geantwortet. Prüfen Sie, ob das gekoppelte Profil und die Erweiterung laufen.</sys:String>
+    <sys:String x:Key="Browser_CheckedAt">Geprüft {0}</sys:String>
+<sys:String x:Key="UI_Details">Details</sys:String>
+    <sys:String x:Key="UI_DailySchedules">Tägliche Zeitpläne</sys:String>
+    <sys:String x:Key="UI_StartupOrder">Startreihenfolge &amp; Bereitschaft</sys:String>
+    <sys:String x:Key="UI_HealthChecks">Erreichbarkeit &amp; Speicherwarnung</sys:String>
+    <sys:String x:Key="UI_ConnectionOptions">Verbindung anpassen</sys:String>
+    <sys:String x:Key="UI_LifecycleScripts">Start- und Stopp-Skripte</sys:String>
+    <sys:String x:Key="UI_LegacyWebsite">Vorhandenen Website-Eintrag übernehmen</sys:String>
+    <sys:String x:Key="UI_LivePreview">Live-Vorschau</sys:String>
+    <sys:String x:Key="UI_SupportAndRestart">Support &amp; Neustart</sys:String>
+    <sys:String x:Key="UI_SoftwareStatus">Softwarestatus · keine Maschinensicherheit</sys:String>
+    <sys:String x:Key="UI_PauseScope">Was wird pausiert?</sys:String>
+    <sys:String x:Key="Browser_ProfileId">Profil-ID</sys:String>
+    <sys:String x:Key="Browser_SummaryReady">Bereit</sys:String>
+    <sys:String x:Key="Browser_SummaryConnected">Verbunden</sys:String>
+    <sys:String x:Key="Browser_SummaryNotConfigured">Nicht eingerichtet</sys:String>
+    <sys:String x:Key="Browser_SummaryHost">Browser-Host einrichten</sys:String>
+    <sys:String x:Key="Browser_SummaryDisconnected">Profil nicht verbunden</sys:String>
+    <sys:String x:Key="Browser_ActionSetup">Einrichten</sys:String>
+    <sys:String x:Key="Browser_ActionReview">Website prüfen</sys:String>
+    <sys:String x:Key="Browser_ActionProfile">Profil verbinden</sys:String>
+    <sys:String x:Key="UI_KioskSummary">Beschränkt den Zugriff auf Windows-Oberfläche und Taskleiste.</sys:String>
+    <sys:String x:Key="UI_KioskDetails">Gesperrte Tastenkürzel &amp; Windows-Unterstützung</sys:String>
+    <sys:String x:Key="Browser_SavedOffline">Gespeichert · offline</sys:String>
+    <sys:String x:Key="Browser_NoProfiles">Einrichten wählen, um diesen Browser zu verbinden.</sys:String>
+        <sys:String x:Key="WindowPicker_Title">Aus offenem Fenster hinzufügen</sys:String>
+    <sys:String x:Key="WindowPicker_Search">Fenster suchen</sys:String>
+    <sys:String x:Key="WindowPicker_Refresh">Aktualisieren</sys:String>
+    <sys:String x:Key="WindowPicker_Manual">Manuell eingeben</sys:String>
+    <sys:String x:Key="WindowPicker_Add">App hinzufügen</sys:String>
+    <sys:String x:Key="WindowPicker_ShowExisting">Eintrag öffnen</sys:String>
+    <sys:String x:Key="WindowPicker_SetupWebsite">Website einrichten</sys:String>
+    <sys:String x:Key="WindowPicker_AlreadyAdded">Bereits hinzugefügt</sys:String>
+    <sys:String x:Key="WindowPicker_ExistingName">Bereits als {0} hinzugefügt</sys:String>
+    <sys:String x:Key="WindowPicker_MultipleExisting">Mehrere Einträge nutzen dieses Programm. Unter Anwendungen auswählen.</sys:String>
+    <sys:String x:Key="WindowPicker_Website">Website-Einrichtung</sys:String>
+    <sys:String x:Key="WindowPicker_WebsiteHint">Websites nutzen die AppSwitcher-Erweiterung. Adresse im nächsten Schritt eintragen.</sys:String>
+    <sys:String x:Key="WindowPicker_ManualRequired">Manuelle Einrichtung nötig</sys:String>
+    <sys:String x:Key="WindowPicker_ManualHint">Diese App benötigt manuelle Starteinstellungen.</sys:String>
+    <sys:String x:Key="WindowPicker_Unavailable">App-Daten nicht verfügbar</sys:String>
+    <sys:String x:Key="WindowPicker_UnavailableHint">Windows erlaubt keinen Zugriff auf diese App-Daten. Manuelle Eingabe ist möglich.</sys:String>
+    <sys:String x:Key="WindowPicker_AccessExpired">Admin-Zugriff abgelaufen. Erneut anmelden.</sys:String>
+    <sys:String x:Key="WindowPicker_Loading">Offene Fenster werden gesucht…</sys:String>
+    <sys:String x:Key="WindowPicker_Empty">Keine Anwendungsfenster gefunden. App öffnen und aktualisieren.</sys:String>
+    <sys:String x:Key="WindowPicker_NoMatches">Keine passenden Fenster.</sys:String>
+    <sys:String x:Key="WindowPicker_ScanFailed">Offene Fenster konnten nicht gelesen werden. Bitte aktualisieren.</sys:String>
+    <sys:String x:Key="WindowPicker_Changed">Dieses Fenster wurde geschlossen oder geändert. Aktualisieren und erneut auswählen.</sys:String>
+    <sys:String x:Key="Setup_Title">{0} einrichten</sys:String>
+    <sys:String x:Key="Setup_Preparing">Browserverbindung wird vorbereitet …</sys:String>
+    <sys:String x:Key="Setup_HostReady">✓ Windows-Verbindung eingerichtet</sys:String>
+    <sys:String x:Key="Setup_Connected">Browser verbunden</sys:String>
+    <sys:String x:Key="Setup_Waiting">Erweiterung im Browser installieren</sys:String>
+    <sys:String x:Key="Setup_ChooseProfile">Browserprofil auswählen</sys:String>
+    <sys:String x:Key="Setup_OpenSavedProfile">Das bereits gekoppelte Browserprofil öffnen.</sys:String>
+    <sys:String x:Key="Setup_ProfileConflict">Dieses Profil ist mehrfach verbunden. Kopiertes Profil schließen und erneut prüfen.</sys:String>
+    <sys:String x:Key="Setup_WaitExpired">Noch nicht verbunden. Browser öffnen und Verbindung prüfen wählen.</sys:String>
+    <sys:String x:Key="Setup_StoreHint">Die AppSwitcher-Erweiterung im Browser bestätigen. Dieses Fenster erkennt sie automatisch.</sys:String>
+    <sys:String x:Key="Setup_UnpackedHint">Im Browser: Entwicklermodus aktivieren, Entpackte Erweiterung laden wählen und den folgenden Ordner auswählen.</sys:String>
+    <sys:String x:Key="Setup_FileHint">In Firefox: Add-ons-Menü → Add-on aus Datei installieren, dann appswitcher-firefox.xpi über den folgenden Pfad wählen. Installation in Firefox bestätigen.</sys:String>
+    <sys:String x:Key="Setup_FirefoxUnavailable">Diesem AppSwitcher-Paket fehlt die signierte Firefox-Erweiterung. Die Einrichtung kann erst fortgesetzt werden, wenn diese Datei mitgeliefert wird. Auf dem Ziel-PC sind weder Internet noch ein Konto nötig.</sys:String>
+    <sys:String x:Key="Setup_PackageMissing">Einrichtungsdateien fehlen. Das vollständige AppSwitcher-Browserpaket verwenden.</sys:String>
+    <sys:String x:Key="Setup_InvalidPackage">Das Browserpaket ist ungültig. Durch ein vollständiges Release ersetzen.</sys:String>
+    <sys:String x:Key="Setup_BrowserMissing">{0} wurde nicht gefunden. Browser installieren oder öffnen und erneut versuchen.</sys:String>
+    <sys:String x:Key="Setup_Failed">Einrichtung nicht abgeschlossen</sys:String>
+    <sys:String x:Key="Setup_Retry">Erneut einrichten</sys:String>
+    <sys:String x:Key="Setup_Install">Erweiterung einrichten</sys:String>
+    <sys:String x:Key="Setup_Check">Verbindung prüfen</sys:String>
+    <sys:String x:Key="Setup_Folder">Installationspfad anzeigen</sys:String>
+    <sys:String x:Key="Setup_CopyFolder">Pfad kopieren</sys:String>
+    <sys:String x:Key="Setup_RestoreTitle">Beim Browserstart dieselben Tabs wieder öffnen</sys:String>
+    <sys:String x:Key="Setup_RestoreHint">So findet AppSwitcher Ihren vorhandenen Website-Tab auch dann wieder, wenn Sie den Browser schließen und erneut öffnen.</sys:String>
+    <sys:String x:Key="Setup_Startup">Diese Browsereinstellung öffnen</sys:String>
+    <sys:String x:Key="Setup_Done">Verbindung übernehmen</sys:String>
+    <sys:String x:Key="Setup_RestoreHintFirefox">In diesem Profil Vorherige Fenster und Tabs öffnen aktivieren. AppSwitcher-Tabgruppen zusammenlassen.</sys:String>
+    <sys:String x:Key="Setup_FirefoxBlocked">Firefox-Datei fehlt im Installationspaket</sys:String>
+    <sys:String x:Key="Setup_AlreadyInstalled">Erweiterung bereits installiert?</sys:String>
+    <sys:String x:Key="Setup_ExistingFirefox">Das Firefox-Profil mit der bereits installierten AppSwitcher-Erweiterung öffnen. Die Verbindung wird automatisch erkannt.</sys:String>
+    <sys:String x:Key="Setup_UnpackedOne">Entwicklermodus einschalten.</sys:String>
+    <sys:String x:Key="Setup_UnpackedTwo">Entpackte Erweiterung laden wählen.</sys:String>
+    <sys:String x:Key="Setup_UnpackedThree">Im Ordnerfenster: Strg+L, Strg+V, dann Enter drücken. Ordner auswählen wählen.</sys:String>
+    <sys:String x:Key="Setup_FirefoxOne">Zahnradmenü öffnen → Add-on aus Datei installieren.</sys:String>
+    <sys:String x:Key="Setup_FirefoxTwo">Im Dateifenster: kopierten Pfad mit Strg+V einfügen, dann Enter drücken.</sys:String>
+    <sys:String x:Key="Setup_FirefoxThree">Installation in Firefox bestätigen.</sys:String>
+    <sys:String x:Key="Setup_CopyAndOpen">Pfad kopieren und {0} öffnen</sys:String>
+    <sys:String x:Key="Setup_PathCopied">Installationspfad kopiert. Sie können ihn im Datei- oder Ordnerfenster des Browsers einfügen.</sys:String>
+    <sys:String x:Key="Setup_CopyFailed">Die Zwischenablage ist belegt. Den Installationspfad unten kopieren, sobald sie verfügbar ist.</sys:String>
+    <sys:String x:Key="Setup_ChooseInBrowser">Diese Option im Browser wählen:</sys:String>
+    <sys:String x:Key="Setup_RestoreChoiceChrome">Zuletzt angesehene Seiten öffnen</sys:String>
+    <sys:String x:Key="Setup_RestoreChoiceEdge">Registerkarten aus der vorherigen Sitzung öffnen</sys:String>
+    <sys:String x:Key="Setup_RestoreChoiceFirefox">Vorherige Fenster und Tabs öffnen</sys:String>
+    <sys:String x:Key="Setup_RestoreDetails">Das oben gewählte Browserprofil verwenden. Diese Einstellung stellt auch dessen andere Tabs wieder her. AppSwitcher kann sie nicht automatisch prüfen oder ändern. AppSwitcher-Tabgruppen zusammenlassen.</sys:String>
+    <sys:String x:Key="Msg_PinRetryAfter">Zu viele falsche PINs. In {0} Sekunden erneut versuchen.</sys:String>
+    <sys:String x:Key="Diag_InvalidPinHash">Eine gespeicherte PIN ist beschädigt oder wird nicht unterstützt. Stellen Sie eine gültige Konfigurationssicherung wieder her.</sys:String>
+    <sys:String x:Key="Recovery_Title">Konfiguration wiederherstellen</sys:String>
+    <sys:String x:Key="Recovery_Explanation">AppSwitcher konnte die Einstellungen nicht laden. Es wurden keine verwalteten Anwendungen gestartet. Prüfen Sie eine Sicherung, um die Konfiguration wiederherzustellen.</sys:String>
+    <sys:String x:Key="Recovery_Backups">Verfügbare Sicherungen</sys:String>
+    <sys:String x:Key="Recovery_SelectBackup">Wählen Sie eine Sicherung. Falls eingerichtet, benötigen Sie deren Administrator-PIN.</sys:String>
+    <sys:String x:Key="Recovery_NoBackups">Keine Sicherungen gefunden. Öffnen Sie den Konfigurationsordner, um die Datei zu prüfen oder zu reparieren. Starten Sie AppSwitcher anschließend erneut.</sys:String>
+    <sys:String x:Key="Recovery_OpenFolder">Ordner öffnen</sys:String>
+    <sys:String x:Key="Recovery_Review">Prüfen und wiederherstellen</sys:String>
+    <sys:String x:Key="Recovery_InvalidBackup">Diese Sicherung ist unlesbar oder enthält ungültige Einstellungen. Wählen Sie eine andere Sicherung.</sys:String>
+    <sys:String x:Key="Recovery_Confirm">Diese Sicherung wiederherstellen? Die aktuelle Datei bleibt im Wiederherstellungsordner erhalten. Schließen Sie danach dieses Fenster und starten Sie AppSwitcher, sobald Sie bereit sind. Dann gelten wieder die normalen Start- und Kioskeinstellungen.</sys:String>
+    <sys:String x:Key="Recovery_Complete">Sicherung wiederhergestellt. Die bisherige Datei bleibt im Wiederherstellungsordner erhalten. Schließen Sie dieses Fenster und starten Sie AppSwitcher, sobald Sie bereit sind.</sys:String>
+    <sys:String x:Key="Recovery_RestoreFailed">Die Sicherung konnte nicht wiederhergestellt werden. Sie wurde möglicherweise seit der Vorschau geändert oder der Konfigurationsordner ist nicht beschreibbar. Prüfen Sie die Dateien und versuchen Sie es erneut.</sys:String>
+</ResourceDictionary>

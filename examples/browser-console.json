@@ -1,0 +1,51 @@
+{
+  "Version": 11,
+  "Settings": {
+    "Language": "en",
+    "Theme": "Dark",
+    "Shape": "RoundedSquare",
+    "ButtonSize": 80,
+    "MenuWidth": 390,
+    "MenuItemHeight": 56,
+    "ButtonOpacity": 1,
+    "KioskMode": false,
+    "AdminPasswordHash": "",
+    "OperatorPasswordHash": "",
+    "ConfigEncryption": false,
+    "SessionTimeoutMinutes": 5,
+    "MaxConfigBackups": 10
+  },
+  "Groups": [],
+  "Apps": [
+    {
+      "AppId": "d368b509e08c4de4921e26c7604e9a04",
+      "Name": "Example dashboard",
+      "Path": "",
+      "TargetKind": 1,
+      "Group": "",
+      "RequireConfirmation": true,
+      "AutoLaunch": false,
+      "WatchdogEnabled": false,
+      "ScheduleTime": "",
+      "ScheduleRestartTime": "",
+      "ScheduleShutdownTime": "",
+      "WebsiteUrl": "https://example.com",
+      "Browser": 1,
+      "BrowserProfileId": "00000000000000000000000000000000"
+    },
+    {
+      "AppId": "d368b509e08c4de4921e26c7604e9a01",
+      "Name": "Notes",
+      "Path": "notepad.exe",
+      "TargetKind": 0,
+      "Group": "",
+      "RequireConfirmation": true,
+      "AutoLaunch": false,
+      "WatchdogEnabled": false,
+      "ScheduleTime": "",
+      "ScheduleRestartTime": "",
+      "ScheduleShutdownTime": ""
+    }
+  ],
+  "Layouts": []
+}

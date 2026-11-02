@@ -1,0 +1,12 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+artifacts/
+obj_*/
+/output/
+/.playwright-cli/
+/.dotnet/
+/.idea/
+/.vs/

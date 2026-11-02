@@ -1,0 +1,35 @@
+name: Bug report
+description: Report a reproducible application problem using synthetic data.
+body:
+  - type: markdown
+    attributes:
+      value: "For vulnerabilities use SECURITY.md. Do not attach real configurations, PIN hashes, browser profiles or customer data."
+  - type: input
+    id: version
+    attributes:
+      label: AppSwitcher version or source commit
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Windows, browser and display environment
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce with safe example data
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected result and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized logs or screenshots
+      description: Remove personal paths, names, URLs and secrets before uploading.

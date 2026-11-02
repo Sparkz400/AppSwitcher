@@ -1,0 +1,716 @@
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:AppSwitcher.Controls" x:Class="AppSwitcher.Controls.GlobalSettingsPanel">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}">
+            <Setter Property="IsEnabled" Value="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+        <Style TargetType="ComboBox" BasedOn="{StaticResource ModernComboBox}">
+            <Setter Property="IsEnabled" Value="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+        <Style TargetType="CheckBox" BasedOn="{StaticResource ConsoleCheckBox}">
+            <Setter Property="IsEnabled" Value="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+        <Style TargetType="ToggleButton" BasedOn="{StaticResource ConsoleToggleButton}">
+            <Setter Property="IsEnabled" Value="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource ConsoleButton}">
+            <Setter Property="IsEnabled" Value="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <TabControl Visibility="{Binding ActiveSection, Converter={StaticResource SectionVisibility}, ConverterParameter=System}">
+            <TabItem Header="{DynamicResource UI_Launcher}">
+                <DockPanel><Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="16" Margin="0,0,0,12" DockPanel.Dock="Top">
+ <DockPanel><StackPanel VerticalAlignment="Center"><TextBlock Text="{DynamicResource UI_LivePreview}" FontWeight="SemiBold" /><TextBlock Text="{Binding Settings.ButtonSize, StringFormat={}{0:0} px}" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0" /></StackPanel>
+ <Viewbox Height="64" MaxWidth="224" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Center" Margin="12,0,0,0"><controls:LauncherVisual DataContext="{Binding Settings}" Opacity="{Binding ButtonOpacity}" AutomationProperties.Name="{DynamicResource UI_LivePreview}" /></Viewbox></DockPanel>
+</Border><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                    <StackPanel Margin="0,0,8,0">
+                        <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                            <StackPanel>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_Shape}" VerticalAlignment="Center" />
+                                    <ComboBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" SelectedValue="{Binding Settings.Shape}" SelectedValuePath="Tag" Style="{DynamicResource ModernComboBox}" MaxWidth="200" HorizontalAlignment="Left" AutomationProperties.Name="{DynamicResource Settings_Shape}">
+                                        <ComboBoxItem Tag="Hexagon" Content="{DynamicResource Shape_Hexagon}" />
+                                        <ComboBoxItem Tag="Circle" Content="{DynamicResource Shape_Circle}" />
+                                        <ComboBoxItem Tag="Square" Content="{DynamicResource Shape_Square}" />
+                                        <ComboBoxItem Tag="RoundedSquare" Content="{DynamicResource Shape_RoundedSquare}" />
+                                        <ComboBoxItem Tag="Diamond" Content="{DynamicResource Shape_Diamond}" />
+                                        <ComboBoxItem Tag="Pentagon" Content="{DynamicResource Shape_Pentagon}" />
+                                        <ComboBoxItem Tag="Octagon" Content="{DynamicResource Shape_Octagon}" />
+                                        <ComboBoxItem Tag="Star" Content="{DynamicResource Shape_Star}" />
+                                    </ComboBox>
+                                </Grid>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_IconStyle}" VerticalAlignment="Center" />
+                                    <ComboBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" SelectedValue="{Binding Settings.IconStyle}" SelectedValuePath="Tag" Style="{DynamicResource ModernComboBox}" MaxWidth="200" HorizontalAlignment="Left" AutomationProperties.Name="{DynamicResource Settings_IconStyle}">
+                                        <ComboBoxItem Tag="Hamburger" Content="{DynamicResource IconStyle_Hamburger}" />
+                                        <ComboBoxItem Tag="Dots" Content="{DynamicResource IconStyle_Dots}" />
+                                        <ComboBoxItem Tag="Arrow" Content="{DynamicResource IconStyle_Arrow}" />
+                                        <ComboBoxItem Tag="Ring" Content="{DynamicResource IconStyle_Ring}" />
+                                        <ComboBoxItem Tag="Power" Content="{DynamicResource IconStyle_Power}" />
+                                    </ComboBox>
+                                </Grid>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_Size}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Slider IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Minimum="40" Maximum="200" Value="{Binding Settings.ButtonSize}" Width="150" VerticalAlignment="Center" AutomationProperties.Name="{DynamicResource Settings_Size}" />
+                                        <TextBlock Text="{Binding Settings.ButtonSize, StringFormat={}{0:0} px}" VerticalAlignment="Center" Margin="10,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_BgColor}" VerticalAlignment="Center" />
+                                    <ToggleButton IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" Template="{DynamicResource ColorPickerTemplate}" Content="{Binding Settings.BgColor}" Width="150" HorizontalAlignment="Left" Height="44" AutomationProperties.Name="{DynamicResource Settings_BgColor}" />
+                                </Grid>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_FgColor}" VerticalAlignment="Center" />
+                                    <ToggleButton IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" Template="{DynamicResource ColorPickerFgTemplate}" Content="{Binding Settings.FgColor}" Width="150" HorizontalAlignment="Left" Height="44" AutomationProperties.Name="{DynamicResource Settings_FgColor}" />
+                                </Grid>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_BorderColor}" VerticalAlignment="Center" />
+                                    <ToggleButton IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" Template="{DynamicResource ColorPickerBorderTemplate}" Content="{Binding Settings.BorderColor}" Width="150" HorizontalAlignment="Left" Height="44" AutomationProperties.Name="{DynamicResource Settings_BorderColor}" />
+                                </Grid>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_Opacity}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Slider IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Minimum="0.2" Maximum="1.0" Value="{Binding Settings.ButtonOpacity}" Width="150" VerticalAlignment="Center" LargeChange="0.1" SmallChange="0.05" TickFrequency="0.1" IsSnapToTickEnabled="True" AutomationProperties.Name="{DynamicResource Settings_Opacity}" />
+                                        <TextBlock Text="{Binding Settings.ButtonOpacity, StringFormat={}{0:P0}}" VerticalAlignment="Center" Margin="10,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                                <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding Settings.GlowEnabled}" Margin="0,8">
+                                    <TextBlock Text="{DynamicResource Settings_GlowEffect}" Foreground="{DynamicResource TextPrimary}" FontSize="14" TextWrapping="Wrap" />
+                                </CheckBox>
+                            </StackPanel>
+                        </Border>
+                        <CheckBox IsChecked="{Binding Settings.GlobalShortcutEnabled}" Content="{DynamicResource Shortcut_Enable}" Margin="0,0,0,8" />
+                        <TextBlock Text="{Binding Runtime.ShortcutStatus}" TextWrapping="Wrap" Foreground="{DynamicResource WarningFg}" Margin="0,0,0,12" Visibility="{Binding Runtime.ShortcutStatus, Converter={StaticResource StringNotEmptyToVis}}" />
+                        <Label Content="{DynamicResource Settings_BehaviorPosition}" />
+                        <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                            <StackPanel>
+                                <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding Settings.PositionLocked}" Margin="0,5">
+                                    <TextBlock Text="{DynamicResource Settings_LockPosition}" Foreground="{DynamicResource TextPrimary}" FontSize="14" TextWrapping="Wrap" />
+                                </CheckBox>
+                                <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding Settings.AutoClose}" Margin="0,10">
+                                    <TextBlock Text="{DynamicResource Settings_AutoCloseMenu}" Foreground="{DynamicResource TextPrimary}" FontSize="14" TextWrapping="Wrap" />
+                                </CheckBox>
+                            </StackPanel>
+                        </Border>
+                        <Label Content="{DynamicResource Settings_Monitor}" />
+                        <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                            <StackPanel>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_PreferredMonitor}" VerticalAlignment="Center" />
+                                    <ComboBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" ItemsSource="{Binding MonitorChoices}" SelectedValue="{Binding LauncherMonitorSelection}" SelectedValuePath="Value" Style="{DynamicResource ModernComboBox}" MaxWidth="280" HorizontalAlignment="Left" AutomationProperties.Name="{DynamicResource Settings_PreferredMonitor}"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Label}" MaxWidth="220" TextWrapping="Wrap"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
+                                </Grid>
+                                </StackPanel>
+                        </Border>
+                    <Expander Header="{DynamicResource UI_SupportAndRestart}" Margin="0,8,0,12"><StackPanel><Button Content="{DynamicResource Support_Title}" Command="{Binding PreviewSupportReportCommand}" HorizontalAlignment="Left" Margin="0,0,0,16" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}" />
+                        <Button Content="{DynamicResource UI_RestartLauncher}" Command="{Binding RestartLauncherCommand}" HorizontalAlignment="Left" Margin="0,0,0,8" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}" />
+                        <TextBlock Text="{DynamicResource UI_RestartLauncherHint}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel></Expander></StackPanel>
+                </ScrollViewer>
+            </DockPanel></TabItem>
+            <TabItem Header="{DynamicResource UI_Appearance}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                    <StackPanel Margin="0,0,8,0">
+                        <Label Content="{DynamicResource Settings_Design}" />
+                        <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                            <StackPanel>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_ColorScheme}" VerticalAlignment="Center" />
+                                    <ComboBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" SelectedValue="{Binding Settings.Theme}" SelectedValuePath="Tag" Style="{DynamicResource ModernComboBox}" MaxWidth="200" HorizontalAlignment="Left" AutomationProperties.Name="{DynamicResource Settings_ColorScheme}">
+                                        <ComboBoxItem Tag="Dark" Content="{DynamicResource Theme_Dark}" />
+                                        <ComboBoxItem Tag="Light" Content="{DynamicResource Theme_Light}" />
+                                    </ComboBox>
+                                </Grid>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_Language}" VerticalAlignment="Center" />
+                                    <ComboBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" SelectedValue="{Binding Settings.Language}" SelectedValuePath="Code" DisplayMemberPath="Label" ItemsSource="{Binding LanguageChoices}" Style="{DynamicResource ModernComboBox}" MaxWidth="200" HorizontalAlignment="Left" AutomationProperties.Name="{DynamicResource Settings_Language}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="{DynamicResource UI_Groups}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                    <StackPanel Margin="0,0,8,0">
+                        <Label Content="{DynamicResource Settings_Groups}" />
+                        <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                            <StackPanel>
+                                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,0,0,10" Text="{DynamicResource Settings_GroupsDescription}" />
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="0" Text="{Binding NewGroupName, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Margin="0,0,8,0" AutomationProperties.Name="{DynamicResource Settings_Groups}" />
+                                    <Button Grid.Column="1" Content="{DynamicResource Settings_AddGroup}" Command="{Binding AddGroupCommand}" Background="Transparent" Foreground="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" Padding="12,5" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="4" />
+                                            </Style>
+                                        </Button.Resources>
+                                    </Button>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding VisibleGroups}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource InputBg}" CornerRadius="4" Padding="10,6" Margin="0,3">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="70" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding Key}" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding NameEntries}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Orientation="Horizontal" Margin="4,1">
+                                                                    <TextBlock Text="{Binding LanguageLabel, StringFormat='{}{0}:'}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" FontSize="12" Margin="0,0,4,0" Width="24" TextWrapping="Wrap" />
+                                                                    <TextBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="90" Padding="4,3" FontSize="12" AutomationProperties.Name="{DynamicResource Settings_Groups}" HorizontalAlignment="Left" />
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                    <Button Grid.Column="2" Content="✕" Command="{Binding DataContext.DeleteGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{DynamicResource DangerFg}" BorderThickness="0" Cursor="Hand" FontSize="14" Padding="4,0" AutomationProperties.Name="{DynamicResource UI_DeleteGroup}" ToolTip="{DynamicResource UI_DeleteGroup}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="{DynamicResource UI_Backups}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                    <StackPanel Margin="0,0,8,0">
+                        <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                            <Label Content="{DynamicResource Settings_TransferConfig}" />
+                            <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="{DynamicResource Settings_Export}" Command="{Binding ExportConfigCommand}" Background="Transparent" Foreground="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" Padding="12,6" Cursor="Hand" Margin="0,0,10,0">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="6" />
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button Content="{DynamicResource Settings_Import}" Command="{Binding ImportConfigCommand}" Background="Transparent" Foreground="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" Padding="12,6" Cursor="Hand">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="6" />
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                        <Label Content="{DynamicResource Settings_ConfigBackups}" />
+                        <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                            <StackPanel>
+                                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,0,0,10" Text="{DynamicResource Settings_ConfigBackupsDescription}" />
+                                <Grid Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Content="{DynamicResource Settings_MaxConfigBackups}" VerticalAlignment="Center" />
+                                    <TextBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" Text="{Binding Settings.MaxConfigBackups, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="60" HorizontalAlignment="Stretch" AutomationProperties.Name="{DynamicResource Settings_MaxConfigBackups}" />
+                                </Grid>
+                                <TextBlock Text="{DynamicResource UI_EmptyBackups}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,12">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ConfigBackups.Count}" Value="0">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <ItemsControl ItemsSource="{Binding ConfigBackups}" Margin="0,10,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource InputBg}" CornerRadius="4" Padding="10,6" Margin="0,2">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding SizeDisplay}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Content="{DynamicResource Settings_RestoreBackup}" Command="{Binding DataContext.RestoreBackupCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{DynamicResource AccentBrush}" BorderThickness="0" Cursor="Hand" FontSize="12" Padding="8,2" Margin="0,0,4,0" Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}" />
+                                                    <Button Grid.Column="2" Content="✕" Command="{Binding DataContext.DeleteBackupCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{DynamicResource DangerFg}" BorderThickness="0" Cursor="Hand" FontSize="14" Padding="4,0" Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}" AutomationProperties.Name="{DynamicResource UI_DeleteBackup}" ToolTip="{DynamicResource UI_DeleteBackup}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+        <TabControl Visibility="{Binding ActiveSection, Converter={StaticResource SectionVisibility}, ConverterParameter=Access}">
+            <TabItem Header="{DynamicResource UI_Security}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                    <StackPanel Margin="0,0,8,0">
+                        <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                            <Label Content="{DynamicResource Settings_Security}" />
+                            <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource Settings_AdminPin}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="{DynamicResource Settings_SetChangePin}" Command="{Binding SetAdminPinCommand}" Background="Transparent" Foreground="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" Padding="12,6" Cursor="Hand" Margin="0,0,10,0">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="6" />
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button Content="{DynamicResource Settings_RemovePin}" Command="{Binding RemoveAdminPinCommand}" Background="{DynamicResource DangerBg}" Foreground="{DynamicResource DangerFg}" BorderBrush="{DynamicResource DangerBorder}" BorderThickness="1" Padding="12,6" Cursor="Hand">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="6" />
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </StackPanel>
+                                    <Separator Background="{DynamicResource SeparatorColor}" Margin="0,15,0,10" />
+                                    <TextBlock Text="{DynamicResource Settings_OperatorPin}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
+                                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,0,0,10" Text="{DynamicResource Settings_OperatorPinDescription}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="{DynamicResource Settings_SetChangeOperatorPin}" Command="{Binding SetOperatorPinCommand}" Background="Transparent" Foreground="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" Padding="12,6" Cursor="Hand" Margin="0,0,10,0">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="6" />
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button Content="{DynamicResource Settings_RemoveOperatorPin}" Command="{Binding RemoveOperatorPinCommand}" Background="{DynamicResource DangerBg}" Foreground="{DynamicResource DangerFg}" BorderBrush="{DynamicResource DangerBorder}" BorderThickness="1" Padding="12,6" Cursor="Hand">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="6" />
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </StackPanel>
+                                    <Separator Background="{DynamicResource SeparatorColor}" Margin="0,15,0,10" />
+                                    <TextBlock Text="{DynamicResource Settings_OperatorAccess}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
+                                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource AccentBrush}" FontSize="12" Margin="0,0,0,10" Text="{DynamicResource Settings_OperatorAccessHint}" />
+                                    <Grid Margin="0,0,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="15" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{DynamicResource Settings_OperatorAccessGroups}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6" TextWrapping="Wrap" />
+                                            <Border Background="{DynamicResource InputBg}" BorderBrush="{DynamicResource InputBorder}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                                <ScrollViewer MaxHeight="170" VerticalScrollBarVisibility="Auto">
+                                                    <ItemsControl ItemsSource="{Binding OperatorScopeGroupEntries}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding IsSelected}" Margin="0,0,0,6" AutomationProperties.Name="{Binding Label}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="{Binding Label}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                                                        <TextBlock Text="{Binding Key}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />
+                                                                    </StackPanel>
+                                                                </CheckBox>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Border>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="{DynamicResource Settings_OperatorAccessApps}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6" TextWrapping="Wrap" />
+                                            <Border Background="{DynamicResource InputBg}" BorderBrush="{DynamicResource InputBorder}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                                <ScrollViewer MaxHeight="170" VerticalScrollBarVisibility="Auto">
+                                                    <ItemsControl ItemsSource="{Binding OperatorScopeAppEntries}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding IsSelected}" Margin="0,0,0,6" AutomationProperties.Name="{Binding Label}">
+                                                                    <TextBlock Text="{Binding Label}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                                                </CheckBox>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                    <Separator Background="{DynamicResource SeparatorColor}" Margin="0,15,0,10" />
+                                    <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding Settings.ConfigEncryption}" Margin="0,5">
+                                        <TextBlock Text="{DynamicResource Settings_EncryptConfig}" Foreground="{DynamicResource TextPrimary}" FontSize="14" TextWrapping="Wrap" />
+                                    </CheckBox>
+                                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WarningFg}" FontSize="12" Margin="25,5,0,0" Text="{DynamicResource Settings_EncryptWarning}" />
+                                    <Separator Background="{DynamicResource SeparatorColor}" Margin="0,15,0,10" />
+                                    <TextBlock Text="{DynamicResource Settings_SessionTimeout}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
+                                    <Grid Margin="0,5,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="200" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Label Content="{DynamicResource Settings_SessionTimeoutMinutes}" VerticalAlignment="Center" />
+                                        <TextBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" Text="{Binding Settings.SessionTimeoutMinutes, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="60" HorizontalAlignment="Stretch" AutomationProperties.Name="{DynamicResource Settings_SessionTimeoutMinutes}" />
+                                    </Grid>
+                                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,5,0,0" Text="{DynamicResource Settings_SessionTimeoutHint}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="{DynamicResource UI_Kiosk}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                    <StackPanel Margin="0,0,8,0">
+                        <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                            <Label Content="{DynamicResource Settings_KioskMode}" />
+                            <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                                <StackPanel>
+                                    <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding Settings.KioskMode}" Margin="0,5">
+                                        <TextBlock Text="{DynamicResource Settings_KioskEnable}" Foreground="{DynamicResource TextPrimary}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    </CheckBox>
+                                    <TextBlock Text="{DynamicResource UI_KioskSummary}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,6,0,8" /><Expander Header="{DynamicResource UI_KioskDetails}" Margin="0,8,0,4"><StackPanel Margin="0,8,0,8"><TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="25,5,0,0" Text="{DynamicResource Settings_KioskDescription}" />
+                                    </StackPanel></Expander><TextBlock TextWrapping="Wrap" Foreground="{DynamicResource WarningFg}" FontSize="12" Margin="25,8,0,0" Text="{DynamicResource Settings_KioskWarning}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                        <StackPanel Visibility="{Binding CanViewDiagnostics, Converter={StaticResource BoolToVis}}">
+                            <Label Content="{DynamicResource Settings_KioskDiagnostics}" />
+                            <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                                <StackPanel>
+                                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,0,0,10" Text="{DynamicResource Settings_KioskDiagnosticsDescription}" />
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_KioskEnabled}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <CheckBox Grid.Column="1" IsChecked="{Binding KioskStatus.IsActive}" IsEnabled="False" AutomationProperties.Name="{DynamicResource Diag_KioskEnabled}" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_KeyboardHook}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <CheckBox Grid.Column="1" IsChecked="{Binding KioskStatus.KeyboardHookInstalled}" IsEnabled="False" AutomationProperties.Name="{DynamicResource Diag_KeyboardHook}" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_TaskbarHidden}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <CheckBox Grid.Column="1" IsChecked="{Binding KioskStatus.TaskbarHidden}" IsEnabled="False" AutomationProperties.Name="{DynamicResource Diag_TaskbarHidden}" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_EdgeSwipe}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <CheckBox Grid.Column="1" IsChecked="{Binding KioskStatus.EdgeSwipePolicyApplied}" IsEnabled="False" AutomationProperties.Name="{DynamicResource Diag_EdgeSwipe}" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_KeyboardFilterSupported}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <CheckBox Grid.Column="1" IsChecked="{Binding KioskStatus.KeyboardFilterSupported}" IsEnabled="False" AutomationProperties.Name="{DynamicResource Diag_KeyboardFilterSupported}" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_KeyboardFilterConfigured}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <CheckBox Grid.Column="1" IsChecked="{Binding KioskStatus.KeyboardFilterConfigured}" IsEnabled="False" AutomationProperties.Name="{DynamicResource Diag_KeyboardFilterConfigured}" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_KeyboardFilterRestart}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <CheckBox Grid.Column="1" IsChecked="{Binding KioskStatus.KeyboardFilterRestartRequired}" IsEnabled="False" AutomationProperties.Name="{DynamicResource Diag_KeyboardFilterRestart}" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_EnforcementLoop}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <CheckBox Grid.Column="1" IsChecked="{Binding KioskStatus.EnforcementLoopRunning}" IsEnabled="False" AutomationProperties.Name="{DynamicResource Diag_EnforcementLoop}" />
+                                    </Grid>
+                                    <Grid Margin="0,8,0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_KeyboardFilterStatus}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding KioskStatus.KeyboardFilterStatusMessage}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                    <Grid Margin="0,8,0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_AccessLevel}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding AccessLevelLabel}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_SessionTimeout}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding SessionTimeoutLabel}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                    <Grid Margin="0,8,0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_LastAction}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding KioskStatus.LastSelfHealAction}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_LastResult}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding KioskStatus.LastSelfHealResult}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                    <Grid Margin="0,8,0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_LastBlockedSurface}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding KioskStatus.LastBlockedSurface}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_LastAllowedForeground}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding KioskStatus.LastAllowedForeground}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{DynamicResource Diag_ShellInterventions}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding KioskStatus.ShellInterventionCount}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                                    </Grid>
+                                    <TextBlock Text="{Binding KioskStatus.LimitedProtectionMessage}" TextWrapping="Wrap" Foreground="{DynamicResource WarningFg}" FontSize="12" Margin="0,10,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding KioskStatus.LimitedProtectionMessage}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding KioskStatus.DeploymentNotes}" TextWrapping="Wrap" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+        <TabControl Visibility="{Binding ActiveSection, Converter={StaticResource SectionVisibility}, ConverterParameter=Audit}">
+            <TabItem Header="{DynamicResource UI_Audit}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                    <StackPanel Margin="0,0,8,0">
+                        <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                            <Label Content="{DynamicResource Settings_AuditLog}" />
+                            <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource UI_EmptyHistory}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,12">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding AuditEntries.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <ItemsControl ItemsSource="{Binding AuditEntries}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource InputBg}" CornerRadius="4" Padding="10,8" Margin="0,2">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{DynamicResource Audit_Timestamp}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                                            <TextBlock Text="{DynamicResource Audit_Actor}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding ActorDisplay}" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                                                            <TextBlock Text="{DynamicResource Audit_Action}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding Action}" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="3" Margin="8,0,0,0">
+                                                            <TextBlock Text="{DynamicResource Audit_Outcome}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding Outcome}" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="0" Margin="0,12,0,0" Grid.Row="1" Grid.ColumnSpan="4">
+                                                            <TextBlock Text="{DynamicResource Audit_Target}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding Target}" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding Details}" Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+        <TabControl Visibility="{Binding ActiveSection, Converter={StaticResource SectionVisibility}, ConverterParameter=Layouts}">
+            <TabItem Header="{DynamicResource UI_Layouts}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                    <StackPanel Margin="0,0,8,0">
+                        <Label Content="{DynamicResource Settings_ScreenLayouts}" />
+                        <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
+                            <StackPanel>
+                                <Label Content="{DynamicResource Workspace_Group}" />
+                                <ComboBox ItemsSource="{Binding GroupChoices}" DisplayMemberPath="CurrentDisplayName" SelectedValuePath="Key" SelectedValue="{Binding WorkspaceGroupKey}" AutomationProperties.Name="{DynamicResource Workspace_Group}" Margin="0,0,0,10" />
+                                <TextBlock Text="{DynamicResource Workspace_Hint}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,10" />
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="0" Text="{Binding NewLayoutName, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Margin="0,0,8,0" AutomationProperties.Name="{DynamicResource Settings_ScreenLayouts}" />
+                                    <Button Grid.Column="1" Content="{DynamicResource Settings_SaveLayout}" Command="{Binding SaveLayoutCommand}" Background="Transparent" Foreground="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" Padding="12,5" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="4" />
+                                            </Style>
+                                        </Button.Resources>
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="{DynamicResource UI_EmptyLayouts}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,12">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Layouts.Count}" Value="0">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <ItemsControl ItemsSource="{Binding Layouts}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource InputBg}" CornerRadius="4" Padding="10,6" Margin="0,2">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                                                    <WrapPanel Margin="0,6,0,0">
+                                                        <Button Content="{DynamicResource Workspace_Start}" Command="{Binding DataContext.StartWorkspaceCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" IsEnabled="{Binding DataContext.CanManageApps, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,8,4" />
+                                                        <Button Content="{DynamicResource Settings_RestoreLayout}" Command="{Binding DataContext.RestoreLayoutCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="0,0,8,4" />
+                                                        <Button Content="{DynamicResource UI_DeleteLayout}" Command="{Binding DataContext.DeleteLayoutCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="0,0,0,4" />
+                                                    </WrapPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

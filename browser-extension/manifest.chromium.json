@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "AppSwitcher Browser Bridge",
+  "version": "1.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1Xf7zbPUANxTlBp0ZwZ8rZ1T0IMYsTPqS6yP5mVmxCBhEryrb1IFf/+361WdB+vhS1WGJYlREx4H43EhjXQYUVjlGVYqBMfR/fvRqZL0bXlGu/VhMfpG7a1E/v7rDTBRez2E84LUFCqBdASaZmrVplBt4/DnHymrLSk5m6GNjTz/9obGCE1vx1uyq5uLd0s3/PGbtO+b7iTcSolKL4iSYGqVXMWbBF0ObStFEoQJ1SQNRVYVwaNpLeDpuK8TDFd7WXjWppYNk3roXQwL0T0UI9He84KvOqODK3HAM3QAyFm9qhaEgkPEiwIc+8vWppCyMKIjV3arAU/Kf7Kud2Yh3QIDAQAB",
+  "description": "Restore and activate the website tabs managed by AppSwitcher.",
+  "minimum_chrome_version": "120",
+  "permissions": ["tabs", "storage", "nativeMessaging", "tabGroups", "alarms"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "profile.html", "default_title": "AppSwitcher connection" },
+  "incognito": "not_allowed"
+}

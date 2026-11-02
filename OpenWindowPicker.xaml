@@ -1,0 +1,42 @@
+<Window x:Class="AppSwitcher.OpenWindowPicker" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="{DynamicResource WindowPicker_Title}" Style="{StaticResource AppWindowStyle}" Width="780" Height="640" MinWidth="600" MinHeight="480" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+ <Grid Margin="20">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <DockPanel Margin="0,0,0,12">
+   <Button Content="{DynamicResource WindowPicker_Refresh}" Command="{Binding RefreshCommand}" DockPanel.Dock="Right" Margin="12,0,0,0" VerticalAlignment="Bottom"/>
+   <StackPanel><Label Content="{DynamicResource WindowPicker_Search}" Target="{Binding ElementName=SearchBox}"/><TextBox x:Name="SearchBox" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsBusy}" AutomationProperties.Name="{DynamicResource WindowPicker_Search}"/></StackPanel>
+  </DockPanel>
+  <Grid Grid.Row="1">
+   <ListBox x:Name="WindowList" ItemsSource="{Binding Windows}" SelectedItem="{Binding SelectedWindow}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBool}}" HorizontalContentAlignment="Stretch" AutomationProperties.Name="{DynamicResource WindowPicker_Title}"
+    ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.PanningMode="VerticalOnly" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+    <ListBox.ItemTemplate><DataTemplate>
+     <Grid Margin="2,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <Grid Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Left">
+       <Path Data="M 2,4 L 30,4 L 30,27 L 2,27 Z M 2,10 L 30,10" Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.5" Stretch="Uniform" Margin="2">
+        <Path.Style><Style TargetType="Path"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Icon}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Path.Style>
+       </Path>
+       <Image Source="{Binding Icon}" Stretch="Uniform"/>
+      </Grid>
+      <StackPanel Grid.Column="1"><TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Title}"/>
+       <TextBlock Text="{Binding AppName}" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0" Visibility="{Binding AppName, Converter={StaticResource StringNotEmptyToVis}}"/>
+       <TextBlock Text="{Binding Status}" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding Status, Converter={StaticResource StringNotEmptyToVis}}"/>
+      </StackPanel>
+     </Grid>
+    </DataTemplate></ListBox.ItemTemplate>
+   </ListBox>
+   <TextBlock Text="{Binding EmptyText}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20" IsHitTestVisible="False" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
+  </Grid>
+  <StackPanel Grid.Row="2" Margin="0,12,0,0">
+   <StackPanel Visibility="{Binding CanName, Converter={StaticResource BoolToVis}}"><Label Content="{DynamicResource Settings_DisplayName}" Target="{Binding ElementName=AppNameBox}"/><TextBox x:Name="AppNameBox" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsBusy}" MaxLength="256" AutomationProperties.Name="{DynamicResource Settings_DisplayName}"/></StackPanel>
+   <TextBlock Text="{Binding ExecutablePath}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,6,0,0" MaxHeight="52" TextTrimming="CharacterEllipsis" ToolTip="{Binding ExecutablePath}" Visibility="{Binding ExecutablePath, Converter={StaticResource StringNotEmptyToVis}}"/>
+   <TextBlock Text="{Binding SelectionHint}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,6,0,0" Visibility="{Binding SelectionHint, Converter={StaticResource StringNotEmptyToVis}}"/>
+   <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Foreground="{DynamicResource WarningFg}" Margin="0,8,0,0" Visibility="{Binding Status, Converter={StaticResource StringNotEmptyToVis}}" AutomationProperties.LiveSetting="Polite"/>
+  </StackPanel>
+  <DockPanel Grid.Row="3" Margin="0,16,0,0">
+   <Button Content="{DynamicResource WindowPicker_Manual}" Command="{Binding ManualCommand}" DockPanel.Dock="Left" Margin="0,0,12,0"/>
+   <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><Button Content="{DynamicResource Password_Cancel}" Click="Cancel_Click" IsCancel="True" Margin="0,0,8,0"/>
+    <Button x:Name="AddButton" Content="{Binding ActionLabel}" Command="{Binding ConfirmCommand}" Style="{StaticResource PrimaryButton}" IsDefault="True"/>
+   </StackPanel>
+  </DockPanel>
+ </Grid>
+</Window>

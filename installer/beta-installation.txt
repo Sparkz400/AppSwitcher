@@ -1,0 +1,9 @@
+AppSwitcher public beta
+
+This Windows beta is unsigned. Obtain it from the project's official release, compare its published SHA-256 checksum, and follow your organization's software approval policy. A matching checksum checks file integrity; it does not establish publisher identity.
+
+This installer works offline and installs only for the current Windows user. No separate .NET installation is required. Close AppSwitcher and its paired browser profiles before updating. Setup will not close managed applications, enable kiosk mode, install browser extensions or start the launcher automatically.
+
+Settings, logs and browser ownership data are kept separately under %LOCALAPPDATA%\AppSwitcher. They are preserved when upgrading or uninstalling. Before updating, export a configuration backup and retain the previous installer. For an offline rollback, close the launcher/browser profiles and run the previous installer into the same directory. If an earlier version cannot read your settings, restore a compatible configuration backup through the app's recovery flow.
+
+The beta has automated Windows validation. Test your actual panel, display arrangement, browsers, touch/glove input and kiosk exit/recovery routes before deployment. AppSwitcher reports software status and is not a machine-safety system.

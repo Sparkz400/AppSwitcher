@@ -1,0 +1,19 @@
+name: Feature request
+description: Describe an operator or maintenance workflow to improve.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What task is difficult today?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What should the user be able to do?
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Deployment constraints and alternatives considered

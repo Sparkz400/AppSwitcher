@@ -1,0 +1,106 @@
+[
+  {
+    "name": "CommunityToolkit.Mvvm",
+    "version": "8.4.0",
+    "license": "MIT",
+    "copyright": "(c) .NET Foundation and Contributors. All rights reserved.",
+    "source": "https://github.com/CommunityToolkit/dotnet",
+    "commit": "638b41dad30dffabb123a39aa38eabc7e3721371"
+  },
+  {
+    "name": "Microsoft.Extensions.DependencyInjection",
+    "version": "10.0.5",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "source": "https://github.com/dotnet/dotnet",
+    "commit": "a612c2a1056fe3265387ae3ff7c94eba1505caf9"
+  },
+  {
+    "name": "Microsoft.Extensions.Logging",
+    "version": "10.0.5",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "source": "https://github.com/dotnet/dotnet",
+    "commit": "a612c2a1056fe3265387ae3ff7c94eba1505caf9"
+  },
+  {
+    "name": "Serilog.Extensions.Logging",
+    "version": "10.0.0",
+    "license": "Apache-2.0",
+    "copyright": null,
+    "source": "https://github.com/serilog/serilog-extensions-logging",
+    "commit": "538cf2fd64baf760950e202a00dd426c6b76e18c"
+  },
+  {
+    "name": "Serilog.Sinks.File",
+    "version": "7.0.0",
+    "license": "Apache-2.0",
+    "copyright": null,
+    "source": "https://github.com/serilog/serilog-sinks-file",
+    "commit": "23c732a8658a0df2a5434fe69b0011800b14f0da"
+  },
+  {
+    "name": "System.Management",
+    "version": "9.0.5",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "source": "https://github.com/dotnet/runtime",
+    "commit": "e36e4d1a8f8dfb08d7e3a6041459c9791d732c01"
+  },
+  {
+    "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+    "version": "10.0.5",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "source": "https://github.com/dotnet/dotnet",
+    "commit": "a612c2a1056fe3265387ae3ff7c94eba1505caf9"
+  },
+  {
+    "name": "Microsoft.Extensions.Logging.Abstractions",
+    "version": "10.0.5",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "source": "https://github.com/dotnet/dotnet",
+    "commit": "a612c2a1056fe3265387ae3ff7c94eba1505caf9"
+  },
+  {
+    "name": "Microsoft.Extensions.Options",
+    "version": "10.0.5",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "source": "https://github.com/dotnet/dotnet",
+    "commit": "a612c2a1056fe3265387ae3ff7c94eba1505caf9"
+  },
+  {
+    "name": "Microsoft.Extensions.Primitives",
+    "version": "10.0.5",
+    "license": "MIT",
+    "copyright": "© Microsoft Corporation. All rights reserved.",
+    "source": "https://github.com/dotnet/dotnet",
+    "commit": "a612c2a1056fe3265387ae3ff7c94eba1505caf9"
+  },
+  {
+    "name": "Serilog",
+    "version": "4.2.0",
+    "license": "Apache-2.0",
+    "copyright": "Copyright © Serilog Contributors",
+    "source": "https://github.com/serilog/serilog",
+    "commit": "c00e17fdeb615d36c062569f7342f72c9ece4aa7"
+  },
+  {
+    "name": "runtimepack.Microsoft.NETCore.App.Runtime.win-x64",
+    "version": "10.0.14",
+    "license": "MIT",
+    "copyright": "Copyright (c) .NET Foundation and Contributors",
+    "source": "https://github.com/dotnet/dotnet",
+    "commit": "0427b9abbead3fa64c6655eb4290c537397131fa"
+  },
+  {
+    "name": "runtimepack.Microsoft.WindowsDesktop.App.Runtime.win-x64",
+    "version": "10.0.14",
+    "license": "MIT",
+    "copyright": "Copyright (c) .NET Foundation and Contributors",
+    "source": "https://github.com/dotnet/dotnet",
+    "commit": "0427b9abbead3fa64c6655eb4290c537397131fa"
+  }
+]

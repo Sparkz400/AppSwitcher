@@ -1,0 +1,35 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="WindowBg" Color="#F0F2F4" />
+    <SolidColorBrush x:Key="PanelBg" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="HeaderBg" Color="#F0F2F4" />
+    <SolidColorBrush x:Key="BorderColor" Color="#D7DCE0" />
+    <SolidColorBrush x:Key="InputBg" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="InputBgHover" Color="#F5F6F7" />
+    <SolidColorBrush x:Key="InputBgFocus" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="InputDisabledBg" Color="#EAEDF0" />
+    <SolidColorBrush x:Key="InputBorder" Color="#7D8791" />
+    <SolidColorBrush x:Key="InputBorderHover" Color="#596875" />
+    <SolidColorBrush x:Key="TextPrimary" Color="#202429" />
+    <SolidColorBrush x:Key="TextSecondary" Color="#505B65" />
+    <SolidColorBrush x:Key="TextMuted" Color="#59636D" />
+    <SolidColorBrush x:Key="TextDark" Color="#202429" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#145E9F" />
+    <SolidColorBrush x:Key="PopupBg" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="PopupBorder" Color="#C0C8CF" />
+    <SolidColorBrush x:Key="SidebarBg" Color="#F0F2F4" />
+    <SolidColorBrush x:Key="SidebarBorder" Color="#D7DCE0" />
+    <SolidColorBrush x:Key="HoverBg" Color="#EDF0F2" />
+    <SolidColorBrush x:Key="SelectedBg" Color="#E1E7EB" />
+    <SolidColorBrush x:Key="DangerBg" Color="#FFF0EF" />
+    <SolidColorBrush x:Key="DangerFg" Color="#B12A26" />
+    <SolidColorBrush x:Key="DangerBorder" Color="#B12A26" />
+    <SolidColorBrush x:Key="WarningFg" Color="#805200" />
+    <SolidColorBrush x:Key="CloseHoverBg" Color="#B12A26" />
+    <SolidColorBrush x:Key="ScrollThumbColor" Color="#7C8791" />
+    <SolidColorBrush x:Key="SeparatorColor" Color="#D7DCE0" />
+    <SolidColorBrush x:Key="GroupHeaderBg" Color="#F0F2F4" />
+    <SolidColorBrush x:Key="SuccessFg" Color="#276742" />
+    <SolidColorBrush x:Key="WarningBg" Color="#FFF5DD" />
+    <SolidColorBrush x:Key="PrimaryBg" Color="#202429" />
+    <SolidColorBrush x:Key="PrimaryFg" Color="#FFFFFF" />
+</ResourceDictionary>

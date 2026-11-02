@@ -1,0 +1,73 @@
+{
+  "Version": 11,
+  "Settings": {
+    "Language": "en",
+    "Theme": "Dark",
+    "Shape": "RoundedSquare",
+    "ButtonSize": 96,
+    "MenuWidth": 390,
+    "MenuItemHeight": 72,
+    "ButtonOpacity": 1,
+    "KioskMode": false,
+    "AdminPasswordHash": "",
+    "OperatorPasswordHash": "",
+    "ConfigEncryption": false,
+    "SessionTimeoutMinutes": 5,
+    "MaxConfigBackups": 10,
+    "OperatorScope": {
+      "AllowedAppNames": [
+        "Drawing",
+        "Shift notes"
+      ],
+      "AllowedGroupKeys": []
+    }
+  },
+  "Groups": [
+    {
+      "Key": "work",
+      "Names": {
+        "en": "Workstation",
+        "de": "Arbeitsplatz"
+      }
+    }
+  ],
+  "Apps": [
+    {
+      "AppId": "d368b509e08c4de4921e26c7604e9a03",
+      "Name": "Shift notes",
+      "Path": "notepad.exe",
+      "TargetKind": 0,
+      "Group": "work",
+      "RequireConfirmation": true,
+      "AutoLaunch": false,
+      "WatchdogEnabled": false,
+      "ScheduleTime": "",
+      "ScheduleRestartTime": "",
+      "ScheduleShutdownTime": ""
+    },
+    {
+      "AppId": "d368b509e08c4de4921e26c7604e9a02",
+      "Name": "Drawing",
+      "Path": "mspaint.exe",
+      "TargetKind": 0,
+      "Group": "work",
+      "RequireConfirmation": true,
+      "AutoLaunch": false,
+      "WatchdogEnabled": false,
+      "ScheduleTime": "",
+      "ScheduleRestartTime": "",
+      "ScheduleShutdownTime": ""
+    }
+  ],
+  "Layouts": [
+    {
+      "Name": "Workstation",
+      "AppIds": [
+        "d368b509e08c4de4921e26c7604e9a03",
+        "d368b509e08c4de4921e26c7604e9a02"
+      ],
+      "GroupKeys": [],
+      "Positions": []
+    }
+  ]
+}

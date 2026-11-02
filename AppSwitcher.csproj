@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        
+        <UseWPF>true</UseWPF>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ApplicationIcon>Assets\AppSwitcher.ico</ApplicationIcon>
+        <!-- Precompile the published Windows build; keep ordinary edit/test builds fast. -->
+        <PublishReadyToRun Condition="'$(Configuration)' == 'Release' and '$(RuntimeIdentifier)' != ''">true</PublishReadyToRun>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+        <PackageReference Include="System.Management" Version="9.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="AppSwitcher.Tests\**\*.cs" />
+        <EmbeddedResource Remove="AppSwitcher.Tests\**\*" />
+        <None Remove="AppSwitcher.Tests\**\*" />
+        <Page Remove="AppSwitcher.Tests\**\*" />
+        <Compile Remove="AppSwitcher.UiChecks\**\*.cs" />
+        <Compile Remove="AppSwitcher.BrowserHost\**\*.cs" />
+        <EmbeddedResource Remove="AppSwitcher.BrowserHost\**\*" />
+        <None Remove="AppSwitcher.BrowserHost\**\*" />
+        <Page Remove="AppSwitcher.BrowserHost\**\*" />
+        <EmbeddedResource Remove="AppSwitcher.UiChecks\**\*" />
+        <None Remove="AppSwitcher.UiChecks\**\*" />
+        <Page Remove="AppSwitcher.UiChecks\**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Resource Include="Assets\AppSwitcher.ico" />
+        <None Remove="app_config.json" />
+        <EmbeddedResource Include="app_config.json" LogicalName="AppSwitcher.DefaultConfig.app_config.json" />
+    </ItemGroup>
+
+</Project>
