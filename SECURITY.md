@@ -1,6 +1,6 @@
 # Security policy
 
-Please report vulnerabilities privately using [GitHub's private vulnerability report form](https://github.com/Sparkz400/AppSwitcher-public/security/advisories/new). Do not post PIN hashes, customer configurations, browser profiles, credentials or exploit details in a public issue. If that form is unavailable, open an issue asking the maintainer to restore the private reporting route, without technical vulnerability details.
+Please report vulnerabilities privately using [GitHub's private vulnerability report form](https://github.com/Sparkz400/AppSwitcher/security/advisories/new). Do not post PIN hashes, customer configurations, browser profiles, credentials or exploit details in a public issue. If that form is unavailable, open an issue asking the maintainer to restore the private reporting route, without technical vulnerability details.
 
 Include the AppSwitcher version/source commit, Windows and browser versions, affected component, a minimal synthetic reproduction, expected impact and any mitigation. Remove customer URLs, names, paths and secrets from logs and screenshots. Reports are reviewed on a best-effort basis; this community project has no guaranteed response time or commercial support contract. Coordinate public disclosure with the maintainer after a fix or mitigation is available.
 

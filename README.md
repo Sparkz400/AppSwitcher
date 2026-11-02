@@ -2,7 +2,7 @@
 
 A native Windows launcher for operator and maintenance workstations. Keep assigned applications within reach, return to the same browser tab, inspect software health and restore window layouts from one compact interface.
 
-[Download the unsigned beta](https://github.com/Sparkz400/AppSwitcher-public/releases) · [Installation and rollback](docs/INSTALLATION.md) · [Examples](examples/README.md) · [Contribute](CONTRIBUTING.md)
+[Download the unsigned beta](https://github.com/Sparkz400/AppSwitcher/releases) · [Installation and rollback](docs/INSTALLATION.md) · [Examples](examples/README.md) · [Contribute](CONTRIBUTING.md)
 
 ![AppSwitcher maintenance workspace with synthetic demonstration applications](docs/images/maintenance-light.png)
 
@@ -19,7 +19,7 @@ AppSwitcher is a **beta**. It is not a machine safety controller. PIN access pro
 
 ## Start in a few minutes
 
-1. Download the `win-x64-…-setup.exe` or complete portable ZIP and its adjacent checksum from [Releases](https://github.com/Sparkz400/AppSwitcher-public/releases). This beta is unsigned; follow the [download verification instructions](docs/INSTALLATION.md).
+1. Download the `win-x64-…-setup.exe` or complete portable ZIP and its adjacent checksum from [Releases](https://github.com/Sparkz400/AppSwitcher/releases). This beta is unsigned; follow the [download verification instructions](docs/INSTALLATION.md).
 2. Install as the intended Windows user, or extract the complete ZIP and open `app\AppSwitcher.exe`. The .NET runtime is included; no SDK or internet connection is needed on the target PC for installation.
 3. Choose an administrator PIN and follow **Settings → Setup**. Add an application, use **Add from an open window**, or import a [safe starter example](examples/README.md).
 4. For websites, follow [browser setup](docs/BROWSER_INTEGRATION.md) and select the connected profile. The offline package includes unpacked Chrome/Edge extensions and the Mozilla-signed Firefox 1.1.0 extension. Browser session restoration must also be enabled in the chosen profile.
@@ -30,7 +30,7 @@ The installer does not launch applications, enable kiosk or install browser exte
 
 The release target is Windows 11 x64. The installer also permits compatible Windows 10 build 19041+, but an installable OS/browser is not necessarily vendor-supported or site-qualified. See the exact compatibility and support boundaries in [Maintenance](MAINTENANCE.md). Browsers are installed separately. Online websites still need their usual network access.
 
-This is a community project with no guaranteed support response time. File reproducible bugs with synthetic data in [Issues](https://github.com/Sparkz400/AppSwitcher-public/issues). Report vulnerabilities through the [private security route](SECURITY.md).
+This is a community project with no guaranteed support response time. File reproducible bugs with synthetic data in [Issues](https://github.com/Sparkz400/AppSwitcher/issues). Report vulnerabilities through the [private security route](SECURITY.md).
 
 ## Build and verify
 
@@ -60,4 +60,4 @@ The native checks open synthetic windows and preserve the real saved configurati
 
 ## License and provenance
 
-AppSwitcher is licensed under [MIT](LICENSE). Runtime dependencies retain their [third-party licenses and notices](THIRD_PARTY_NOTICES.md). Screenshots use synthetic demonstration data. The public repository starts from a reviewed clean source snapshot; prior development history remains private to avoid publishing historical local configuration. See [publication review](docs/PUBLICATION_REVIEW.md).
+AppSwitcher is licensed under [MIT](LICENSE). Runtime dependencies retain their [third-party licenses and notices](THIRD_PARTY_NOTICES.md). Screenshots use synthetic demonstration data. The public repository starts from a reviewed clean source snapshot; prior development history was excluded to avoid publishing historical local configuration. See [publication review](docs/PUBLICATION_REVIEW.md).

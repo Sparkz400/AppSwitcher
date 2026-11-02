@@ -1,6 +1,6 @@
 # Beta software validation
 
-Recorded on 2026-11-02. [Public beta v1.2.0-beta.1](https://github.com/Sparkz400/AppSwitcher-public/releases/tag/v1.2.0-beta.1) was built at clean public commit `5ebac9b9dcc538349e3ec143375635cf031f316d`; its [Windows CI run](https://github.com/Sparkz400/AppSwitcher-public/actions/runs/41513508379) passed. The released artifacts remain tied to that tag; later documentation updates do not replace them. The evidence below covers the implemented beta features and distribution mechanism; it does not establish production workstation acceptance.
+Recorded on 2026-11-02. [Public beta v1.2.0-beta.1](https://github.com/Sparkz400/AppSwitcher/releases/tag/v1.2.0-beta.1) was built at clean public commit `5ebac9b9dcc538349e3ec143375635cf031f316d`; its [Windows CI run](https://github.com/Sparkz400/AppSwitcher/actions/runs/41513508379) passed. The released artifacts remain tied to that tag; later documentation updates do not replace them. The evidence below covers the implemented beta features and distribution mechanism; it does not establish production workstation acceptance.
 
 | Check | Observed result | Boundary |
 | --- | --- | --- |

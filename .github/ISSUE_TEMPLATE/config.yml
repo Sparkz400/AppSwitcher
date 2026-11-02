@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Private security report
-    url: https://github.com/Sparkz400/AppSwitcher-public/security/advisories/new
+    url: https://github.com/Sparkz400/AppSwitcher/security/advisories/new
     about: Report vulnerabilities privately; do not include sensitive details in public issues.
