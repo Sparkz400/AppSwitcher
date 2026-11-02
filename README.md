@@ -10,7 +10,7 @@ A native Windows launcher for operator and maintenance workstations. Keep assign
 
 [Watch the short demo](docs/images/quick-tour.gif) · [Demo walkthrough](docs/DEMO.md) · [Keyboard reference](docs/KEYBOARD.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
 
-![AppSwitcher maintenance workspace with synthetic demonstration applications](docs/images/maintenance-light.png)
+![AppSwitcher monitoring two synthetic demonstration applications](docs/images/demo-monitoring.jpg)
 
 ## What it does
 
@@ -27,7 +27,7 @@ AppSwitcher is a **beta**. It is not a machine safety controller. PIN access pro
 
 1. Download the `win-x64-…-setup.exe` or complete portable ZIP and its adjacent checksum from [Releases](https://github.com/Sparkz400/AppSwitcher/releases). This beta is unsigned; follow the [download verification instructions](docs/INSTALLATION.md).
 2. Install as the intended Windows user, or extract the complete ZIP and open `app\AppSwitcher.exe`. The .NET runtime is included; no SDK or internet connection is needed on the target PC for installation.
-3. Choose an administrator PIN and follow **Settings → Setup**. Add an application, use **Add from an open window**, or import a [safe starter example](examples/README.md).
+3. Choose an administrator PIN and follow **Settings → Setup checklist**. Add an application, use **Add from an open window**, or import a [safe starter example](examples/README.md).
 4. For websites, follow [browser setup](docs/BROWSER_INTEGRATION.md) and select the connected profile. The offline package includes unpacked Chrome/Edge extensions and the Mozilla-signed Firefox 1.1.0 extension. Browser session restoration must also be enabled in the chosen profile.
 
 The installer does not launch applications, enable kiosk or install browser extensions automatically. Once you start AppSwitcher, your saved automatic-launch/kiosk settings apply. Back up existing configuration before an update; keep the previous release for rollback.
@@ -47,7 +47,7 @@ On Windows, install PowerShell 7, Node.js 24 and the .NET SDK pinned in `global.
 ./scripts/build-release.ps1
 ```
 
-Verification runs locked-dependency builds, .NET and browser-extension tests, native UI checks and isolated process/recovery scenarios. The release builder produces a self-contained ZIP, unsigned per-user installer, store-submission bundle, file manifest, checksums and SPDX dependency inventory. Published betas include [verifiable build and release records](docs/VERIFY_DOWNLOADS.md). It checks the installer through fresh install, blocked in-use updates, upgrade, rollback and uninstall. Build-time downloads require internet access.
+Verification runs locked-dependency builds, .NET and browser-extension tests, native UI checks and isolated process/recovery scenarios. The release builder produces a self-contained ZIP, unsigned per-user installer, store-submission bundle, file manifest, checksums and SPDX dependency inventory. Beta.3 and later include [verifiable build and release records](docs/VERIFY_DOWNLOADS.md). It checks the installer through fresh install, blocked in-use updates, upgrade, rollback and uninstall. Build-time downloads require internet access.
 
 The native checks open synthetic windows and preserve the real saved configuration. They do not establish real-machine qualification. See [Contributing](CONTRIBUTING.md) for focused tests, longer runs and browser checks, and [delivery evidence](docs/DELIVERY_CHECKLIST.md) for the recorded scope and remaining acceptance work.
 
