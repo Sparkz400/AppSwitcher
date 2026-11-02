@@ -41,7 +41,7 @@ function Write-Fixture([string]$Scenario) {
         } finally { $zip.Dispose() }
     }
     'synthetic installer' | Set-Content (Join-Path $path "$name-setup.exe")
-    foreach ($pair in @(@("$name.zip", "$name.sha256"), @("$name-setup.exe", "$name-setup.sha256"), @("$name-store-submission.zip", "$name-store-submission.sha256"))) {
+    foreach ($pair in @(@("$name.zip", "$name.sha256"), @("$name-setup.exe", "$name-setup.exe.sha256"), @("$name-store-submission.zip", "$name-store-submission.sha256"))) {
         "$((Get-FileHash (Join-Path $path $pair[0])).Hash)  $($pair[0])" | Set-Content (Join-Path $path $pair[1])
     }
     switch ($Scenario) {

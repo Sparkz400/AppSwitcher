@@ -7,12 +7,12 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $name = "AppSwitcher-$Version-win-x64-$($Commit.Substring(0, 8))"
-$expected = @("$name.zip", "$name.sha256", "$name-setup.exe", "$name-setup.sha256", "$name-store-submission.zip", "$name-store-submission.sha256")
+$expected = @("$name.zip", "$name.sha256", "$name-setup.exe", "$name-setup.exe.sha256", "$name-store-submission.zip", "$name-store-submission.sha256")
 $actual = @(Get-ChildItem -LiteralPath $Path -Force)
 if ($actual.Count -ne 6 -or @($actual | Where-Object { $_.PSIsContainer -or $_.Name -cnotin $expected }).Count) {
     throw 'Release must contain exactly the six expected assets.'
 }
-foreach ($pair in @(@("$name.zip", "$name.sha256"), @("$name-setup.exe", "$name-setup.sha256"), @("$name-store-submission.zip", "$name-store-submission.sha256"))) {
+foreach ($pair in @(@("$name.zip", "$name.sha256"), @("$name-setup.exe", "$name-setup.exe.sha256"), @("$name-store-submission.zip", "$name-store-submission.sha256"))) {
     $file = Join-Path $Path $pair[0]
     $checksum = (Get-Content -LiteralPath (Join-Path $Path $pair[1]) -Raw).Trim()
     $hash = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash
