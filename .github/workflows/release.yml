@@ -3,17 +3,23 @@ name: Publish verified beta
 on:
   push:
     tags: ['v*-beta.*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing beta tag whose complete draft should be verified and published'
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
   publish:
-    if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: windows-2025
     timeout-minutes: 15
     permissions:
@@ -24,13 +30,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
           fetch-depth: 0
           persist-credentials: false
       - name: Retrieve verified artifacts for the tagged main revision
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
@@ -65,21 +72,26 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          RESUME_DRAFT: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
           $assets = @(Get-ChildItem artifacts/release-upload -File | ForEach-Object FullName)
           # Upload and verify while draft; publication locks the assets and tag.
-          gh release create $env:RELEASE_TAG @assets --draft --verify-tag --prerelease --latest=false --title "AppSwitcher $env:RELEASE_TAG" --notes-file artifacts/release-notes.md
-          $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$env:RELEASE_TAG" | ConvertFrom-Json
-          if (-not $release.draft -or $release.assets.Count -ne $assets.Count) { throw 'Draft asset inventory mismatch.' }
+          if ($env:RESUME_DRAFT -ne 'true') {
+            gh release create $env:RELEASE_TAG @assets --draft --verify-tag --prerelease --latest=false --title "AppSwitcher $env:RELEASE_TAG" --notes-file artifacts/release-notes.md
+          }
+          # The tag REST endpoint only returns published releases. CLI lookup also finds drafts.
+          $releaseId = gh release view $env:RELEASE_TAG --json databaseId --jq '.databaseId'
+          $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/$releaseId" | ConvertFrom-Json
+          if (-not $release.draft -or -not $release.prerelease -or $release.tag_name -cne $env:RELEASE_TAG -or $release.assets.Count -ne $assets.Count) { throw 'Draft asset inventory mismatch.' }
           foreach ($file in $assets) {
             $asset = @($release.assets | Where-Object name -CEQ (Split-Path $file -Leaf))
             $digest = 'sha256:' + (Get-FileHash -LiteralPath $file).Hash.ToLowerInvariant()
             if ($asset.Count -ne 1 -or $asset[0].digest -cne $digest) { throw "Uploaded asset mismatch: $file" }
           }
-          gh release edit $env:RELEASE_TAG --draft=false --latest=false
-          $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$env:RELEASE_TAG" | ConvertFrom-Json
+          gh release edit $env:RELEASE_TAG --draft=false --latest=false --notes-file artifacts/release-notes.md
+          $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/$releaseId" | ConvertFrom-Json
           if ($release.draft -or -not $release.immutable) { throw 'Published release is not immutable.' }
           gh release verify $env:RELEASE_TAG
