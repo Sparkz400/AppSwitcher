@@ -147,6 +147,9 @@ internal static partial class Program
         Save(actionButton.ContextMenu, "launcher-actions");
         actionButton.ContextMenu.IsOpen = false;
         vm.IsMenuOpen = false;
+        // Flush the bound popup closure before timing the launcher's reopen debounce.
+        await Render();
+        Check(!((Popup)launcher.FindName("AppMenu")).IsOpen, "Launcher popup is closed before the reopen check");
         await Task.Delay(350);
         Invoke((Button)launcher.FindName("MainGrid")); await Render();
         Check(vm.IsMenuOpen, "Launcher button opens the menu through UI Automation");
