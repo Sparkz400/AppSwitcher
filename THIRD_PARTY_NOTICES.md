@@ -6,9 +6,9 @@ The complete exact-version inventory, copyright holders and upstream source comm
 
 | Component | Version | License and retained notices |
 | --- | --- | --- |
-| CommunityToolkit.Mvvm | 8.4.0 | [MIT](third-party/CommunityToolkit-MIT.txt), [notices](third-party/CommunityToolkit-NOTICES.txt) |
-| Microsoft.Extensions.DependencyInjection, DependencyInjection.Abstractions, Logging, Logging.Abstractions, Options, Primitives | 10.0.5 | [MIT](third-party/dotnet-MIT.txt), [notices](third-party/Microsoft.Extensions-NOTICES.txt) |
-| System.Management | 9.0.5 | [MIT](third-party/dotnet-MIT.txt), [notices](third-party/System.Management-NOTICES.txt) |
+| CommunityToolkit.Mvvm | 8.4.2 | [MIT](third-party/CommunityToolkit-MIT.txt), [notices](third-party/CommunityToolkit-NOTICES.txt) |
+| Microsoft.Extensions.DependencyInjection, DependencyInjection.Abstractions, Logging, Logging.Abstractions, Options, Primitives | 10.0.14 | [MIT](third-party/dotnet-MIT.txt), [notices](third-party/Microsoft.Extensions-NOTICES.txt) |
+| System.Management | 10.0.14 | [MIT](third-party/dotnet-MIT.txt), [notices](third-party/System.Management-NOTICES.txt) |
 | Serilog | 4.2.0 | [Apache 2.0](third-party/serilog-LICENSE.txt); Copyright Serilog Contributors |
 | Serilog.Extensions.Logging | 10.0.0 | [Apache 2.0](third-party/serilog-extensions-logging-LICENSE.txt); Copyright Serilog Contributors |
 | Serilog.Sinks.File | 7.0.0 | [Apache 2.0](third-party/serilog-sinks-file-LICENSE.txt); Copyright Serilog Contributors |

@@ -2,7 +2,7 @@
 
 A native Windows launcher for operator and maintenance workstations. Keep assigned applications within reach, return to the same browser tab, inspect software health and restore window layouts from one compact interface.
 
-[Download the unsigned beta](https://github.com/Sparkz400/AppSwitcher/releases) · [Installation and rollback](docs/INSTALLATION.md) · [Examples](examples/README.md) · [Contribute](CONTRIBUTING.md)
+[Download the unsigned beta](https://github.com/Sparkz400/AppSwitcher/releases) · [Installation and rollback](docs/INSTALLATION.md) · [Examples](examples/README.md) · [Get help](SUPPORT.md) · [Roadmap](ROADMAP.md) · [Contribute](CONTRIBUTING.md)
 
 ![AppSwitcher maintenance workspace with synthetic demonstration applications](docs/images/maintenance-light.png)
 
@@ -30,7 +30,7 @@ The installer does not launch applications, enable kiosk or install browser exte
 
 The release target is Windows 11 x64. The installer also permits compatible Windows 10 build 19041+, but an installable OS/browser is not necessarily vendor-supported or site-qualified. See the exact compatibility and support boundaries in [Maintenance](MAINTENANCE.md). Browsers are installed separately. Online websites still need their usual network access.
 
-This is a community project with no guaranteed support response time. File reproducible bugs with synthetic data in [Issues](https://github.com/Sparkz400/AppSwitcher/issues). Report vulnerabilities through the [private security route](SECURITY.md).
+This is a community project with no guaranteed support response time. See [Support](SUPPORT.md) for questions, reproducible bug reports and feature requests. Report vulnerabilities through the [private security route](SECURITY.md).
 
 ## Build and verify
 

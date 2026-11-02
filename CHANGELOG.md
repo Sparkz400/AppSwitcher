@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0-beta.2 — 2026-11-02
+
+- Update the proposed NuGet runtime and test dependencies, refresh all four projects' lockfiles, and review shipped dependency notices.
+- Fix dependency maintenance so UI-check transitive dependencies are included in the solution and grouped update proposals.
+- Add C# and browser JavaScript CodeQL checks, protected pull-request integration, secret scanning and push protection.
+- Add a code of conduct, support question form and public roadmap with tracked priorities and starter tasks.
+- Publish tagged betas from the exact successful main CI artifact, checking source, manifests and all asset checksums without replacing earlier releases.
+
+This remains an **unsigned Windows x64 beta**. Browser-store bundles are prepared but not submitted; the offline Mozilla-signed Firefox bridge remains 1.1.0. No application configuration format changes are introduced. Real Narrator, touch, docking/mixed-DPI, reboot/power-loss, kiosk and sustained site acceptance remain open. Automated checks do not establish production qualification.
+
 ## 1.2.0-beta.1 — 2026-11-02
 
 First public source snapshot and unsigned Windows x64 beta.

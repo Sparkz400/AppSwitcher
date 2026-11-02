@@ -1,0 +1,25 @@
+name: Usage or setup question
+description: Ask for help configuring or using AppSwitcher.
+labels: ['question']
+body:
+  - type: markdown
+    attributes:
+      value: 'Read [Support](https://github.com/Sparkz400/AppSwitcher/blob/main/SUPPORT.md) first. This issue is public: use synthetic examples and remove private details.'
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried, and where are you stuck?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: AppSwitcher, Windows and browser versions
+    validations:
+      required: true

@@ -16,7 +16,7 @@ try {
     try { & "$PSScriptRoot/check-release-notices.ps1" -PackagePath $root } catch { $rejected = $_.Exception.Message -like 'Unreviewed or ambiguous*' }
     if (-not $rejected) { throw 'An unreviewed dependency was not rejected.' }
     $libraries.Remove('Unreviewed.Dependency/1.0.0')
-    $libraries.Remove('CommunityToolkit.Mvvm/8.4.0')
+    $libraries.Remove(@($libraries.Keys)[0])
     @{libraries=$libraries} | ConvertTo-Json -Depth 4 | Set-Content "$root/app/AppSwitcher.deps.json"
     $rejected = $false
     try { & "$PSScriptRoot/check-release-notices.ps1" -PackagePath $root } catch { $rejected = $_.Exception.Message -like 'The notice inventory*' }
