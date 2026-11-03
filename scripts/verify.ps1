@@ -14,6 +14,7 @@ try {
     & (Join-Path $PSScriptRoot 'test-release-artifacts.ps1') | Tee-Object -FilePath artifacts/test-results/release-artifacts.txt
     & (Join-Path $PSScriptRoot 'test-stable-readiness.ps1') | Tee-Object -FilePath artifacts/test-results/stable-readiness.txt
     & (Join-Path $PSScriptRoot 'test-sign-release-files.ps1') | Tee-Object -FilePath artifacts/test-results/signing-adapter.txt
+    & (Join-Path $PSScriptRoot 'test-release-publication.ps1') | Tee-Object -FilePath artifacts/test-results/release-publication.txt
     node --test browser-extension/tests/core.test.mjs scripts/tests/browser-check-broker.test.mjs | Tee-Object -FilePath artifacts/test-results/browser-tests.txt
     if (-not $Fast) {
     dotnet run --project AppSwitcher.UiChecks -c Release --no-build --no-restore | Tee-Object -FilePath artifacts/test-results/native-ui.txt
