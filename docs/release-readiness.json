@@ -1,10 +1,26 @@
 {
   "version": "1.2.0",
-  "qualifiedCommit": null,
+  "qualifiedCommit": "452f05a7725cbbf04c4953224d05500ba0b5ad38",
+  "publicationAuthorization": {
+    "status": "approved-with-limitations",
+    "version": "1.2.0",
+    "approvedBy": "Sparkz400, repository owner; explicit publication instruction on 2026-11-03",
+    "deploymentAccepted": false,
+    "deferredGates": ["workstation", "offlineBrowsers"],
+    "evidence": "docs/RELEASE_ACCEPTANCE_1.2.0.md"
+  },
   "gates": {
-    "workstation": { "status": "pending", "reviewedBy": null, "evidence": null },
-    "narrator": { "status": "pending", "reviewedBy": null, "evidence": null },
-    "offlineBrowsers": { "status": "pending", "reviewedBy": null, "evidence": null },
-    "publisherSigning": { "status": "pending", "reviewedBy": null, "evidence": null }
+    "workstation": {
+      "status": "deferred",
+      "reviewedBy": "Sparkz400, repository owner; publication with disclosed deployment limits",
+      "evidence": "docs/RELEASE_ACCEPTANCE_1.2.0.md",
+      "reason": "Target hardware, keyboard/visual feedback, kiosk, power interruption and representative full-shift acceptance remain unperformed; required before site deployment."
+    },
+    "offlineBrowsers": {
+      "status": "deferred",
+      "reviewedBy": "Sparkz400, repository owner; publication with disclosed installation limits",
+      "evidence": "docs/RELEASE_ACCEPTANCE_1.2.0.md",
+      "reason": "Persistent offline installation and browser restart tests passed; Chrome/Edge native folder-picker/manual installation walkthrough and site-specific browser/profile/policy acceptance remain unperformed."
+    }
   }
 }

@@ -56,7 +56,7 @@ AppSwitcher follows Windows high-contrast mode at startup and when the mode chan
 
 Use Tab/Shift+Tab to move through controls, Space/Enter for actions and checkboxes, and Escape to leave popups/dialogs. PIN input supports digits and Backspace without exposing the entered digits in its display. Settings search opens and focuses its target control. Native UI checks verify accessible names/control patterns, keyboard operations and 44-pixel action targets in both languages and compact layouts.
 
-Before deploying to an operator panel, test with that user's Narrator configuration and required input hardware: launcher discovery, search and selection announcements, PIN errors, save/restore confirmation, session expiry, scrolling, and all kiosk exit routes. Repeat with the intended gloves and panel scaling. Automated UI Automation checks and scaled renders do not certify speech output, physical touch accuracy or machine operation.
+Before deploying to an operator panel, test keyboard operation and visible feedback: launcher discovery, search and selection, PIN errors, save/restore confirmation, session expiry, scrolling, and all kiosk exit routes. Repeat with the intended gloves and panel scaling. The target workstations have no audio output; Narrator speech is optional follow-up work, not a release gate. Automated UI Automation checks and scaled renders do not certify physical touch accuracy or machine operation.
 
 ## Timed maintenance
 

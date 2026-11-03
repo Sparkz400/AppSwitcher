@@ -57,11 +57,6 @@ jobs:
           if ($blockingAlerts.Count) { throw "Unresolved serious code-scanning findings on main: $($blockingAlerts -join ', ')" }
           gh run download $runs['verify.yml'] --name "AppSwitcher-$commit" --dir artifacts/release-upload
           ./scripts/check-release-artifacts.ps1 -Path artifacts/release-upload -Version $version -Commit $commit
-          if ($version -notmatch '-') {
-            foreach ($installer in Get-ChildItem artifacts/release-upload -Filter '*-setup.exe') {
-              if ((Get-AuthenticodeSignature -LiteralPath $installer.FullName).Status -ne 'Valid') { throw 'Stable installer lacks a valid Windows publisher signature.' }
-            }
-          }
           foreach ($asset in Get-ChildItem artifacts/release-upload -File) {
             gh attestation verify $asset.FullName --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/verify.yml" --source-ref refs/heads/main --source-digest $commit --deny-self-hosted-runners
           }

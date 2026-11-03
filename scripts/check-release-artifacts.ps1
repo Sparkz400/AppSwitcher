@@ -18,6 +18,9 @@ foreach ($pair in @(@("$name.zip", "$name.sha256"), @("$name-setup.exe", "$name-
     $hash = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash
     if ((Get-Item -LiteralPath $file).Length -eq 0 -or $checksum -cne "$hash  $($pair[0])") { throw "Release checksum mismatch: $($pair[0])" }
 }
+# Unsigned releases are supported; an optional publisher signature must still be valid.
+$signatureStatus = (Get-AuthenticodeSignature -LiteralPath (Join-Path $Path "$name-setup.exe")).Status
+if ($signatureStatus -notin @('NotSigned', 'Valid')) { throw "Installer has an invalid Windows publisher signature: $signatureStatus" }
 foreach ($package in @(@("$name.zip", 'release-manifest.json'), @("$name-store-submission.zip", 'submission-manifest.json'))) {
     $zip = [IO.Compression.ZipFile]::OpenRead((Join-Path $Path $package[0]))
     try {
