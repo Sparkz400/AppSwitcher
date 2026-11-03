@@ -43,7 +43,7 @@ Local raw reports and unsuccessful setup/driver attempts are retained under `art
 
 Cleanup completed: the VM's external adapter is back up, the temporary scheduled task/login runner and shared folder were removed, and no qualification application processes remain. The RC installation, test results and pre-test VM snapshot were retained. No release was published by this qualification run.
 
-The [stable gates](release-readiness.json) remain pending. VM evidence does not close physical mixed-DPI/docking, touch/gloves, live contrast/keyboard acceptance, kiosk escape, power interruption or representative full-shift operation on the intended workstation. The deployment has no audio output, and Narrator speech is outside its required acceptance scope. Final stable publication still needs qualification tied to the final build revision.
+These VM checks leave physical mixed-DPI/docking, touch/gloves, live contrast/keyboard acceptance, kiosk escape, power interruption and representative full-shift operation unperformed on the intended workstation. The deployment has no audio output, and Narrator speech is outside its required acceptance scope. The later [1.2.0 publication decision](RELEASE_ACCEPTANCE_1.2.0.md) explicitly defers the remaining deployment checks while retaining exact-main software verification and documenting the scope in the [release record](release-readiness.json).
 
 # Historical beta software validation
 

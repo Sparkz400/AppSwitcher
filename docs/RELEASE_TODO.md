@@ -1,6 +1,6 @@
 # First stable release TODO
 
-Based on the [3 November 2026 audit](RELEASE_AUDIT_2026-11-03.md) of `4519900a`. The published `1.2.0-rc.1` has completed the recorded VM checks. The source now prepares the unsigned `1.2.0` package; public stable release remains gated on the pending deployment acceptance.
+Based on the [3 November 2026 audit](RELEASE_AUDIT_2026-11-03.md) of `4519900a`. The published RC and unsigned 1.2.0 package completed the [recorded software/VM checks](VALIDATION.md). The owner [authorized public 1.2.0 publication with disclosed deployment limits](RELEASE_ACCEPTANCE_1.2.0.md). Unchecked deployment rows below remain unperformed; exact-main CI/security/integrity checks remain mandatory for publication.
 
 **Release recommendation: fix the confirmed behavior defects, simplify the existing UI, then qualify the exact offline package.** A major feature expansion or language rewrite should not delay these fixes. Implementation status is recorded below and in [the resolution report](RELEASE_RESOLUTION_2026-11-03.md). The historical audit describes the original revision, not the fixed candidate. IDs B01–B12 refer to reproducible findings in the audit.
 
@@ -21,7 +21,7 @@ Based on the [3 November 2026 audit](RELEASE_AUDIT_2026-11-03.md) of `4519900a`.
 
 For each fix, add a regression test that fails on the audited revision and asserts the intended behavior. The local audit probes demonstrate current defects; do not turn their observed wrong results into passing expectations.
 
-## Release gates
+## Release records and remaining deployment acceptance
 
 - [x] **Choose and document the stable contract.** Set the actual version, Windows editions/architectures, supported browser versions, upgrade/rollback path and support expectations. The owner selected zero-cost unsigned stable distribution on 3 November 2026; Windows publisher signing [#11](https://github.com/Sparkz400/AppSwitcher/issues/11) is optional and deferred, not a release gate. Disclose unsigned status; GitHub attestations are not Windows publisher signing.
 - [x] **Add stable publication to the release workflow.** Support the chosen stable tag/version and release notes without weakening exact-commit verification, scanner gates, checksums, SBOM/build attestations, draft inventory checks or immutable assets. Acceptance: a rehearsal rejects wrong commits, incomplete drafts and modified assets; stable publication is intentional.
