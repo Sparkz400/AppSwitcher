@@ -4,6 +4,10 @@
 
 See [the release resolution and current evidence](RELEASE_RESOLUTION_2026-11-03.md) and [remaining gates](release-readiness.json). The records below are retained historical beta evidence, not substituted for validation of the changed candidate.
 
+The [published RC](https://github.com/Sparkz400/AppSwitcher/releases/tag/v1.2.0-rc.1) is tied to clean commit `0472a98232ce7f48700aad190139dd838d5ed1b2`. Its [Windows verification](https://github.com/Sparkz400/AppSwitcher/actions/runs/41591695150) and [CodeQL](https://github.com/Sparkz400/AppSwitcher/actions/runs/41591695072) passed: 273 .NET tests, 32 Node tests, 10,086 native UI assertions (visible-control counts vary by environment), process switching, authenticated recovery, 15 bundled-setup assertions, and 23 installer checks. The downloaded eight-asset package passed independent manifest/checksum/SPDX validation. The installer remains unsigned; the bundled Firefox bridge remains Mozilla-signed 1.1.0.
+
+The first publication run uploaded and published the immutable assets successfully, then failed because the newly generated release attestation was not available on its immediate verification attempt. A subsequent `gh release verify v1.2.0-rc.1` succeeded without modifying the tag or assets. Publication now has bounded absence retries and verification-only recovery; this is a workflow timing fix, not a replacement release.
+
 # Historical beta software validation
 
 Recorded on 2026-11-02. [Public beta v1.2.0-beta.1](https://github.com/Sparkz400/AppSwitcher/releases/tag/v1.2.0-beta.1) was built at clean public commit `5ebac9b9dcc538349e3ec143375635cf031f316d`; its [Windows CI run](https://github.com/Sparkz400/AppSwitcher/actions/runs/41513508379) passed. The released artifacts remain tied to that tag; later documentation updates do not replace them. The evidence below covers the implemented beta features and distribution mechanism; it does not establish production workstation acceptance.

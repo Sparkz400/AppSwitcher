@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing version tag whose complete draft should be verified and published'
+        description: 'Existing version tag: publish a verified complete draft or reverify an immutable release'
         required: true
         type: string
 
@@ -74,33 +74,19 @@ jobs:
           if (-not $section.Success) { throw 'Versioned release notes missing.' }
           $notes = $section.Groups['notes'].Value.Trim() + "`n`nSource: $commit`nWindows verification: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$($runs['verify.yml'])`nCodeQL: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$($runs['codeql.yml'])"
           $notes | Set-Content artifacts/release-notes.md
-      - name: Publish immutable versioned assets
+      - name: Publish or verify immutable versioned assets
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
           RESUME_DRAFT: ${{ github.event_name == 'workflow_dispatch' }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
-          $assets = @(Get-ChildItem artifacts/release-upload -File | ForEach-Object FullName)
-          $prerelease = $env:RELEASE_TAG -match '-(beta|rc)\.'
-          $preFlag = $prerelease ? '--prerelease' : '--prerelease=false'
-          $latestFlag = $prerelease ? '--latest=false' : '--latest'
-          # Upload and verify while draft; publication locks the assets and tag.
-          if ($env:RESUME_DRAFT -ne 'true') {
-            gh release create $env:RELEASE_TAG @assets --draft --verify-tag $preFlag --latest=false --title "AppSwitcher $env:RELEASE_TAG" --notes-file artifacts/release-notes.md
-          }
-          # The tag REST endpoint only returns published releases. CLI lookup also finds drafts.
-          $releaseId = gh release view $env:RELEASE_TAG --json databaseId --jq '.databaseId'
-          $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/$releaseId" | ConvertFrom-Json
-          if (-not $release.draft -or $release.prerelease -ne $prerelease -or $release.tag_name -cne $env:RELEASE_TAG -or $release.assets.Count -ne $assets.Count) { throw 'Draft asset inventory mismatch.' }
-          foreach ($file in $assets) {
-            $asset = @($release.assets | Where-Object name -CEQ (Split-Path $file -Leaf))
-            $digest = 'sha256:' + (Get-FileHash -LiteralPath $file).Hash.ToLowerInvariant()
-            if ($asset.Count -ne 1 -or $asset[0].digest -cne $digest) { throw "Uploaded asset mismatch: $file" }
-          }
-          gh release edit $env:RELEASE_TAG --draft=false $latestFlag --notes-file artifacts/release-notes.md
-          $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/$releaseId" | ConvertFrom-Json
-          if ($release.draft -or -not $release.immutable) { throw 'Published release is not immutable.' }
-          gh release verify $env:RELEASE_TAG
+          # On recovery the source checkout is the old immutable tag. Use the
+          # helper from this workflow's trusted revision, not from that old tag.
+          if ($env:WORKFLOW_SHA -notmatch '^[0-9a-f]{40}$') { throw 'Invalid workflow revision.' }
+          git show "${env:WORKFLOW_SHA}:scripts/publish-verified-release.ps1" |
+            Set-Content artifacts/publish-verified-release.ps1
+          & ./artifacts/publish-verified-release.ps1 -Tag $env:RELEASE_TAG -Repository $env:GITHUB_REPOSITORY -Path artifacts/release-upload -NotesPath artifacts/release-notes.md -Resume:($env:RESUME_DRAFT -eq 'true')
