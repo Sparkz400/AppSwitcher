@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.0 — prepared 2026-11-03
+## 1.2.0 — 2026-11-03
 
 - Support unsigned stable Windows releases under the owner's zero-cost distribution policy. Remove mandatory publisher signing from stable builds and acceptance records; retain workstation and offline-browser acceptance, exact-commit verification, security scans, checksums, manifests, SPDX inventories, attestations and immutable release assets. Optional installer signatures must still be valid.
 - Update release and installation guidance to disclose unsigned stable distribution. The existing Mozilla-signed Firefox payload is unchanged.
@@ -8,7 +8,9 @@
 - Record offline VM qualification of the published RC, including actual installer upgrade/rollback/uninstall, released browser-bridge recovery, and persistent Chrome/Edge installations with two unattended offline restarts each. Keep their manual folder-picker walkthrough and target-workstation acceptance open. Update installer wording for beta, RC and stable packages.
 - Fix the browser test helper's disconnect handling so it consumes POST bodies before replying and clears stale connections before a reconnect check; add a regression that fails against the old helper. Released application and extension behavior is unchanged.
 
-This **unsigned Windows x64 1.2.0 package** is prepared for final verification and acceptance. Preparation is not public publication or completed workstation qualification. The Mozilla-signed offline Firefox bridge remains byte-for-byte 1.1.0, and configuration remains schema 12. Stable publication still requires the recorded workstation/offline-browser acceptance and exact-main CI; signing and Narrator speech are not required for the agreed deployment scope.
+This first **unsigned Windows x64 stable release** includes the behavior fixes and UI improvements listed under 1.2.0-rc.1 below. The Mozilla-signed offline Firefox bridge remains byte-for-byte 1.1.0, and configuration remains schema 12. Roll back with the previous binary and its pre-upgrade configuration backup.
+
+The owner authorized publication with [documented validation limits](https://github.com/Sparkz400/AppSwitcher/blob/main/docs/RELEASE_ACCEPTANCE_1.2.0.md): physical workstation/full-shift acceptance and the Chrome/Edge manual folder-picker walkthrough remain unperformed. Persistent browser installation and unattended offline restarts passed. Site deployment still requires its applicable acceptance checks. Windows publisher signing, browser-store publication and Narrator speech are not required for the agreed zero-cost, silent-workstation scope. Windows may show an unknown-publisher warning; verify the downloaded checksums and build/release attestations.
 
 ## 1.2.0-rc.1 — 2026-11-03
 

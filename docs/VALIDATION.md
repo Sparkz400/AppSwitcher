@@ -1,5 +1,13 @@
 # Validation
 
+## 1.2.0 unsigned package and publication decision — 3 November 2026
+
+The clean local package at `9f604edb203771c1a05fef80b17670b6b8bac954` passed 273 application tests, 32 browser/helper tests, 10,089 native UI assertions with zero binding warnings, process/recovery checks, 15 bundled-setup assertions and 23 installer lifecycle checks. All 894 payload files, the eight release assets and the SPDX inventory passed validation. A four-project dependency audit reported no vulnerable dependencies. The exact unsigned installer passed 19 additional offline VM checks upgrading the published RC to 1.2.0 as a standard user, preserving configuration and all three existing browser-host registrations/files. The VM network was restored and no test processes remained.
+
+The local installer SHA-256 was `A6E36D1AE7FCDC41F598BBC8A8F82BDDC73AD399AF46EE513393B8EB3E54EA62`; the application assembly SHA-256 was `6085991B3D92D022E5730AC442643E0F7E059C1A0DE77000E99AD72FE9532960`. GitHub publication builds and verifies its own assets at the final main revision and publishes their matching hashes and attestations. These local hashes do not identify the later GitHub assets.
+
+The owner authorized public software release with the [remaining deployment limits disclosed](RELEASE_ACCEPTANCE_1.2.0.md). Those checks remain deferred, not passed. Exact-main Windows CI, CodeQL, security and asset/attestation verification remain publication requirements. This software release does not fill in an unperformed target-workstation acceptance record.
+
 ## 1.2.0-rc.1 preparation — 3 November 2026
 
 See [the release resolution and current evidence](RELEASE_RESOLUTION_2026-11-03.md) and [remaining gates](release-readiness.json). The records below are retained historical beta evidence, not substituted for validation of the changed candidate.

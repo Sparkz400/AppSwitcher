@@ -2,7 +2,7 @@
 
 Use a versioned release from the project's GitHub Releases page. The setup executable and portable ZIP contain the application, .NET Windows runtime, native browser bridge, offline extensions, guides and examples. The target PC needs no SDK, publisher account or internet connection for installation. A browser must already be installed; websites retain their own connectivity requirements.
 
-AppSwitcher Windows releases are **unsigned**, including the planned stable release, under the project's zero-cost distribution policy. Windows may display an unknown-publisher or reputation warning. Check the release source and compare the downloaded file with its adjacent SHA-256 file (`Get-FileHash -Algorithm SHA256 <download>`). A matching checksum detects a changed download; it does not replace publisher authentication. Follow your organization's software approval policy. Beta.3 and later also provide [signed build/release records and a dependency inventory](VERIFY_DOWNLOADS.md). For common warnings, connection and display problems, see [Troubleshooting](TROUBLESHOOTING.md).
+AppSwitcher Windows releases are **unsigned**, including stable releases, under the project's zero-cost distribution policy. Windows may display an unknown-publisher or reputation warning. Check the release source and compare the downloaded file with its adjacent SHA-256 file (`Get-FileHash -Algorithm SHA256 <download>`). A matching checksum detects a changed download; it does not replace publisher authentication. Follow your organization's software approval policy. Beta.3 and later also provide [signed build/release records and a dependency inventory](VERIFY_DOWNLOADS.md). For common warnings, connection and display problems, see [Troubleshooting](TROUBLESHOOTING.md).
 
 ## Install
 
