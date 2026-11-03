@@ -17,6 +17,14 @@ public sealed record AuditLogEntry(
     string Target,
     string Details)
 {
+    public string ActionDisplay => DisplayCode("AuditEvent_", Action);
+    public string OutcomeDisplay => DisplayCode("AuditOutcome_", Outcome);
+    private static string DisplayCode(string prefix, string code)
+    {
+        var key = prefix + code;
+        var translated = LocalizationService.T(key);
+        return translated == key ? code : translated;
+    }
     public string ActorDisplay =>
         string.IsNullOrWhiteSpace(ActorUser)
             ? ActorRole
@@ -28,6 +36,8 @@ public sealed class AuditLogService
     private readonly ILogger<AuditLogService> _logger;
     private readonly string _auditLogPath;
     private readonly object _sync = new();
+    internal const long RotationBytes = 16 * 1024 * 1024;
+    internal const int RetainedArchives = 5;
 
     public event Action<AuditLogEntry>? EntryRecorded;
 
@@ -67,7 +77,8 @@ public sealed class AuditLogService
                 if (!string.IsNullOrWhiteSpace(directory))
                     Directory.CreateDirectory(directory);
 
-                var needsHeader = !File.Exists(_auditLogPath);
+                RotateIfNeeded(_auditLogPath);
+                var needsHeader = !File.Exists(_auditLogPath) || new FileInfo(_auditLogPath).Length == 0;
                 using var writer = new StreamWriter(_auditLogPath, append: true);
                 if (needsHeader)
                     writer.WriteLine("Timestamp,Action,ActorRole,ActorUser,Outcome,Target,Details");
@@ -93,29 +104,38 @@ public sealed class AuditLogService
     public List<AuditLogEntry> GetRecentEntries(int maxEntries = 200)
     {
         var entries = new List<AuditLogEntry>();
-        if (maxEntries <= 0 || !File.Exists(_auditLogPath))
+        maxEntries = Math.Min(maxEntries, 5000);
+        if (maxEntries <= 0)
             return entries;
 
         try
         {
-            var lines = File.ReadAllLines(_auditLogPath);
-            foreach (var line in lines.Skip(1).TakeLast(maxEntries).Reverse())
+            lock (_sync)
             {
-                var parts = ParseCsvLine(line);
-                if (parts.Length < 7)
-                    continue;
+                for (var archive = 0; archive <= RetainedArchives && entries.Count < maxEntries; archive++)
+                {
+                    var path = archive == 0 ? _auditLogPath : $"{_auditLogPath}.{archive}";
+                    if (!File.Exists(path)) continue;
+                    foreach (var line in ReadRecordsBackwards(path))
+                    {
+                        var parts = ParseCsvLine(line);
+                        if (parts.Length < 7)
+                            continue;
 
-                if (!DateTime.TryParse(parts[0], CultureInfo.InvariantCulture, DateTimeStyles.None, out var timestamp))
-                    continue;
+                        if (!DateTime.TryParse(parts[0], CultureInfo.InvariantCulture, DateTimeStyles.None, out var timestamp))
+                            continue;
 
-                entries.Add(new AuditLogEntry(
-                    timestamp,
-                    parts[1],
-                    parts[2],
-                    parts[3],
-                    parts[4],
-                    parts[5],
-                    parts[6]));
+                        entries.Add(new AuditLogEntry(
+                            timestamp,
+                            parts[1],
+                            parts[2],
+                            parts[3],
+                            parts[4],
+                            parts[5],
+                            parts[6]));
+                        if (entries.Count >= maxEntries) break;
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -124,6 +144,58 @@ public sealed class AuditLogService
         }
 
         return entries;
+    }
+
+    internal static void RotateIfNeeded(string path)
+    {
+        if (!File.Exists(path) || new FileInfo(path).Length < RotationBytes) return;
+        for (var index = RetainedArchives; index >= 1; index--)
+        {
+            var source = index == 1 ? path : $"{path}.{index - 1}";
+            if (File.Exists(source)) File.Move(source, $"{path}.{index}", overwrite: true);
+        }
+    }
+
+    // Quote parity works in either direction, including doubled CSV quotes. Scan
+    // UTF-8 bytes so a block boundary cannot split a character during decoding.
+    internal static IEnumerable<string> ReadRecordsBackwards(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var block = new byte[8192];
+        var record = new List<byte>(256);
+        var quoted = false;
+        var oversized = false;
+        var remaining = stream.Length;
+        while (remaining > 0)
+        {
+            var count = (int)Math.Min(block.Length, remaining);
+            remaining -= count;
+            stream.Position = remaining;
+            stream.ReadExactly(block.AsSpan(0, count));
+            for (var index = count - 1; index >= 0; index--)
+            {
+                var value = block[index];
+                if (value == (byte)'"') quoted = !quoted;
+                if (value == (byte)'\n' && !quoted)
+                {
+                    if (record.Count > 0 && !oversized) yield return Decode();
+                    record.Clear();
+                    oversized = false;
+                }
+                else if (!oversized)
+                {
+                    if (record.Count >= 1024 * 1024) { oversized = true; record.Clear(); }
+                    else record.Add(value);
+                }
+            }
+        }
+        if (record.Count > 0 && !oversized && !quoted) yield return Decode();
+
+        string Decode()
+        {
+            record.Reverse();
+            return System.Text.Encoding.UTF8.GetString(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(record)).TrimEnd('\r');
+        }
     }
 
     private static string EscapeCsv(string value)
@@ -135,7 +207,7 @@ public sealed class AuditLogService
         return value;
     }
 
-    private static string[] ParseCsvLine(string line)
+    internal static string[] ParseCsvLine(string line)
     {
         var result = new List<string>();
         var current = new System.Text.StringBuilder();

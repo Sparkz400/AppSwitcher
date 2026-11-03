@@ -162,3 +162,9 @@ artifacts/perfhost/AppSwitcher.UiChecks.exe --startup-memory --exercise
 ```
 
 The test-only `IsTestProject=false` publish property keeps runtime identifiers consistent through the harness's test-project reference. Normal unit tests still use `dotnet test` as above. The experiment writes a fresh results directory, uses separate configuration/instance/browser-bridge scopes, starts no configured applications and cleans up its own hosts. For comparing two published hosts, append `--compare-hosts <baseline-exe> <candidate-exe>`; that comparison uses software rendering for both.
+
+## Candidate settings and history behavior
+
+Settings preview live. Save persists; Close offers discard; session expiry discards pending edits. Background pinning/position updates do not persist the editor's unfinished configuration. Empty restricted operator scope grants no apps; select **Allow all applications** explicitly for unrestricted operator management. Rollback from schema 12 requires a pre-upgrade configuration backup as well as the older binary.
+
+Lifecycle scripts should wait for their child work before returning. Cancelling a running hook stops its process tree; a service intentionally detached by an already completed script is outside that lifetime. Audit and crash CSVs rotate at 16 MiB and retain five numbered archives. Export older history before rotation if longer retention is required. See the [release resolution](RELEASE_RESOLUTION_2026-11-03.md) for precise limits and outstanding deployment qualification.

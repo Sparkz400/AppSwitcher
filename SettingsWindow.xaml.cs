@@ -23,29 +23,34 @@ public partial class SettingsWindow : Window
         };
     }
 
+    private bool _closing;
     private async void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        if (ConfigurationSavedOnClose || DataContext is not SettingsViewModel vm || vm.Runtime.CurrentAccessLevel == AccessLevel.None) return;
+        if (ConfigurationSavedOnClose || DataContext is not SettingsViewModel vm) return;
         if (!vm.IsAdmin) { ConfigurationSavedOnClose = true; return; }
         if (!vm.HasInputErrors && !vm.HasUnsavedChanges && !vm.SaveCommand.IsRunning)
-        {
-            ConfigurationSavedOnClose = true;
-            return;
-        }
+        { ConfigurationSavedOnClose = true; return; }
         e.Cancel = true;
-        if (vm.HasInputErrors)
+        if (_closing) return;
+        _closing = true;
+        try
         {
-            vm.SaveStatus = Services.LocalizationService.T("UI_FieldErrors");
-            return;
-        }
-        if (vm.SaveCommand.IsRunning) await vm.SaveCommand.ExecutionTask!;
-        else await vm.SaveCommand.ExecuteAsync(null);
-        if (vm.LastSaveSucceeded && !vm.HasUnsavedChanges && !vm.HasInputErrors && IsLoaded)
-        {
+            if (vm.SaveCommand.IsRunning) await vm.SaveCommand.ExecutionTask!;
+            if (vm.Runtime.CurrentAccessLevel != AccessLevel.None && (vm.HasUnsavedChanges || vm.HasInputErrors))
+            {
+                var discard = vm.Runtime.ConfirmOperation(Services.LocalizationService.T("UI_DiscardConfirm"));
+                // Expiry may close the confirmation while its modal loop runs.
+                if (!discard && vm.Runtime.CurrentAccessLevel != AccessLevel.None) return;
+            }
+            await vm.DiscardChangesAsync();
             ConfigurationSavedOnClose = true;
-            // Closing cannot be called again while its current event is being dispatched.
             _ = Dispatcher.BeginInvoke(Close);
         }
+        catch (Exception)
+        {
+            vm.SaveStatus = Services.LocalizationService.T("UI_SaveFailed");
+        }
+        finally { _closing = false; }
     }
 
     private void OnValidationError(object? sender, ValidationErrorEventArgs e)
@@ -56,12 +61,16 @@ public partial class SettingsWindow : Window
         {
             vm.HasInputErrors = _inputErrors.Count > 0;
         }
+        if (e.Action == ValidationErrorEventAction.Added && e.OriginalSource is FrameworkElement field)
+            field.BringIntoView();
     }
 
     private void Workspace_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         if (AppListColumn is null) return;
         var compact = ActualWidth < 1000;
+        NavigationColumn.Width = new GridLength(ActualWidth < 800 ? 156 : 184);
+        ConfigurationHeading.Visibility = ActualWidth < 800 ? Visibility.Collapsed : Visibility.Visible;
         AppListColumn.Width = new GridLength(compact ? 0 : 190);
         AppListPane.Visibility = compact ? Visibility.Collapsed : Visibility.Visible;
         CompactAppHeader.Visibility = compact ? Visibility.Visible : Visibility.Collapsed;
@@ -131,6 +140,7 @@ public partial class SettingsWindow : Window
             var property = control switch
             {
                 TextBox => TextBox.TextProperty,
+                System.Windows.Controls.Primitives.ToggleButton toggle when toggle.GetBindingExpression(ContentControl.ContentProperty) != null => ContentControl.ContentProperty,
                 System.Windows.Controls.Primitives.ToggleButton => System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty,
                 ComboBox combo when combo.IsEditable && combo.GetBindingExpression(ComboBox.TextProperty) != null => ComboBox.TextProperty,
                 ComboBox combo when combo.GetBindingExpression(ComboBox.SelectedValueProperty) != null => ComboBox.SelectedValueProperty,

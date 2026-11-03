@@ -133,6 +133,12 @@ internal sealed class ProcessHookRunner : IAppHookRunner
         }
         catch (OperationCanceledException)
         {
+            if (process != null)
+            {
+                TryKill(process);
+                try { await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(3)); }
+                catch (Exception ex) when (ex is TimeoutException or InvalidOperationException) { }
+            }
             throw;
         }
         catch (AppHookExecutionException)
@@ -271,7 +277,7 @@ internal sealed class AppLifecycleService : IAppLifecycleService
     private readonly IServiceProvider _services;
     private readonly NotificationService _notifications;
     private readonly ILogger<AppLifecycleService> _logger;
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _appLocks = new();
+    private readonly BoundedOperationGates _appLocks = new();
 
     public AppLifecycleService(
         ProcessHelper processHelper,
@@ -291,7 +297,7 @@ internal sealed class AppLifecycleService : IAppLifecycleService
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var gate = _appLocks.GetOrAdd(app.ProcessTarget.Key, _ => new SemaphoreSlim(1, 1));
+        var gate = _appLocks.For(app.ProcessTarget.Key);
         await gate.WaitAsync(ct);
         try
         {
@@ -337,7 +343,7 @@ internal sealed class AppLifecycleService : IAppLifecycleService
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var gate = _appLocks.GetOrAdd(app.ProcessTarget.Key, _ => new SemaphoreSlim(1, 1));
+        var gate = _appLocks.For(app.ProcessTarget.Key);
         await gate.WaitAsync(ct);
         try
         {

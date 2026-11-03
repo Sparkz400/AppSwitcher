@@ -20,5 +20,6 @@ $arguments = @('--quiet', '--no-signing', '--no-ide-signtools', "--define=Packag
 if ($TestId) { $arguments += "--define=ProductId=AppSwitcher.Verification.$TestId", "--define=InstanceMutex=AppSwitcher.Verification.$TestId" }
 & $compiler @arguments (Join-Path (Split-Path -Parent $PSScriptRoot) 'installer/AppSwitcher.iss') | Out-Host
 if (-not (Test-Path -LiteralPath $installer)) { throw 'Installer compiler produced no executable.' }
+if (-not $TestId) { & (Join-Path $PSScriptRoot 'sign-release-files.ps1') -Path $installer }
 "$((Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash)  $Name.exe" | Set-Content -LiteralPath (Join-Path $output "$Name.exe.sha256") -Encoding ascii
 Write-Output $installer

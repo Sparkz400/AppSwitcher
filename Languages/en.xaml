@@ -137,7 +137,7 @@
     <sys:String x:Key="Settings_WorkDir">Working Directory (Optional)</sys:String>
     <sys:String x:Key="Settings_WorkDirHint">Blank = executable folder</sys:String>
     <sys:String x:Key="Settings_WinTitle">Window Title Detection (Optional)</sys:String>
-    <sys:String x:Key="Settings_WinTitleHint">If empty, the process name is used for detection.</sys:String>
+    <sys:String x:Key="Settings_WinTitleHint">Optional title filter within the configured executable.</sys:String>
     <sys:String x:Key="Settings_Group">Group (Optional)</sys:String>
     <sys:String x:Key="Settings_GroupHint">Apps with the same group are grouped together in the menu.</sys:String>
     <sys:String x:Key="Settings_DisplayMode">Display Mode</sys:String>
@@ -145,7 +145,7 @@
     <sys:String x:Key="Settings_ButtonColor">Button Color (in menu)</sys:String>
     <sys:String x:Key="Settings_AutoLaunch">Auto-launch on startup</sys:String>
     <sys:String x:Key="Settings_Watchdog">Auto-restart on crash (Watchdog)</sys:String>
-    <sys:String x:Key="Settings_MaxRestarts">Max. Restarts:</sys:String>
+    <sys:String x:Key="Settings_MaxRestarts">Retries per 10 minutes</sys:String>
     <sys:String x:Key="Settings_LifecycleHooks">Lifecycle Hooks</sys:String>
     <sys:String x:Key="Settings_PreLaunchHook">Pre-Launch Hook</sys:String>
     <sys:String x:Key="Settings_PostLaunchHook">Post-Launch Hook</sys:String>
@@ -238,7 +238,7 @@
     <sys:String x:Key="Settings_RemoveOperatorPin">Remove Operator PIN</sys:String>
     <sys:String x:Key="Settings_OperatorAccess">Operator Access</sys:String>
     <sys:String x:Key="Settings_OperatorAccessDescription">Choose which apps or groups operators may control.</sys:String>
-    <sys:String x:Key="Settings_OperatorAccessHint">Leave both lists empty to allow operators to control all apps.</sys:String>
+    <sys:String x:Key="Settings_OperatorAccessHint">With all applications off, only the selected apps and groups are allowed. An empty selection allows none.</sys:String>
     <sys:String x:Key="Settings_OperatorAccessGroups">Allowed groups</sys:String>
     <sys:String x:Key="Settings_OperatorAccessApps">Allowed apps</sys:String>
     <sys:String x:Key="Settings_AdminOnly">Admin only</sys:String>
@@ -299,7 +299,7 @@
     <sys:String x:Key="Msg_MemoryThresholdExceeded">{0} exceeds memory limit: {1} MB / {2} MB</sys:String>
 
     <!-- Confirmation -->
-    <sys:String x:Key="Settings_RequireConfirmation">Require confirmation before closing</sys:String>
+    <sys:String x:Key="Settings_RequireConfirmation">Confirm manual termination</sys:String>
     <sys:String x:Key="Msg_ConfirmKillTitle">Close App?</sys:String>
     <sys:String x:Key="Msg_ConfirmKillApp">Are you sure you want to close "{0}"?</sys:String>
     <sys:String x:Key="Msg_ConfirmKillWarning">The app will be terminated immediately. Unsaved data may be lost.</sys:String>
@@ -450,7 +450,7 @@
     <sys:String x:Key="UI_SelectAppHint">Select an application to review its settings. Administrators can add applications with the button on the left.</sys:String>
     <sys:String x:Key="UI_Save">Save</sys:String>
     <sys:String x:Key="UI_Close">Close</sys:String>
-    <sys:String x:Key="UI_SaveHint">Applied · not saved yet</sys:String>
+    <sys:String x:Key="UI_SaveHint">Live preview · Save or close to discard.</sys:String>
     <sys:String x:Key="UI_Saved">Saved {0}</sys:String>
     <sys:String x:Key="UI_SaveFailed">Not saved. Review the validation message, correct the settings and try again.</sys:String>
     <sys:String x:Key="UI_DeleteBackup">Delete backup</sys:String>
@@ -496,7 +496,7 @@
     <sys:String x:Key="UI_ImportConfirm">Replace the current configuration with {0} applications, {1} groups and {2} layouts? Current access PINs are retained. Review the changes below.</sys:String>
     <sys:String x:Key="UI_RestoreBackupConfirm">Restore the configuration saved on {0}? Current settings will be replaced; access PINs are retained.</sys:String>
     <sys:String x:Key="UI_DeleteBackupConfirm">Permanently delete backup “{0}”?</sys:String>
-    <sys:String x:Key="UI_FieldErrors">Correct the marked fields before saving or closing.</sys:String>
+    <sys:String x:Key="UI_FieldErrors">Correct the marked fields before saving.</sys:String>
     <sys:String x:Key="UI_ReadOnly">Read-only settings · administrator access is required to make changes.</sys:String>
     <sys:String x:Key="UI_SetPIN">Set a new PIN</sys:String>
     <sys:String x:Key="UI_SignInForActions">Sign in for more actions…</sys:String>
@@ -669,4 +669,31 @@
     <sys:String x:Key="Recovery_Confirm">Restore this backup? The current file will be kept in the recovery folder. Close this window afterward and start AppSwitcher when you are ready; its normal startup and kiosk settings will then apply.</sys:String>
     <sys:String x:Key="Recovery_Complete">Backup restored. The previous file is preserved in the recovery folder. Close this window, then start AppSwitcher when you are ready.</sys:String>
     <sys:String x:Key="Recovery_RestoreFailed">The backup could not be restored. It may have changed since the preview, or the configuration folder is not writable. Review the files and try again.</sys:String>
+    <sys:String x:Key="Diag_UnsupportedValue">Unsupported value: {0}.</sys:String>
+    <sys:String x:Key="Diag_ValueRange">{0} must be between {1} and {2}.</sys:String>
+    <sys:String x:Key="Diag_WebsiteNativeOptions">Websites do not support launch arguments or per-tab memory limits.</sys:String>
+    <sys:String x:Key="Settings_AllOperatorApps">Allow all applications</sys:String>
+    <sys:String x:Key="Settings_MenuDimensions">Menu dimensions</sys:String>
+    <sys:String x:Key="Settings_MenuWidth">Menu width</sys:String>
+    <sys:String x:Key="Settings_MenuItemHeight">Minimum row height</sys:String>
+    <sys:String x:Key="UI_TabMetricsUnavailable">Tab CPU and memory are unavailable</sys:String>
+    <sys:String x:Key="UI_DeleteReferences">Remove dependency links from: {0}. Remove saved positions/membership from: {1}.</sys:String>
+    <sys:String x:Key="UI_DiscardConfirm">Discard unsaved changes and close?</sys:String>
+<sys:String x:Key="Setup_RestartUnverified">Restart recovery: not verified by this connection check</sys:String>
+<sys:String x:Key="AuditEvent_ConfigChanged">Configuration changed</sys:String>
+<sys:String x:Key="AuditEvent_AppStopped">Application stopped</sys:String>
+<sys:String x:Key="AuditEvent_Authentication">Sign-in</sys:String>
+<sys:String x:Key="AuditEvent_BrowserSetup">Browser setup</sys:String>
+<sys:String x:Key="AuditEvent_BrowserCheck">Connection check</sys:String>
+<sys:String x:Key="AuditEvent_BrowserSwitchTest">Switch test</sys:String>
+<sys:String x:Key="AuditEvent_StartWorkspace">Workspace started</sys:String>
+<sys:String x:Key="AuditEvent_MaintenancePause">Automation paused</sys:String>
+<sys:String x:Key="AuditEvent_MaintenanceResume">Automation resumed</sys:String>
+<sys:String x:Key="AuditOutcome_Success">Succeeded</sys:String>
+<sys:String x:Key="AuditOutcome_Failed">Failed</sys:String>
+<sys:String x:Key="AuditOutcome_Denied">Denied</sys:String>
+<sys:String x:Key="AuditOutcome_Cancelled">Cancelled</sys:String>
+<sys:String x:Key="UI_FieldValueInvalid">Enter a valid value.</sys:String>
+<sys:String x:Key="UI_DeleteGroupConfirm">Remove group {0}?</sys:String>
+<sys:String x:Key="UI_DeleteGroupReferences">These apps become ungrouped: {0}. Remove the group from these workspaces: {1}.</sys:String>
 </ResourceDictionary>

@@ -107,17 +107,21 @@
     </Style>
     <Style TargetType="Label" BasedOn="{StaticResource ConsoleLabel}"/>
     <Style x:Key="ModernTextBox" TargetType="TextBox">
+        <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
         <Setter Property="Background" Value="{DynamicResource InputBg}"/><Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/><Setter Property="CaretBrush" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="10,8"/><Setter Property="MinHeight" Value="44"/>
         <Setter Property="FontSize" Value="14"/><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}"/>
         <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TextBox">
+            <Grid><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
             <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
                 <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
             </Border>
+            <TextBlock Grid.Row="1" x:Name="FieldError" Text="{DynamicResource UI_FieldValueInvalid}" Foreground="{DynamicResource DangerFg}" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
+            </Grid>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/></Trigger>
                 <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource TextMuted}"/><Setter TargetName="Surface" Property="Background" Value="{DynamicResource InputDisabledBg}"/></Trigger>
-                <Trigger Property="Validation.HasError" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="{DynamicResource DangerFg}"/></Trigger>
+                <Trigger Property="Validation.HasError" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="{DynamicResource DangerFg}"/><Setter TargetName="FieldError" Property="Visibility" Value="Visible"/></Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate></Setter.Value></Setter>
         <Style.Triggers><Trigger Property="Validation.HasError" Value="True"><Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/></Trigger></Style.Triggers>

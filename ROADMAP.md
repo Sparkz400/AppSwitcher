@@ -12,6 +12,8 @@ AppSwitcher is a usable unsigned beta. This roadmap distinguishes software maint
 
 ## Next priorities
 
+The [3 November release audit](docs/RELEASE_AUDIT_2026-11-03.md) found additional runtime and settings defects. Follow the [first stable release TODO](docs/RELEASE_TODO.md) for reproductions, acceptance criteria, UI simplification and release gates before treating the beta as stable.
+
 | Priority | Work | Completion evidence / dependency |
 | --- | --- | --- |
 | High | [Representative workstation acceptance #9](https://github.com/Sparkz400/AppSwitcher/issues/9) | Target displays, touch/gloves, kiosk recovery, reboot/power interruption and sustained workload; requires a workstation owner. |

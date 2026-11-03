@@ -44,6 +44,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private int _shutdownState;
     private AppSettings? _observedSettings;
     private SettingsWindow? _settingsWindow;
+    private int _openEditors;
+    internal void BeginEditing() => _openEditors++;
+    internal void EndEditing() => _openEditors = Math.Max(0, _openEditors - 1);
     private HealthDashboardWindow? _dashboardWindow;
 
     [ObservableProperty] private AppSettings _settings = new();
@@ -307,7 +310,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
             return;
 
         if (e.PropertyName == nameof(OperatorScopeSettings.AllowedAppNames)
-            || e.PropertyName == nameof(OperatorScopeSettings.AllowedGroupKeys))
+            || e.PropertyName == nameof(OperatorScopeSettings.AllowedGroupKeys)
+            || e.PropertyName == nameof(OperatorScopeSettings.Restricted))
         {
             RebuildGroups();
         }
@@ -648,10 +652,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    internal Func<string> AuditUserProvider { get; set; } = GetCurrentWindowsUser;
     internal AuditActor CreateAuditActor(AccessLevel? accessLevelOverride = null)
     {
         var accessLevel = accessLevelOverride ?? CurrentAccessLevel;
-        return new AuditActor(MapAccessLevelToAuditRole(accessLevel), GetCurrentWindowsUser());
+        return new AuditActor(MapAccessLevelToAuditRole(accessLevel), AuditUserProvider());
     }
 
     internal static AuditActor CreateExternalAuditActor() => new("External", "Unknown");
@@ -806,6 +811,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public void SaveConfigInBackground(ConfigSaveAuditOptions? auditOptions = null)
     {
+        // Background changes join the preview; only explicit Save persists it.
+        if (_openEditors > 0) return;
         _ = SaveConfigInBackgroundCore(auditOptions);
     }
 
@@ -1090,15 +1097,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         win.ShowDialog();
 
         RebuildGroups();
-        if (win.ConfigurationSavedOnClose) return;
-        try
-        {
-            await SaveConfigAsync();
-        }
-        catch (InvalidOperationException)
-        {
-            _logger.LogInformation("Settings changes were kept in memory but not saved because validation failed");
-        }
+        await Task.CompletedTask;
     }
 
     private AccessLevel EnsureAuthenticated(AccessLevel minimumLevel)
@@ -1468,6 +1467,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private async Task ApplySettingsStateAsync(bool showNotifications)
     {
+        SetObservedOperatorScope(Settings.OperatorScope);
+        StartSessionTimeout();
         _themeService.ApplyTheme(Settings.Theme);
         _localizationService.ApplyLanguage(Settings.Language);
         _kioskService.Status.DeploymentNotes = LocalizationService.T("Settings_KioskDeploymentNotes");

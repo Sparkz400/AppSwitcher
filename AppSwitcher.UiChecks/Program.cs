@@ -61,6 +61,7 @@ internal static partial class Program
             {
                 if (args.FirstOrDefault() == "--setup-package-check" && args.Length == 2)
                     await CheckBrowserSetupPackage(args[1]);
+                else if (args.Contains("--editor-benchmark")) await CheckEditorPerformance();
                 else if (args.Contains("--accessibility-check")) await CheckHighContrast();
                 else if (args.Contains("--picker-expiry-check"))
                 {
@@ -130,6 +131,17 @@ internal static partial class Program
         Save(launcher, "launcher-button");
         vm.IsMenuOpen = true;
         await Render();
+        var surface = (FrameworkElement)launcher.FindName("MenuSurface");
+        var firstApp = vm.Apps[0];
+        var launchButton = Descendants<Button>(surface).First(button => button.DataContext == firstApp && button.ContextMenu == null);
+        firstApp.Mode = DisplayMode.IconOnly; await Render();
+        Check(!Descendants<TextBlock>(launchButton).Any(text => text.IsVisible), "Icon-only hides both name and status text");
+        Check(AutomationProperties.GetName(launchButton) == firstApp.Name, "Icon-only retains its accessible name");
+        firstApp.Mode = DisplayMode.TextOnly; await Render();
+        Check(!Descendants<Image>(launchButton).Any(image => image.IsVisible), "Text-only hides the icon");
+        Check(Descendants<TextBlock>(launchButton).Any(text => text.IsVisible && text.Text == firstApp.Name), "Text-only retains its visible name");
+        firstApp.Mode = DisplayMode.Combined; await Render();
+        Check(Descendants<Image>(launchButton).Any(image => image.IsVisible), "Combined restores the icon");
         Save((FrameworkElement)launcher.FindName("MenuSurface"), "launcher-light");
         vm.QuickFilter = "quality";
         await Render();
@@ -231,9 +243,12 @@ internal static partial class Program
             await Render();
             if (language == "en" && theme == "Light")
             {
+                await CheckSettingsCatalog(window, settings);
                 await CheckEditorInteraction(window, settings);
                 await CheckWindowPickImport(window, settings);
             }
+            if (settings.HasUnsavedChanges) await settings.SaveCommand.ExecuteAsync(null);
+            Check(!settings.HasUnsavedChanges, "Preview edits explicitly saved before closing");
             window.Close();
             await Render();
             Check(!window.IsVisible, "Editor closes after successful save");
@@ -426,9 +441,12 @@ internal static partial class Program
         await Render();
         Check(settings.HasInputErrors && !settings.SaveCommand.CanExecute(null), "Invalid numeric input disables saving");
         Save(window, "validation-error");
+        var cancelClose = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+        cancelClose.Tick += (_, _) => { cancelClose.Stop(); Application.Current.Windows.OfType<ConfirmationDialog>().Single(dialog => dialog.IsVisible).Close(); };
+        cancelClose.Start();
         Invoke(Descendants<AppSwitcher.Controls.WindowTitleBar>(window).Single().CloseButton);
-        await Render();
-        Check(window.IsVisible, "Invalid input keeps the editor open");
+        await Task.Delay(250); await Render();
+        Check(window.IsVisible, "Cancelling discard preserves the editor and invalid input");
         numeric.Text = "3";
         numeric.GetBindingExpression(TextBox.TextProperty)!.UpdateSource();
         Check(!settings.HasInputErrors, "Correcting input clears the validation error");

@@ -4,6 +4,27 @@ namespace AppSwitcher.Tests;
 
 public class WindowPolicyEnforcementServiceTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ManualMinimizeIsRespectedUnlessContinuousPlacementIsEnabled(bool continuous)
+    {
+        var resolver = new FakeWindowHandleResolver();
+        var platform = CreatePlatform();
+        var hwnd = (IntPtr)111;
+        var target = new AppProcessTarget(@"C:\Apps\worker.exe");
+        resolver.SetHandle(target, hwnd);
+        platform.Windows[hwnd] = new FakeWindow { Rect = NativeRect.FromPositionAndSize(50, 50, 800, 600), Style = new WindowStyleState(0x00CF0000, 0) };
+        using var service = CreateService(resolver, platform);
+        var app = new AppItem { Name = "Worker", Path = target.Path, PlacementMode = WindowPlacementMode.Maximize, ReapplyPlacementContinuously = continuous };
+        service.EnforceNow([app]);
+        platform.Windows[hwnd].IsMinimized = true;
+        platform.Calls.Clear();
+        service.EnforceNow([app]);
+        service.EnforceNow([app]);
+        Assert.Equal(!continuous, platform.Windows[hwnd].IsMinimized);
+        Assert.Equal(continuous, platform.Calls.Contains("Restore:111"));
+    }
     [Fact]
     public void ForcedIdentitySurvivesReorderAndRecoversFromDisconnectWithoutChangingConfiguration()
     {

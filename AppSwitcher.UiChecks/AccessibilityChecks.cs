@@ -75,6 +75,7 @@ internal static partial class Program
         }
         finally
         {
+            await settings.DiscardChangesAsync();
             foreach (var key in keys) resources.Remove(key);
             theme.ApplyTheme("Dark");
             editor.Close(); launcher.Close();

@@ -28,7 +28,7 @@
      </StackPanel>
      <StackPanel Visibility="{Binding ShowProfiles, Converter={StaticResource BoolToVis}}" Margin="0,8,0,12"><Label Content="{DynamicResource Browser_Profile}" Target="{Binding ElementName=ProfilePicker}"/><ComboBox x:Name="ProfilePicker" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" DisplayMemberPath="DisplayName" AutomationProperties.Name="{DynamicResource Browser_Profile}"/></StackPanel>
      <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="14" Margin="0,4,0,0" Visibility="{Binding ConnectionReady, Converter={StaticResource BoolToVis}}">
-      <StackPanel><TextBlock Text="{DynamicResource Setup_RestoreTitle}" FontWeight="SemiBold" TextWrapping="Wrap"/><TextBlock Text="{Binding RestoreHint}" TextWrapping="Wrap" Margin="0,6,0,12"/>
+      <StackPanel><TextBlock Text="{DynamicResource Setup_RestartUnverified}" Foreground="{DynamicResource WarningFg}" TextWrapping="Wrap" Margin="0,0,0,8"/><TextBlock Text="{DynamicResource Setup_RestoreTitle}" FontWeight="SemiBold" TextWrapping="Wrap"/><TextBlock Text="{Binding RestoreHint}" TextWrapping="Wrap" Margin="0,6,0,12"/>
        <TextBlock Text="{DynamicResource Setup_ChooseInBrowser}" Foreground="{DynamicResource TextSecondary}"/><TextBlock Text="{Binding RestoreChoice}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,4,0,12"/>
        <Button Content="{DynamicResource Setup_Startup}" Command="{Binding OpenStartupCommand}" HorizontalAlignment="Left"/>
        <Expander Header="{DynamicResource UI_Details}" Margin="0,8,0,0"><TextBlock Text="{DynamicResource Setup_RestoreDetails}" TextWrapping="Wrap" Margin="0,8,0,0"/></Expander>

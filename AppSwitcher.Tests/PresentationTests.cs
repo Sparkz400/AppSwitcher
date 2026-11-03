@@ -132,6 +132,8 @@ public class PresentationTests
         editor.Settings.OperatorScope.SetAllowedAppNames(["A"]);
         Assert.True(editor.HasUnsavedChanges);
         editor.Settings.OperatorScope.SetAllowedAppNames([]);
+        Assert.True(editor.HasUnsavedChanges); // Empty restrictions no longer imply all apps.
+        editor.Settings.OperatorScope.Restricted = false;
         Assert.False(editor.HasUnsavedChanges);
         editor.Apps.Move(0, 1);
         Assert.True(editor.HasUnsavedChanges);

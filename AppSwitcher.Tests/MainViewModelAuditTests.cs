@@ -195,6 +195,7 @@ public class MainViewModelAuditTests
             new AppVersionService(NullLogger<AppVersionService>.Instance, notificationService),
             NullLogger<MainViewModel>.Instance);
 
+        viewModel.AuditUserProvider = () => @"DEMO\Operator";
         var configRoot = CloneConfig(initialConfig ?? new ConfigRoot { Settings = new AppSettings() });
         await viewModel.ApplyConfigAsync(configRoot, showNotifications: false);
         viewModel.MarkConfigAsPersisted(configRoot);

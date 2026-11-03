@@ -13,7 +13,7 @@ Install Git, PowerShell 7, the SDK specified by `global.json` and Node.js 24. Fr
 ./scripts/build-release.ps1
 ```
 
-The first command restores locked packages, builds, runs .NET/extension tests, renders native UI, and exercises isolated process/recovery behavior. It opens synthetic windows and checks that the real saved configuration is unchanged. The second builds the self-contained Windows x64 package, validates bundled Firefox source/signature payload correspondence, checks installer install/upgrade/rollback/uninstall, and emits the ZIP, unsigned setup EXE, submission materials and checksums under `artifacts/releases`.
+The first command restores locked packages, builds, runs .NET/extension tests, renders native UI, and exercises isolated process/recovery behavior. It opens synthetic windows and checks that the real saved configuration is unchanged. The second builds the self-contained Windows x64 package, validates bundled Firefox source/signature payload correspondence, checks installer install/upgrade/rollback/uninstall, and emits the ZIP, setup EXE, submission materials and checksums under `artifacts/releases`. Candidates are unsigned unless publisher signing is configured; stable builds require signing as described in [Maintenance](MAINTENANCE.md).
 
 A build with uncommitted changes records `dirty: true` in its release manifest and must not be published as a release. Output directories are revision-specific and existing release artifacts are never overwritten. Build a new revision or use a fresh checkout when repeating a release build. Build-time package/compiler downloads need internet access; deployment does not.
 
@@ -41,3 +41,5 @@ All four projects belong to `AppSwitcher.sln`. After changing a package version,
 For shipped dependencies, inspect the new package's license, source commit and notices. Update `third-party/dependencies.json`, the retained upstream notices and `THIRD_PARTY_NOTICES.md` before building the release package. Test-tool major updates also need a successful full test run. Dependabot groups NuGet updates across project directories into one proposal; its PR is a proposal, not an automatic approval of versions or licenses.
 
 Changes reach `main` through a pull request with up-to-date Windows verification and both CodeQL language checks. Resolve review conversations before merging. A second reviewer is welcome but is not mandatory for this single-maintainer project; administrators follow the same checks. Release automation is documented in [Maintenance](MAINTENANCE.md).
+
+For the fast build/unit/browser/package-gate layer use `./scripts/verify.ps1 -Fast`; required CI still uses the full default. Editor scaling is reproducible with `dotnet run --project AppSwitcher.UiChecks -c Release -- --editor-benchmark`. The manual Isolated sustained performance workflow retains longer synthetic measurements separately from release acceptance.

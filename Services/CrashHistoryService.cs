@@ -4,6 +4,7 @@ public class CrashHistoryService
 {
     private readonly ILogger<CrashHistoryService> _logger;
     private readonly string _crashLogPath;
+    private readonly object _sync = new();
 
     public CrashHistoryService(ILogger<CrashHistoryService> logger)
     {
@@ -30,11 +31,16 @@ public class CrashHistoryService
     {
         try
         {
-            var needsHeader = !File.Exists(_crashLogPath);
-            using var writer = new StreamWriter(_crashLogPath, append: true);
-            if (needsHeader)
-                writer.WriteLine("Timestamp,AppName,AppPath,Event");
-            writer.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss},{EscapeCsv(appName)},{EscapeCsv(appPath)},{EscapeCsv(eventType)}");
+            lock (_sync)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(_crashLogPath)!);
+                AuditLogService.RotateIfNeeded(_crashLogPath);
+                var needsHeader = !File.Exists(_crashLogPath);
+                using var writer = new StreamWriter(_crashLogPath, append: true);
+                if (needsHeader)
+                    writer.WriteLine("Timestamp,AppName,AppPath,Event");
+                writer.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss},{EscapeCsv(appName)},{EscapeCsv(appPath)},{EscapeCsv(eventType)}");
+            }
         }
         catch (Exception ex)
         {
@@ -45,16 +51,25 @@ public class CrashHistoryService
     public List<CrashEntry> GetHistory(int maxEntries = 200)
     {
         var entries = new List<CrashEntry>();
-        if (!File.Exists(_crashLogPath)) return entries;
+        if (maxEntries <= 0) return entries;
+        maxEntries = Math.Min(maxEntries, 5000);
 
         try
         {
-            var lines = File.ReadAllLines(_crashLogPath);
-            foreach (var line in lines.Skip(1).TakeLast(maxEntries))
+            lock (_sync)
             {
-                var parts = ParseCsvLine(line);
-                if (parts.Length >= 4 && DateTime.TryParse(parts[0], out var timestamp))
-                    entries.Add(new CrashEntry(timestamp, parts[1], parts[2], parts[3]));
+                for (var archive = 0; archive <= AuditLogService.RetainedArchives && entries.Count < maxEntries; archive++)
+                {
+                    var path = archive == 0 ? _crashLogPath : $"{_crashLogPath}.{archive}";
+                    if (!File.Exists(path)) continue;
+                    foreach (var line in AuditLogService.ReadRecordsBackwards(path))
+                    {
+                        var parts = AuditLogService.ParseCsvLine(line);
+                        if (parts.Length >= 4 && DateTime.TryParse(parts[0], out var timestamp))
+                            entries.Add(new CrashEntry(timestamp, parts[1], parts[2], parts[3]));
+                        if (entries.Count >= maxEntries) break;
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -62,6 +77,7 @@ public class CrashHistoryService
             _logger.LogWarning(ex, "Failed to read crash history");
         }
 
+        entries.Reverse(); // Preserve the existing chronological display contract.
         return entries;
     }
 
@@ -76,7 +92,7 @@ public class CrashHistoryService
 
     private static string EscapeCsv(string value)
     {
-        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
+        if (value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
             return $"\"{value.Replace("\"", "\"\"")}\"";
         return value;
     }

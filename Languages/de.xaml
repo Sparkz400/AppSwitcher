@@ -137,7 +137,7 @@
     <sys:String x:Key="Settings_WorkDir">Arbeitsverzeichnis (Optional)</sys:String>
     <sys:String x:Key="Settings_WorkDirHint">Leer = Programmordner</sys:String>
     <sys:String x:Key="Settings_WinTitle">Fenstertitel-Erkennung (Optional)</sys:String>
-    <sys:String x:Key="Settings_WinTitleHint">Falls leer, wird nach dem Prozessnamen gesucht.</sys:String>
+    <sys:String x:Key="Settings_WinTitleHint">Optionaler Titelfilter innerhalb der konfigurierten Anwendung.</sys:String>
     <sys:String x:Key="Settings_Group">Gruppe (Optional)</sys:String>
     <sys:String x:Key="Settings_GroupHint">Apps mit gleicher Gruppe werden im Menü zusammengefasst.</sys:String>
     <sys:String x:Key="Settings_DisplayMode">Anzeigemodus</sys:String>
@@ -145,7 +145,7 @@
     <sys:String x:Key="Settings_ButtonColor">Button Farbe (im Menü)</sys:String>
     <sys:String x:Key="Settings_AutoLaunch">Beim Start automatisch starten</sys:String>
     <sys:String x:Key="Settings_Watchdog">Automatisch neu starten bei Absturz (Watchdog)</sys:String>
-    <sys:String x:Key="Settings_MaxRestarts">Max. Neustarts:</sys:String>
+    <sys:String x:Key="Settings_MaxRestarts">Versuche je 10 Minuten</sys:String>
     <sys:String x:Key="Settings_LifecycleHooks">Lifecycle-Hooks</sys:String>
     <sys:String x:Key="Settings_PreLaunchHook">Pre-Launch Hook</sys:String>
     <sys:String x:Key="Settings_PostLaunchHook">Post-Launch Hook</sys:String>
@@ -238,7 +238,7 @@
     <sys:String x:Key="Settings_RemoveOperatorPin">Bediener-PIN entfernen</sys:String>
     <sys:String x:Key="Settings_OperatorAccess">Bediener-Zugriff</sys:String>
     <sys:String x:Key="Settings_OperatorAccessDescription">Wählen Sie aus, welche Apps oder Gruppen Bediener steuern dürfen.</sys:String>
-    <sys:String x:Key="Settings_OperatorAccessHint">Wenn beide Listen leer bleiben, dürfen Bediener alle Apps steuern.</sys:String>
+    <sys:String x:Key="Settings_OperatorAccessHint">Wenn „Alle Anwendungen“ aus ist, sind nur ausgewählte Apps und Gruppen erlaubt. Eine leere Auswahl erlaubt keine.</sys:String>
     <sys:String x:Key="Settings_OperatorAccessGroups">Erlaubte Gruppen</sys:String>
     <sys:String x:Key="Settings_OperatorAccessApps">Erlaubte Apps</sys:String>
     <sys:String x:Key="Settings_AdminOnly">Nur für Admin</sys:String>
@@ -299,7 +299,7 @@
     <sys:String x:Key="Msg_MemoryThresholdExceeded">{0} überschreitet Speicherlimit: {1} MB / {2} MB</sys:String>
 
     <!-- Confirmation -->
-    <sys:String x:Key="Settings_RequireConfirmation">Bestätigung vor Beenden erforderlich</sys:String>
+    <sys:String x:Key="Settings_RequireConfirmation">Manuelles Beenden bestätigen</sys:String>
     <sys:String x:Key="Msg_ConfirmKillTitle">App beenden?</sys:String>
     <sys:String x:Key="Msg_ConfirmKillApp">Möchten Sie "{0}" wirklich beenden?</sys:String>
     <sys:String x:Key="Msg_ConfirmKillWarning">Die App wird sofort beendet. Nicht gespeicherte Daten können verloren gehen.</sys:String>
@@ -450,7 +450,7 @@
     <sys:String x:Key="UI_SelectAppHint">Wählen Sie eine Anwendung aus, um ihre Einstellungen zu prüfen. Administratoren können links Anwendungen hinzufügen.</sys:String>
     <sys:String x:Key="UI_Save">Speichern</sys:String>
     <sys:String x:Key="UI_Close">Schließen</sys:String>
-    <sys:String x:Key="UI_SaveHint">Angewendet · noch nicht gespeichert</sys:String>
+    <sys:String x:Key="UI_SaveHint">Live-Vorschau · Speichern oder schließen und verwerfen.</sys:String>
     <sys:String x:Key="UI_Saved">Gespeichert {0}</sys:String>
     <sys:String x:Key="UI_SaveFailed">Nicht gespeichert. Prüfen Sie die Fehlermeldung, korrigieren Sie die Einstellungen und versuchen Sie es erneut.</sys:String>
     <sys:String x:Key="UI_DeleteBackup">Sicherung löschen</sys:String>
@@ -496,7 +496,7 @@
     <sys:String x:Key="UI_ImportConfirm">Aktuelle Konfiguration durch {0} Anwendungen, {1} Gruppen und {2} Layouts ersetzen? Die aktuellen PINs bleiben erhalten. Prüfen Sie die Änderungen unten.</sys:String>
     <sys:String x:Key="UI_RestoreBackupConfirm">Konfiguration vom {0} wiederherstellen? Aktuelle Einstellungen werden ersetzt; die PINs bleiben erhalten.</sys:String>
     <sys:String x:Key="UI_DeleteBackupConfirm">Sicherung „{0}“ endgültig löschen?</sys:String>
-    <sys:String x:Key="UI_FieldErrors">Korrigieren Sie die markierten Felder vor dem Speichern oder Schließen.</sys:String>
+    <sys:String x:Key="UI_FieldErrors">Markierte Felder vor dem Speichern korrigieren.</sys:String>
     <sys:String x:Key="UI_ReadOnly">Schreibgeschützte Einstellungen · Änderungen erfordern Administratorzugriff.</sys:String>
     <sys:String x:Key="UI_SetPIN">Neue PIN festlegen</sys:String>
     <sys:String x:Key="UI_SignInForActions">Für weitere Aktionen anmelden…</sys:String>
@@ -669,4 +669,31 @@
     <sys:String x:Key="Recovery_Confirm">Diese Sicherung wiederherstellen? Die aktuelle Datei bleibt im Wiederherstellungsordner erhalten. Schließen Sie danach dieses Fenster und starten Sie AppSwitcher, sobald Sie bereit sind. Dann gelten wieder die normalen Start- und Kioskeinstellungen.</sys:String>
     <sys:String x:Key="Recovery_Complete">Sicherung wiederhergestellt. Die bisherige Datei bleibt im Wiederherstellungsordner erhalten. Schließen Sie dieses Fenster und starten Sie AppSwitcher, sobald Sie bereit sind.</sys:String>
     <sys:String x:Key="Recovery_RestoreFailed">Die Sicherung konnte nicht wiederhergestellt werden. Sie wurde möglicherweise seit der Vorschau geändert oder der Konfigurationsordner ist nicht beschreibbar. Prüfen Sie die Dateien und versuchen Sie es erneut.</sys:String>
+    <sys:String x:Key="Diag_UnsupportedValue">Nicht unterstützter Wert: {0}.</sys:String>
+    <sys:String x:Key="Diag_ValueRange">{0} muss zwischen {1} und {2} liegen.</sys:String>
+    <sys:String x:Key="Diag_WebsiteNativeOptions">Webseiten unterstützen keine Startargumente oder Speichergrenzen pro Tab.</sys:String>
+    <sys:String x:Key="Settings_AllOperatorApps">Alle Anwendungen erlauben</sys:String>
+    <sys:String x:Key="Settings_MenuDimensions">Menüabmessungen</sys:String>
+    <sys:String x:Key="Settings_MenuWidth">Menübreite</sys:String>
+    <sys:String x:Key="Settings_MenuItemHeight">Minimale Zeilenhöhe</sys:String>
+    <sys:String x:Key="UI_TabMetricsUnavailable">CPU und Speicher pro Tab nicht verfügbar</sys:String>
+    <sys:String x:Key="UI_DeleteReferences">Abhängigkeiten entfernen bei: {0}. Gespeicherte Positionen/Mitgliedschaft entfernen aus: {1}.</sys:String>
+    <sys:String x:Key="UI_DiscardConfirm">Ungespeicherte Änderungen verwerfen und schließen?</sys:String>
+<sys:String x:Key="Setup_RestartUnverified">Wiederfinden nach Neustart: durch Verbindungstest nicht bestätigt</sys:String>
+<sys:String x:Key="AuditEvent_ConfigChanged">Konfiguration geändert</sys:String>
+<sys:String x:Key="AuditEvent_AppStopped">Anwendung beendet</sys:String>
+<sys:String x:Key="AuditEvent_Authentication">Anmeldung</sys:String>
+<sys:String x:Key="AuditEvent_BrowserSetup">Browser-Einrichtung</sys:String>
+<sys:String x:Key="AuditEvent_BrowserCheck">Verbindungstest</sys:String>
+<sys:String x:Key="AuditEvent_BrowserSwitchTest">Wechseltest</sys:String>
+<sys:String x:Key="AuditEvent_StartWorkspace">Arbeitsbereich gestartet</sys:String>
+<sys:String x:Key="AuditEvent_MaintenancePause">Automatik pausiert</sys:String>
+<sys:String x:Key="AuditEvent_MaintenanceResume">Automatik fortgesetzt</sys:String>
+<sys:String x:Key="AuditOutcome_Success">Erfolgreich</sys:String>
+<sys:String x:Key="AuditOutcome_Failed">Fehlgeschlagen</sys:String>
+<sys:String x:Key="AuditOutcome_Denied">Abgelehnt</sys:String>
+<sys:String x:Key="AuditOutcome_Cancelled">Abgebrochen</sys:String>
+<sys:String x:Key="UI_FieldValueInvalid">Gültigen Wert eingeben.</sys:String>
+<sys:String x:Key="UI_DeleteGroupConfirm">Gruppe {0} entfernen?</sys:String>
+<sys:String x:Key="UI_DeleteGroupReferences">Diese Apps werden ohne Gruppe geführt: {0}. Gruppe aus diesen Arbeitsbereichen entfernen: {1}.</sys:String>
 </ResourceDictionary>

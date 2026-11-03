@@ -15,6 +15,29 @@ public partial class SettingsViewModel
 
     internal static readonly SettingsSearchResult[] SearchCatalog =
     [
+        new("Settings_DisplayName", "Applications", 0, "SelectedApp.Name", "name title bezeichnung", true),
+        new("Readiness_Seconds", "Applications", 1, "SelectedApp.ReadinessTimeoutSeconds", "timeout wait bereitschaft warten", true),
+        new("Settings_MaxRestarts", "Applications", 2, "SelectedApp.MaxRestarts", "retries limit restart versuche grenze neustart", true),
+        new("Settings_RequireConfirmation", "Applications", 2, "SelectedApp.RequireConfirmation", "confirm termination bestätigen beenden", true),
+        new("Settings_WinTitle", "Applications", 3, "SelectedApp.WinPattern", "matching title process titel prozess", true),
+        new("Settings_PlacementMode", "Applications", 3, "SelectedApp.PlacementMode", "maximize fullscreen maximieren vollbild", true),
+        new("Settings_AlwaysOnTop", "Applications", 3, "SelectedApp.AlwaysOnTop", "topmost always above immer vordergrund", true),
+        new("Settings_ReapplyPlacementContinuously", "Applications", 3, "SelectedApp.ReapplyPlacementContinuously", "continuous placement minimize kontinuierlich minimieren", true),
+        new("Settings_DisplayMode", "Applications", 4, "SelectedApp.Mode", "icon text display symbol text ansicht", true),
+        new("Settings_CustomIcon", "Applications", 4, "SelectedApp.CustomIconPath", "custom icon bild symbol", true),
+        new("Settings_ButtonColor", "Applications", 4, "SelectedApp.BgColor", "color app farbe", true),
+        new("Settings_IconStyle", "System", 0, "Settings.IconStyle", "icon symbol style stil", true),
+        new("Settings_BgColor", "System", 0, "Settings.BgColor", "background color hintergrund farbe", true),
+        new("Settings_FgColor", "System", 0, "Settings.FgColor", "foreground color vordergrund farbe", true),
+        new("Settings_Opacity", "System", 0, "Settings.ButtonOpacity", "opacity transparency deckkraft transparenz", true),
+        new("Settings_MenuWidth", "System", 0, "Settings.MenuWidth", "width menu breite menü", true),
+        new("Settings_MenuItemHeight", "System", 0, "Settings.MenuItemHeight", "height row zeile höhe", true),
+        new("Settings_LockPosition", "System", 0, "Settings.PositionLocked", "lock position sperren", true),
+        new("Settings_AutoCloseMenu", "System", 0, "Settings.AutoClose", "close menu schließen menü", true),
+        new("Settings_PreferredMonitor", "System", 0, "LauncherMonitorSelection", "launcher monitor starter display", true),
+        new("Settings_MaxConfigBackups", "System", 3, "Settings.MaxConfigBackups", "backup count sicherung anzahl", true),
+        new("Settings_AllOperatorApps", "Access", 0, "AllowAllOperatorApps", "operator scope all access berechtigung zugriff alle", true),
+        new("Settings_EncryptConfig", "Access", 0, "Settings.ConfigEncryption", "encryption dpapi verschlüsselung", true),
         new("UI_Setup", "Setup", 0, "", "setup checklist first start einrichtung checkliste erster start", true),
         new("Browser_TargetKind", "Applications", 0, "SelectedApp.TargetKind", "website native type typ anwendung webseite"),
         new("Browser_Url", "Applications", 0, "SelectedApp.WebsiteUrl", "url address adresse http https ip"),
@@ -65,6 +88,7 @@ public partial class SettingsViewModel
         if (words.Length == 0) return;
         foreach (var entry in SearchCatalog.Where(entry => !entry.AdminOnly || IsAdmin))
         {
+            if (!IsSettingApplicable(entry)) continue;
             var haystack = entry.Label + " " + entry.SectionLabel + " " + entry.Keywords;
             if (words.All(word => haystack.Contains(word, StringComparison.CurrentCultureIgnoreCase))) SearchResults.Add(entry);
         }
@@ -75,8 +99,18 @@ public partial class SettingsViewModel
     {
         if (result == null || (result.AdminOnly && !IsAdmin)) return;
         if (result.Section == "Applications" && SelectedApp == null) SelectedApp = VisibleApps.FirstOrDefault();
+        if (result.Section == "Applications" && RequiredTarget(result.PropertyPath) is { } website
+            && SelectedApp?.IsWebsite != website) SelectedApp = VisibleApps.FirstOrDefault(app => app.IsWebsite == website);
         ActiveSection = result.Section;
         SettingsSearch = "";
         NavigateToSetting?.Invoke(result);
     }
+    private bool IsSettingApplicable(SettingsSearchResult entry) => RequiredTarget(entry.PropertyPath) is not { } website || VisibleApps.Any(app => app.IsWebsite == website);
+    private static bool? RequiredTarget(string path) => path switch
+    {
+        "SelectedApp.WebsiteUrl" or "SelectedBrowserProfile" or "SelectedApp.BrowserProfileId" or "SelectedApp.BrowserExecutablePath" or "SelectedApp.BrowserProfileDirectory" => true,
+        "SelectedApp.Path" or "SelectedApp.WorkingDirectory" or "SelectedApp.Args" or "SelectedApp.MemoryThresholdMB" or "SelectedApp.WinPattern" or "SelectedApp.PlacementMode" or "AppMonitorSelection" or "SelectedApp.AlwaysOnTop" or "SelectedApp.ReapplyPlacementContinuously" => false,
+        _ => null
+    };
+
 }

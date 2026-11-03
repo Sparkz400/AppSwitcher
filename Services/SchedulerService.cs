@@ -237,11 +237,14 @@ public class SchedulerService : IDisposable
 
     internal Task TrackOperationAsync(string key, Func<CancellationToken, Task> operation, CancellationToken ct)
     {
-        var task = _pendingOperations.GetOrAdd(key, _ => RunTrackedOperationAsync(key, operation, ct));
-        return task;
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var registered = _pendingOperations.GetOrAdd(key, completion.Task);
+        if (ReferenceEquals(registered, completion.Task))
+            _ = RunTrackedOperationAsync(key, operation, ct, completion);
+        return registered;
     }
 
-    private async Task RunTrackedOperationAsync(string key, Func<CancellationToken, Task> operation, CancellationToken ct)
+    private async Task RunTrackedOperationAsync(string key, Func<CancellationToken, Task> operation, CancellationToken ct, TaskCompletionSource completion)
     {
         try
         {
@@ -260,7 +263,8 @@ public class SchedulerService : IDisposable
         }
         finally
         {
-            _pendingOperations.TryRemove(key, out _);
+            _pendingOperations.TryRemove(new KeyValuePair<string, Task>(key, completion.Task));
+            completion.TrySetResult();
         }
     }
 

@@ -6,13 +6,18 @@ public class HealthCheckService : IDisposable
 {
     private readonly ILogger<HealthCheckService> _logger;
     private readonly HttpClient _httpClient;
+    private readonly Action<Action> _dispatch;
     private CancellationTokenSource? _cts;
     private Task? _loop;
 
     public HealthCheckService(ILogger<HealthCheckService> logger)
+        : this(logger, new HttpClient { Timeout = TimeSpan.FromSeconds(5) }, action => UiDispatcher.TryBeginInvoke(action)) { }
+
+    internal HealthCheckService(ILogger<HealthCheckService> logger, HttpClient client, Action<Action> dispatch)
     {
         _logger = logger;
-        _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+        _httpClient = client;
+        _dispatch = dispatch;
     }
 
     public void Start(Func<IReadOnlyList<AppItem>> getApps)
@@ -54,18 +59,22 @@ public class HealthCheckService : IDisposable
         }
     }
 
-    private async Task CheckAppHealth(AppItem app, CancellationToken ct)
+    internal async Task CheckAppHealth(AppItem app, CancellationToken ct)
     {
+        var revision = app.HealthRevision;
+        var url = app.HealthCheckUrl;
+        if (!app.IsRunning || string.IsNullOrWhiteSpace(url)) return;
         try
         {
-            using var response = await _httpClient.GetAsync(app.HealthCheckUrl, HttpCompletionOption.ResponseHeadersRead, ct);
+            using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
             var healthy = LocalizationService.T("Status_Healthy");
             var unhealthy = LocalizationService.T("Status_Unhealthy");
             var status = response.IsSuccessStatusCode ? healthy : unhealthy;
             var previousStatus = app.HealthStatus;
 
-            UiDispatcher.TryBeginInvoke(() =>
+            _dispatch(() =>
             {
+                if (ct.IsCancellationRequested || !app.IsRunning || app.HealthRevision != revision) return;
                 app.HealthStatus = status;
                 if (IsStatus(previousStatus: status, resourceValue: unhealthy, legacyValue: "Unhealthy") && app.State == AppState.Running)
                     app.State = AppState.Unhealthy;
@@ -80,8 +89,9 @@ public class HealthCheckService : IDisposable
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            UiDispatcher.TryBeginInvoke(() =>
+            _dispatch(() =>
             {
+                if (ct.IsCancellationRequested || !app.IsRunning || app.HealthRevision != revision) return;
                 app.HealthStatus = LocalizationService.T("Status_Unhealthy");
                 if (app.State == AppState.Running)
                     app.State = AppState.Unhealthy;

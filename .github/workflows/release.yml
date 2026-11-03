@@ -1,12 +1,12 @@
-name: Publish verified beta
+name: Publish verified release
 
 on:
   push:
-    tags: ['v*-beta.*']
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing beta tag whose complete draft should be verified and published'
+        description: 'Existing version tag whose complete draft should be verified and published'
         required: true
         type: string
 
@@ -42,8 +42,9 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
           $version = ([xml](Get-Content Directory.Build.props -Raw)).Project.PropertyGroup.Version
-          if ($version -notmatch '^\d+\.\d+\.\d+-beta\.\d+$' -or $env:RELEASE_TAG -cne "v$version") { throw 'Tag and beta version must match.' }
+          if ($version -notmatch '^\d+\.\d+\.\d+(-(beta|rc)\.\d+)?$' -or $env:RELEASE_TAG -cne "v$version") { throw 'Tag and release version must match.' }
           $commit = (git rev-parse HEAD).Trim()
+          ./scripts/check-stable-readiness.ps1 -Version $version -Commit $commit
           git merge-base --is-ancestor $commit origin/main
           if (git status --porcelain --untracked-files=normal) { throw 'Release checkout is dirty.' }
           $runs = @{}
@@ -56,6 +57,11 @@ jobs:
           if ($blockingAlerts.Count) { throw "Unresolved serious code-scanning findings on main: $($blockingAlerts -join ', ')" }
           gh run download $runs['verify.yml'] --name "AppSwitcher-$commit" --dir artifacts/release-upload
           ./scripts/check-release-artifacts.ps1 -Path artifacts/release-upload -Version $version -Commit $commit
+          if ($version -notmatch '-') {
+            foreach ($installer in Get-ChildItem artifacts/release-upload -Filter '*-setup.exe') {
+              if ((Get-AuthenticodeSignature -LiteralPath $installer.FullName).Status -ne 'Valid') { throw 'Stable installer lacks a valid Windows publisher signature.' }
+            }
+          }
           foreach ($asset in Get-ChildItem artifacts/release-upload -File) {
             gh attestation verify $asset.FullName --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/verify.yml" --source-ref refs/heads/main --source-digest $commit --deny-self-hosted-runners
           }
@@ -78,20 +84,23 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
           $assets = @(Get-ChildItem artifacts/release-upload -File | ForEach-Object FullName)
+          $prerelease = $env:RELEASE_TAG -match '-(beta|rc)\.'
+          $preFlag = $prerelease ? '--prerelease' : '--prerelease=false'
+          $latestFlag = $prerelease ? '--latest=false' : '--latest'
           # Upload and verify while draft; publication locks the assets and tag.
           if ($env:RESUME_DRAFT -ne 'true') {
-            gh release create $env:RELEASE_TAG @assets --draft --verify-tag --prerelease --latest=false --title "AppSwitcher $env:RELEASE_TAG" --notes-file artifacts/release-notes.md
+            gh release create $env:RELEASE_TAG @assets --draft --verify-tag $preFlag --latest=false --title "AppSwitcher $env:RELEASE_TAG" --notes-file artifacts/release-notes.md
           }
           # The tag REST endpoint only returns published releases. CLI lookup also finds drafts.
           $releaseId = gh release view $env:RELEASE_TAG --json databaseId --jq '.databaseId'
           $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/$releaseId" | ConvertFrom-Json
-          if (-not $release.draft -or -not $release.prerelease -or $release.tag_name -cne $env:RELEASE_TAG -or $release.assets.Count -ne $assets.Count) { throw 'Draft asset inventory mismatch.' }
+          if (-not $release.draft -or $release.prerelease -ne $prerelease -or $release.tag_name -cne $env:RELEASE_TAG -or $release.assets.Count -ne $assets.Count) { throw 'Draft asset inventory mismatch.' }
           foreach ($file in $assets) {
             $asset = @($release.assets | Where-Object name -CEQ (Split-Path $file -Leaf))
             $digest = 'sha256:' + (Get-FileHash -LiteralPath $file).Hash.ToLowerInvariant()
             if ($asset.Count -ne 1 -or $asset[0].digest -cne $digest) { throw "Uploaded asset mismatch: $file" }
           }
-          gh release edit $env:RELEASE_TAG --draft=false --latest=false --notes-file artifacts/release-notes.md
+          gh release edit $env:RELEASE_TAG --draft=false $latestFlag --notes-file artifacts/release-notes.md
           $release = gh api "repos/$env:GITHUB_REPOSITORY/releases/$releaseId" | ConvertFrom-Json
           if ($release.draft -or -not $release.immutable) { throw 'Published release is not immutable.' }
           gh release verify $env:RELEASE_TAG

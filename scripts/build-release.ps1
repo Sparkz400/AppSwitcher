@@ -7,6 +7,7 @@ $repoPath = Split-Path -Parent $PSScriptRoot
 Push-Location $repoPath
 try {
     $version = ([xml](Get-Content Directory.Build.props -Raw)).Project.PropertyGroup.Version
+    if ($version -notmatch '-' -and [string]::IsNullOrWhiteSpace($env:APPSWITCHER_SIGNING_CERTIFICATE_THUMBPRINT)) { throw 'Stable builds require configured Windows publisher signing.' }
     $commit = (git rev-parse HEAD).Trim()
     $dirty = [bool](git status --porcelain --untracked-files=normal)
     $name = "AppSwitcher-$version-win-x64-$($commit.Substring(0, 8))"

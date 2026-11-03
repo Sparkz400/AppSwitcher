@@ -198,6 +198,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         if (IsAdmin && _configService.IsFirstRun) ActiveSection = "Setup";
         RefreshSaveState();
         SaveCommand.PropertyChanged += OnSaveCommandChanged;
+        _mainVm.BeginEditing();
     }
 
     public List<GroupDefinition> GroupChoices
@@ -267,6 +268,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
 
     private void OnOperatorScopePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        OnPropertyChanged(nameof(AllowAllOperatorApps));
         RefreshSaveState();
         if (e.PropertyName == nameof(OperatorScopeSettings.AllowedAppNames)
             || e.PropertyName == nameof(OperatorScopeSettings.AllowedGroupKeys))
@@ -317,18 +319,38 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         if (sender is not AppItem app)
             return;
 
-        if (e.PropertyName == null || PersistedAppProperties.Contains(e.PropertyName))
+        if (e.PropertyName == nameof(AppItem.TargetKind) && app.IsWebsite)
+        {
+            app.Args = "";
+            app.MemoryThresholdMB = 0;
+            app.PlacementMode = WindowPlacementMode.None;
+            app.ForcedMonitor = 0;
+            app.ForcedMonitorId = "";
+            app.AlwaysOnTop = false;
+            app.ReapplyPlacementContinuously = false;
+            if (app.Readiness == ReadinessMode.Window) app.Readiness = ReadinessMode.Process;
+        }
+
+        if (e.PropertyName != nameof(AppItem.Name) && (e.PropertyName == null || PersistedAppProperties.Contains(e.PropertyName)))
             RefreshSaveState();
 
         if (e.PropertyName == nameof(AppItem.Name))
         {
             var previousName = _trackedAppNames.GetValueOrDefault(app, "");
-            if (!string.Equals(previousName, app.Name, StringComparison.Ordinal))
+            if (!string.IsNullOrWhiteSpace(app.Name) && !string.Equals(previousName, app.Name, StringComparison.Ordinal)
+                && !Apps.Any(other => !ReferenceEquals(other, app) && string.Equals(other.Name.Trim(), app.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
             {
-                Settings.OperatorScope.RenameAppName(previousName, app.Name);
                 _trackedAppNames[app] = app.Name;
+                Settings.OperatorScope.RenameAppName(previousName, app.Name);
+                foreach (var dependent in Apps.Where(item => !string.IsNullOrWhiteSpace(previousName)
+                    && string.Equals(item.DependsOn.Trim(), previousName.Trim(), StringComparison.OrdinalIgnoreCase)))
+                    dependent.DependsOn = app.Name.Trim();
+                foreach (var position in Layouts.SelectMany(layout => layout.Positions).Where(position =>
+                    position.AppId == app.AppId || (string.IsNullOrEmpty(position.AppId) && position.AppName == previousName)))
+                { position.AppId = app.AppId; position.AppName = app.Name; }
                 RefreshOperatorScopeEntries();
             }
+            RefreshSaveState();
         }
 
         if (e.PropertyName == nameof(AppItem.Name)
@@ -436,19 +458,44 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         }
     }
 
+    public bool AllowAllOperatorApps
+    {
+        get => !Settings.OperatorScope.HasRestrictions;
+        set
+        {
+            if (!CanEditSecurity || !_mainVm.CanAdminister) return;
+            if (value)
+            {
+                Settings.OperatorScope.AllowedAppNames = [];
+                Settings.OperatorScope.AllowedGroupKeys = [];
+            }
+            Settings.OperatorScope.Restricted = !value;
+            OnPropertyChanged(nameof(AllowAllOperatorApps));
+        }
+    }
+
     private static void ReplaceScopeEntries(
         ObservableCollection<OperatorScopeOption> target,
         IEnumerable<OperatorScopeOption> source,
         System.ComponentModel.PropertyChangedEventHandler propertyChangedHandler)
     {
-        foreach (var entry in target)
-            entry.PropertyChanged -= propertyChangedHandler;
-
-        target.Clear();
-        foreach (var entry in source)
+        var previous = target.GroupBy(entry => entry.Key, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        var desired = source.GroupBy(entry => entry.Key, StringComparer.Ordinal).Select(group => group.First()).Select(entry =>
         {
+            if (previous.TryGetValue(entry.Key, out var existing) && existing.Label == entry.Label)
+            { existing.IsSelected = entry.IsSelected; return existing; }
             entry.PropertyChanged += propertyChangedHandler;
-            target.Add(entry);
+            return entry;
+        }).ToArray();
+        var retained = desired.ToHashSet();
+        foreach (var entry in target.Where(entry => !retained.Contains(entry)).ToArray())
+        { entry.PropertyChanged -= propertyChangedHandler; target.Remove(entry); }
+        for (var index = 0; index < desired.Length; index++)
+        {
+            if (index < target.Count && ReferenceEquals(target[index], desired[index])) continue;
+            var oldIndex = target.IndexOf(desired[index]);
+            if (oldIndex >= 0) target.Move(oldIndex, index);
+            else target.Insert(index, desired[index]);
         }
     }
 
@@ -476,8 +523,10 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
 
     private static void SyncCollection<T>(ObservableCollection<T> target, IEnumerable<T> source)
     {
+        var desired = source.ToArray();
+        if (target.SequenceEqual(desired)) return;
         target.Clear();
-        foreach (var item in source)
+        foreach (var item in desired)
             target.Add(item);
     }
 
@@ -487,6 +536,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         RefreshSaveState();
         if (e.PropertyName == nameof(AppSettings.Language))
         {
+            RefreshAuditEntries();
             RefreshBrowserProfiles();
             OnSettingsSearchChanged(SettingsSearch);
             RefreshLocalizedChoices();
@@ -546,10 +596,20 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private void DeleteApp()
     {
         if (!CanEditApps || SelectedApp is null) return;
-        if (!_mainVm.ConfirmOperation(LocalizationService.T("UI_DeleteAppConfirm", SelectedApp.Name), destructive: true)) return;
-
-        Settings.OperatorScope.RemoveAppName(SelectedApp.Name);
-        Apps.Remove(SelectedApp);
+        var deleted = SelectedApp;
+        var dependents = Apps.Where(app => app.DependsOn.Trim().Equals(deleted.Name.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+        var affectedLayouts = Layouts.Where(layout => layout.AppIds.Contains(deleted.AppId)
+            || layout.Positions.Any(position => position.AppId == deleted.AppId || position.AppName == deleted.Name)).ToList();
+        var details = LocalizationService.T("UI_DeleteReferences", string.Join(", ", dependents.Select(app => app.Name)), string.Join(", ", affectedLayouts.Select(layout => layout.Name)));
+        if (!_mainVm.ConfirmOperation(LocalizationService.T("UI_DeleteAppConfirm", deleted.Name), details, destructive: true) || !_mainVm.CanAdminister) return;
+        foreach (var dependent in dependents) dependent.DependsOn = "";
+        foreach (var layout in affectedLayouts)
+        {
+            layout.AppIds.RemoveAll(id => id == deleted.AppId);
+            layout.Positions.RemoveAll(position => position.AppId == deleted.AppId || position.AppName == deleted.Name);
+        }
+        Settings.OperatorScope.RemoveAppName(deleted.Name);
+        Apps.Remove(deleted);
         SelectedApp = null;
         RefreshOperatorScopeEntries();
     }
@@ -674,12 +734,17 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private void DeleteGroup(GroupDefinition? group)
     {
         if (!CanEditApps || group == null || string.IsNullOrEmpty(group.Key)) return;
+        var members = Apps.Where(app => app.Group == group.Key).Select(app => app.Name).ToArray();
+        var workspaces = Layouts.Where(layout => layout.GroupKeys.Contains(group.Key)).Select(layout => layout.Name).ToArray();
+        if (!_mainVm.ConfirmOperation(LocalizationService.T("UI_DeleteGroupConfirm", group.GetDisplayName(Settings.Language)),
+            LocalizationService.T("UI_DeleteGroupReferences", string.Join(", ", members), string.Join(", ", workspaces)), destructive: true)) return;
 
         Settings.OperatorScope.RemoveGroupKey(group.Key);
         Groups.Remove(group);
         OnPropertyChanged(nameof(GroupChoices));
         foreach (var app in Apps.Where(a => a.Group == group.Key))
             app.Group = "";
+        foreach (var layout in Layouts) layout.GroupKeys.RemoveAll(key => key == group.Key);
         RefreshOperatorScopeEntries();
     }
 
@@ -968,6 +1033,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         if (Interlocked.Exchange(ref _operationsDisposed, 1) != 0) return;
+        _mainVm.EndEditing();
         _operationLifetime.Cancel();
         _operationLifetime.Dispose();
         Settings.PropertyChanged -= OnSettingsPropertyChanged;
