@@ -137,7 +137,8 @@ public class ConfigDiffService
             changes.Add(new("settings.adminpasswordhash", "AdminPIN changed"));
         if (oldS.OperatorPasswordHash != newS.OperatorPasswordHash)
             changes.Add(new("settings.operatorpasswordhash", "OperatorPIN changed"));
-        if (!oldS.OperatorScope.AllowedAppNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+        if (oldS.OperatorScope.Restricted != newS.OperatorScope.Restricted
+            || !oldS.OperatorScope.AllowedAppNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                 .SequenceEqual(newS.OperatorScope.AllowedAppNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase)
             || !oldS.OperatorScope.AllowedGroupKeys.OrderBy(key => key, StringComparer.OrdinalIgnoreCase)
                 .SequenceEqual(newS.OperatorScope.AllowedGroupKeys.OrderBy(key => key, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase))

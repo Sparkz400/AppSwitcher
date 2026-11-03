@@ -83,7 +83,7 @@ Optional automatic startup requires the exact browser executable and profile fol
 
 Website entries do not use native window placement, per-process resource control or AppSwitcher kiosk enforcement because browser windows/processes can contain unrelated pages. Validation rejects incompatible placement/kiosk configurations. Browser kiosk deployments need their own restricted profile and policy design.
 
-`Uninstall-BrowserHost.ps1` removes only registrations pointing to this installation. It intentionally preserves extension state, browser profiles and the desktop ownership journal.
+The legacy `Install-BrowserHost.ps1` and `Uninstall-BrowserHost.ps1` entry points are retired and stop without changing files or registrations. Use Settings → Browsers → Setup for installation/repair and the AppSwitcher installer for removal. These paths preserve browser profiles and the ownership journal, and check registration ownership.
 
 ## Implementation
 

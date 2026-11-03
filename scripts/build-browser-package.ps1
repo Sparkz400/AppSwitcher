@@ -42,6 +42,11 @@ dotnet publish (Join-Path $repoPath 'AppSwitcher.BrowserHost\AppSwitcher.Browser
 if ($LASTEXITCODE -ne 0) { throw 'Native host publishing failed.' }
 dotnet publish (Join-Path $repoPath 'AppSwitcher.csproj') -c Release -r win-x64 --self-contained true -p:RestoreLockedMode=true -o (Join-Path $packagePath 'app')
 if ($LASTEXITCODE -ne 0) { throw 'AppSwitcher publishing failed.' }
+& (Join-Path $PSScriptRoot 'sign-release-files.ps1') -Path @(
+    (Join-Path $packagePath 'host/AppSwitcher.BrowserHost.exe'),
+    (Join-Path $packagePath 'host/AppSwitcher.BrowserHost.dll'),
+    (Join-Path $packagePath 'app/AppSwitcher.exe'),
+    (Join-Path $packagePath 'app/AppSwitcher.dll'))
 $setupPath = Join-Path $packagePath 'app\browser-setup'
 New-Item -ItemType Directory -Path $setupPath -Force | Out-Null
 foreach ($folder in @('host', 'chromium', 'firefox')) {

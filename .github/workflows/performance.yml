@@ -1,0 +1,48 @@
+name: Isolated sustained performance
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'Synthetic churn duration (1–45 minutes; does not qualify a target workstation)'
+        required: true
+        default: '10'
+        type: string
+permissions:
+  contents: read
+jobs:
+  measure:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Build locked synthetic host
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          dotnet restore AppSwitcher.sln --locked-mode
+          dotnet build AppSwitcher.sln -c Release --no-restore
+      - name: Measure editor and sustained process churn
+        shell: pwsh
+        env:
+          CHECK_MINUTES: ${{ inputs.minutes }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $minutes = 0
+          if (-not [int]::TryParse($env:CHECK_MINUTES, [ref]$minutes) -or $minutes -lt 1 -or $minutes -gt 45) { throw 'Minutes must be 1–45.' }
+          dotnet run --project AppSwitcher.UiChecks -c Release --no-build -- --editor-benchmark
+          dotnet run --project AppSwitcher.UiChecks -c Release --no-build -- --soak-check $minutes
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: performance-${{ github.sha }}-${{ github.run_id }}
+          path: |
+            artifacts/ui-checks/editor-performance.json
+            artifacts/soak
+          retention-days: 30

@@ -1,4 +1,10 @@
-# Beta software validation
+# Validation
+
+## 1.2.0-rc.1 preparation — 3 November 2026
+
+See [the release resolution and current evidence](RELEASE_RESOLUTION_2026-11-03.md) and [remaining gates](release-readiness.json). The records below are retained historical beta evidence, not substituted for validation of the changed candidate.
+
+# Historical beta software validation
 
 Recorded on 2026-11-02. [Public beta v1.2.0-beta.1](https://github.com/Sparkz400/AppSwitcher/releases/tag/v1.2.0-beta.1) was built at clean public commit `5ebac9b9dcc538349e3ec143375635cf031f316d`; its [Windows CI run](https://github.com/Sparkz400/AppSwitcher/actions/runs/41513508379) passed. The released artifacts remain tied to that tag; later documentation updates do not replace them. The evidence below covers the implemented beta features and distribution mechanism; it does not establish production workstation acceptance.
 

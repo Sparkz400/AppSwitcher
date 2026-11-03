@@ -1,7 +1,7 @@
 #requires -Version 7.0
+param([ValidatePattern('^\d+\.\d+\.\d+(-(beta|rc)\.\d+)?$')][string]$Version = '1.2.0-rc.1')
 $ErrorActionPreference = 'Stop'
 $root = Join-Path (Split-Path -Parent $PSScriptRoot) ('artifacts/release-artifact-tests/' + [Guid]::NewGuid().ToString('N'))
-$version = '1.2.0-beta.3'
 $commit = '0123456789abcdef0123456789abcdef01234567'
 $name = "AppSwitcher-$version-win-x64-$($commit.Substring(0, 8))"
 

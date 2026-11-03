@@ -95,6 +95,7 @@ internal static partial class Program
         foreach (var expireSession in new[] { false, true })
         {
             runtime.CurrentAccessLevel = AccessLevel.Admin;
+            await runtime.SaveConfigAsync();
             using var settings = new SettingsViewModel(runtime, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
                 new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
                 new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session, AccessLevel.Admin);

@@ -10,7 +10,7 @@
       <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="4"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
        <Border Background="{Binding BgColor}" CornerRadius="2" Margin="0,2,0,2"/>
        <Image x:Name="AppIcon" Grid.Column="1" Width="28" Height="28" Margin="12,0" RenderOptions.BitmapScalingMode="HighQuality"><Image.Source><MultiBinding Converter="{StaticResource PathToIconConv}"><Binding Path="Path"/><Binding Path="CustomIconPath"/></MultiBinding></Image.Source></Image>
-       <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0">
+       <StackPanel x:Name="AppText" Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0">
         <TextBlock x:Name="AppName" Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/>
         <TextBlock FontSize="12" Margin="0,4,0,0"><TextBlock.Text><MultiBinding Converter="{StaticResource AppStateText}"><Binding Path="State"/><Binding Path="IsResponding"/></MultiBinding></TextBlock.Text>
          <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/><Style.Triggers>
@@ -34,7 +34,7 @@
      </Button>
     </Grid>
    </Border>
-   <DataTemplate.Triggers><DataTrigger Binding="{Binding Mode}" Value="{x:Static models:DisplayMode.IconOnly}"><Setter TargetName="AppIcon" Property="Width" Value="36"/><Setter TargetName="AppIcon" Property="Height" Value="36"/><Setter TargetName="AppName" Property="FontSize" Value="12"/></DataTrigger><DataTrigger Binding="{Binding Mode}" Value="{x:Static models:DisplayMode.TextOnly}"><Setter TargetName="AppIcon" Property="Visibility" Value="Collapsed"/></DataTrigger></DataTemplate.Triggers>
+   <DataTemplate.Triggers><DataTrigger Binding="{Binding Mode}" Value="{x:Static models:DisplayMode.IconOnly}"><Setter TargetName="AppIcon" Property="Width" Value="36"/><Setter TargetName="AppIcon" Property="Height" Value="36"/><Setter TargetName="AppText" Property="Visibility" Value="Collapsed"/></DataTrigger><DataTrigger Binding="{Binding Mode}" Value="{x:Static models:DisplayMode.TextOnly}"><Setter TargetName="AppIcon" Property="Visibility" Value="Collapsed"/></DataTrigger></DataTemplate.Triggers>
   </DataTemplate>
  </Window.Resources>
  <Grid>

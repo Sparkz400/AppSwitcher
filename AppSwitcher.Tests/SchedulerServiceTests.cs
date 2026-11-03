@@ -5,6 +5,23 @@ namespace AppSwitcher.Tests;
 public class SchedulerServiceTests
 {
     [Fact]
+    public async Task ImmediateFailureAndCompletionReleaseTheirKeyForRetry()
+    {
+        using var scheduler = CreateScheduler();
+        var attempts = 0;
+        await scheduler.TrackOperationAsync("retry", _ => { attempts++; throw new InvalidOperationException("synthetic"); });
+        await scheduler.TrackOperationAsync("retry", _ => { attempts++; return Task.CompletedTask; });
+        await scheduler.TrackOperationAsync("retry", _ => { attempts++; return Task.CompletedTask; });
+        Assert.Equal(3, attempts);
+        var resume = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var first = scheduler.TrackOperationAsync("pending", _ => { attempts++; return resume.Task; });
+        var second = scheduler.TrackOperationAsync("pending", _ => { attempts++; return Task.CompletedTask; });
+        Assert.Same(first, second);
+        Assert.Equal(4, attempts);
+        resume.SetResult();
+        await first;
+    }
+    [Fact]
     public async Task StopAsync_Cancels_Tracked_Pending_Operations()
     {
         var scheduler = CreateScheduler();

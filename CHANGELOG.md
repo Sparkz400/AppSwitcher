@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0-rc.1 — 2026-11-03
+
+- Repair session timeout transitions, scheduler retries, lifecycle cancellation, manual minimization and stale HTTP health results.
+- Preserve operator restrictions and dependency/workspace references through app renames and deletion; configuration schema 12 distinguishes all-app access from an empty restricted scope.
+- Make Save explicit: closing offers discard, expiry discards unsaved changes, and background pin/position saves cannot persist unfinished edits.
+- Remove ineffective appearance controls and native-only website fields; make icon-only mode accurate and validate imported visual values and geometry.
+- Read audit/crash history from the tail with CSV multiline support and rotate at 16 MiB, retaining five archives.
+- Support beta, release-candidate and stable artifacts while gating stable publication on reviewed acceptance evidence and a valid publisher signature. Retire conflicting legacy host-install scripts.
+
+This is an **unsigned Windows x64 release candidate**, not a qualified stable release. The Mozilla-signed offline Firefox bridge remains byte-for-byte 1.1.0. Physical workstation, Narrator, offline-browser qualification and Windows publisher signing remain explicit release gates in `docs/release-readiness.json`.
+
 ## 1.2.0-beta.3 — 2026-11-02
 
 - Lock newly published releases and protect version tags against updates and deletion; retain earlier release bytes unchanged.

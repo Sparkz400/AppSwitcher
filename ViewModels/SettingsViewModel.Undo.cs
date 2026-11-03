@@ -6,12 +6,22 @@ public partial class SettingsViewModel
     private string? _lastEditorSnapshot;
     private long _lastEditTimestamp;
     private bool _restoringEditor;
+    internal async Task DiscardChangesAsync()
+    {
+        _restoringEditor = true;
+        try
+        {
+            await _mainVm.DiscardEditorChangesAsync();
+            HasInputErrors = false;
+            ResetEditorHistory();
+        }
+        finally { _restoringEditor = false; RefreshSaveState(); }
+    }
     public bool CanUndo => IsAdmin && _undoSnapshots.Count > 0 && !HasInputErrors && !SaveCommand.IsRunning && !_restoringEditor;
 
-    private void TrackEditorChanges()
+    private void TrackEditorChanges(string current)
     {
         if (!IsAdmin || _restoringEditor) return;
-        var current = _mainVm.EditorSnapshot;
         if (_lastEditorSnapshot != null && current != _lastEditorSnapshot)
         {
             // A typing burst, a slider drag, or a multi-property command is one edit.

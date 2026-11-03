@@ -1,0 +1,74 @@
+# First stable release TODO
+
+Based on the [3 November 2026 audit](RELEASE_AUDIT_2026-11-03.md) of `4519900a`. The implementation now targets `1.2.0-rc.1`, followed by `1.2.0` once deployment gates pass.
+
+**Release recommendation: fix the confirmed behavior defects, simplify the existing UI, then qualify the exact offline package.** A major feature expansion or language rewrite should not delay these fixes. Implementation status is recorded below and in [the resolution report](RELEASE_RESOLUTION_2026-11-03.md). The historical audit describes the original revision, not the fixed candidate. IDs B01–B12 refer to reproducible findings in the audit.
+
+## Fix before stable
+
+- [x] **B01 — Make session timeout match its setting in every transition.** Fix `5 → off → 5`; reconcile the timer after Undo, import, backup restore and hot reload. Acceptance: expiry occurs at the configured interval after each transition, closes privileged dialogs and cancels pending privileged work. Cover both shorter and longer intervals.
+- [x] **B02 — Preserve operator restrictions while editing/removing apps.** Clearing and retyping a name must not turn restricted access into all-app access. Separate “All applications” from an empty restricted selection. Acceptance: rename, delete-last-allowed-app, delete-last-allowed-group, Undo and reload never grant additional access implicitly.
+- [x] **B03 — Respect manual minimization when continuous placement is off.** Gate restoration on deliberate activation or the chosen enforcement policy. Acceptance: repeated background passes leave a manually minimized window minimized; a launcher click still restores it; continuous mode and topmost/fullscreen transitions have explicit tests.
+- [x] **B04 — Cancel owned lifecycle scripts completely.** Stop/reap the owned process tree on cancellation, with a defined policy for scripts that intentionally detach children. Acceptance: maintenance pause, launcher shutdown and operation cancellation leave no unintended pre/post-launch/stop child running; unrelated processes are untouched.
+- [x] **B05 — Fix scheduler operation registration/cleanup.** Register a pending operation before running it and remove only its own entry. Acceptance: immediate failure can retry; delayed operations are awaited/cancelled; one key never runs concurrently or stays blocked by a completed task.
+- [x] **B06 — Preserve dependency references through rename.** Use app IDs or an atomic migration/update of all references. Acceptance: rename does not break startup/workspace/schedule plans; deleting an app presents dependent apps/workspaces and requires a clear repair choice.
+- [x] **B07 — Clear obsolete HTTP health results.** Changing/removing a health URL resets its state; in-flight old requests cannot overwrite the new state. Acceptance: disabling a failed check clears its warning/attention entry without restarting the app; responsiveness faults remain independent.
+- [x] **B08 — Remove unsupported website settings.** Hide native arguments and per-app memory thresholds for website targets, and validate/migrate existing values. Acceptance: every visible website control has a supported effect; unavailable browser-tab CPU/RAM is shown as unavailable.
+- [x] **B09 — Remove dead launcher appearance options.** Remove border color while retaining the requested borderless launcher. Implement a measurable, bounded glow or remove that option. Align the size minimum with the actual 44-pixel footprint. Acceptance: every retained visual setting changes the intended pixels and behaves deliberately in high contrast.
+- [x] **B10 — Make “Icon only” accurate.** Hide text or rename the mode. Acceptance: icon-only/text-only/combined have distinct correct visuals, accessible names and useful tooltips.
+- [x] **B11 — Validate the complete persisted UI schema.** Reject or explicitly migrate unsupported dimensions, opacity, colors, shape/icon/theme/language values and invalid layout geometry. Acceptance: malformed imported/hot-reloaded data is rejected before live application, with a useful field-level message and recovery path.
+- [x] **B12 — Repair audit records and bound history reads.** Preserve multiline details and load a bounded tail rather than the entire file; define retention/rotation. Acceptance: quoted commas/quotes/newlines round-trip; reading 200 events remains bounded as history grows; required older history remains available under the retention policy.
+
+For each fix, add a regression test that fails on the audited revision and asserts the intended behavior. The local audit probes demonstrate current defects; do not turn their observed wrong results into passing expectations.
+
+## Release gates
+
+- [x] **Choose and document the stable contract.** Set the actual version, Windows editions/architectures, supported browser versions, upgrade/rollback path and support expectations. Decide whether any unsigned stable distribution is acceptable; publisher signing remains [#11](https://github.com/Sparkz400/AppSwitcher/issues/11), and GitHub attestations are not Windows publisher signing.
+- [x] **Add stable publication to the release workflow.** Support the chosen stable tag/version and release notes without weakening exact-commit verification, scanner gates, checksums, SBOM/build attestations, draft inventory checks or immutable assets. Acceptance: a rehearsal rejects wrong commits, incomplete drafts and modified assets; stable publication is intentional.
+- [ ] **Qualify actual offline browser packages.** On a disposable standalone/workgroup PC, install Chrome/Edge unpacked bridges and the signed Firefox XPI from the release. Test connection, minimize/restore, unrelated same-URL tabs, redirects, browser/AppSwitcher restart, disconnected host, copied-profile conflicts and explicit close/recreate. Acceptance: retain the owned tab when identity survives; otherwise fail clearly without choosing an unrelated tab or silently duplicating it. Keep session-restore setup distinct from a completed restart test. Store publication is optional.
+- [ ] **Complete target-workstation acceptance [#9](https://github.com/Sparkz400/AppSwitcher/issues/9).** Use [WORKSTATION_ACCEPTANCE.md](WORKSTATION_ACCEPTANCE.md): offline install, real mixed-DPI docking, touch/gloves, controlled reboot/power interruption, kiosk escape and representative full-shift workload. Acceptance: signed-off results for the exact release and supported deployment scope; unperformed rows stay open.
+- [ ] **Complete actual Narrator/keyboard acceptance [#10](https://github.com/Sparkz400/AppSwitcher/issues/10).** EN/DE, launcher/search, PIN failure, session expiry, recovery, custom scrollbars, high contrast and dialogs. Acceptance: useful spoken names/errors, predictable focus and a keyboard path for every action.
+- [ ] **Run final candidate verification after fixes.** Locked restore/build, .NET/Node/WPF/process/recovery suites, signed Firefox package check, full installer upgrade/rollback/uninstall, release-manifest validation and current-main CI. Update `VALIDATION.md` with exact results; do not copy counts from this audit as evidence for a changed build.
+
+## UI improvements worth doing before stable
+
+- [x] **Make Save/Close/Undo behavior unambiguous.** Current edits apply live and Close saves valid edits. Prefer an isolated draft with Apply/Discard for operational settings; keep appearance preview reversible. If retaining live apply for stable, state that once in the footer and provide a reliable whole-session revert. Never let pinning, closing or session expiry accidentally persist unrelated partial edits.
+- [x] **Make new-app setup short.** Start with “From open window”, “Desktop app”, or “Website”; then show only fields relevant to that choice. Keep scripts, matching overrides, custom browser paths and detailed diagnostics collapsed. Preserve the open-window identity recheck.
+- [x] **Show browser connection and restart readiness separately.** Use a short status plus one relevant action. “Connected” must not imply session restoration is configured/tested. Keep the offline Firefox file flow and Chrome/Edge manual steps truthful; do not offer unsupported silent installation on standalone PCs.
+- [x] **Replace duplicate explanatory blocks with accurate labels.** Examples: one “Health check” heading, “Confirm manual termination”, “Capture layout”, “Start workspace”, and clear retry-limit semantics. Keep detailed help in disclosures. Update the process-name matching hint and localize audit display labels while keeping stable internal event codes.
+- [x] **Improve compact layouts and field errors.** At 640×560, permanent navigation, headers and footer leave little editor space. Use compact navigation, remove redundant headings and scroll the selected invalid field into view with a short inline error. Preserve touch targets and keyboard focus instead of shrinking controls.
+- [x] **Remove or formalize legacy fields.** Decide on app foreground color and configuration-only menu width/row height. Align defaults with runtime limits; migrate deliberately rather than silently preserving ineffective values.
+- [x] **Improve settings discovery.** Add searchable terms for every supported setting and a test that each catalog entry opens/focuses the right visible control, including website/native differences. Empty launcher search should have an obvious name/group prompt.
+- [ ] **Make workspace repair practical (follow-up enhancement).** Show included apps/groups, missing members and the effect of deleting or replacing a layout. Provide edit/repair without forcing users to recapture an entire workspace.
+
+## Performance work with measurable acceptance
+
+- [x] **Fix audit-log scaling first (B12).** The audit's 100,000-row synthetic history allocated 42 MiB just to request 200 rows. Set a bounded-allocation/read-time test and avoid synchronous whole-log work on the UI thread.
+- [x] **Benchmark large editors before optimizing them.** Test 10/100/500 configured entries while typing, dragging sliders, filtering, reordering and opening/closing settings. Measure frame/input stalls, allocations and private-memory recovery. Replace repeated full snapshots with debounced/incremental dirty tracking only where it helps; preserve Undo and save-race correctness.
+- [ ] **Measure the actual deployment package at startup and over a shift.** Record cold/warm startup separately, launcher-only and browser-host totals separately, and private memory separately from working set. Include disconnected browsers, unhealthy endpoints and recovery churn. Establish thresholds from the target panel rather than this development machine.
+- [x] **Bound long-lived data and reduce unnecessary work.** Review audit/crash/recovery retention, retired host versions, per-app gates/snapshots and event subscriptions. Cleanup must preserve active host registrations and rollback/recovery evidence. Add repeated editor/setup open-close and app-add-remove scenarios before declaring a leak fixed.
+
+Keep C#/WPF. No current measurement demonstrates that Rust would improve the user-facing result enough to justify another runtime/interop boundary. Reconsider a narrow native component only after profiling identifies a specific hotspot that cannot be addressed well in the current implementation.
+
+## Repository work
+
+- [ ] **Optional repository follow-up: split future work into issues/milestones.** Link reproductions, acceptance criteria and regression tests; group closely related changes without creating one oversized implementation PR. Existing remote issues were not modified by the audit.
+- [x] **Separate fast checks, full UI checks and acceptance evidence.** Keep mandatory Windows/CodeQL coverage; add transition tests for every setting family. Schedule/offer isolated browser and sustained runs where the environment supports them. Counts alone are not behavioral coverage.
+- [x] **Refresh release documentation after fixes.** Link this checklist from the roadmap, retain historical delivery records, update validation/version guidance, and clarify that Firefox signing already exists while broader store distribution remains optional/pending.
+- [x] **Consolidate installation paths.** Align or deprecate legacy browser-host scripts so repair/uninstall cannot diverge from the UI's immutable-host/per-browser strategy. Test ownership checks and removal without touching another installed version's registration.
+- [x] **Improve diagnostics safely.** Align support-report event codes with actual `ConfigChanged`/`AppStopped` events; keep redaction tests. Inject a synthetic actor into UI fixtures before publishing captures. Do not publish local configuration or unreviewed raw logs.
+- [x] **Decide review ownership for stable releases.** Main protection and scanners are already enabled. Add a second reviewer/code-owner policy if there is someone available to perform it; keep administrators subject to checks and avoid an unstaffed approval bottleneck.
+- [x] **Refresh public UI screenshots after the final UX pass.** Capture synthetic data from the release candidate, verify EN/DE examples, and update the quick tour. Do not present older screenshots as the final stable UI.
+
+## Larger changes that make sense after the essentials
+
+| Improvement | Why it is worth considering | Keep it contained |
+| --- | --- | --- |
+| Transactional settings editor | Prevent partial name/schedule/security edits affecting live operation; predictable Apply/Discard/Undo | Separate editable configuration from runtime telemetry. This can also provide the long-term fix for several audit findings. |
+| Stable-ID dependency/scope model | Renames become presentation changes; safer delete/import/workspace repair | Migrate existing names once; retain readable labels. A prerequisite if adding multiple dependencies. |
+| Offline commissioning assistant | Guides install → app selection → browser pairing → switch test → restart drill → recovery/backup | On-demand and evidence-based; no continuous scanner or forced cloud service. |
+| Portable deployment bundle with preview | Transfer configuration plus approved custom assets and environment-specific path mappings | Strip secrets, keep browser identity/profile pairing explicit, show differences and preserve rollback. |
+| Workspace editor | Edit membership, groups and monitor mapping without recapturing everything | Use existing layout data; show broken references and affected apps. |
+| Schedule preview and deterministic clock | Show the next action and make restart/DST/maintenance behavior understandable | Define conflict precedence and persistence first; add complex recurrence only for a concrete use case. |
+
+Avoid making a cloud account, browser store, remote administration service, plugin marketplace or automatic updater a stable-release prerequisite. The required product is an offline standalone switcher; additions should preserve that deployment model.

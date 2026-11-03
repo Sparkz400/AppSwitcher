@@ -30,7 +30,7 @@ internal static class SupportReportService
         }, AppJsonOptions.Default);
     }
     private static string SafeVersion(string value) => Version.TryParse(value, out var version) ? version.ToString() : "Unknown";
-    private static string SafeAction(string value) => value is "LaunchApp" or "KillApp" or "StartGroup" or "StopGroup"
+    private static string SafeAction(string value) => value is "ConfigChanged" or "AppStopped" or "Authentication" or "LaunchApp" or "KillApp" or "StartGroup" or "StopGroup"
         or "StartWorkspace" or "MaintenancePause" or "MaintenanceResume" or "SaveConfig" or "BrowserCheck" or "BrowserSwitchTest"
         ? value : "Other";
 }

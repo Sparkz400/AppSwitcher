@@ -16,7 +16,7 @@ public sealed class BrowserBridgeService : IDisposable
     private readonly ILogger<BrowserBridgeService> _logger;
     private readonly CancellationTokenSource _shutdown = new();
     private readonly ConcurrentDictionary<Guid, Connection> _clients = new();
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _gates = new();
+    private readonly BoundedOperationGates _gates = new();
     private readonly ConcurrentDictionary<string, DateTime> _bootstraps = new();
     private readonly BrowserOwnershipStore? _ownership;
     private readonly Task _listener;
@@ -58,7 +58,7 @@ public sealed class BrowserBridgeService : IDisposable
     {
         app = Snapshot(app);
         ValidateWebsite(app);
-        var gate = _gates.GetOrAdd(app.AppId, _ => new(1, 1));
+        var gate = _gates.For(app.AppId);
         await gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -76,7 +76,7 @@ public sealed class BrowserBridgeService : IDisposable
     {
         app = Snapshot(app);
         ValidateWebsite(app);
-        var gate = _gates.GetOrAdd(app.AppId, _ => new(1, 1));
+        var gate = _gates.For(app.AppId);
         await gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -126,7 +126,7 @@ public sealed class BrowserBridgeService : IDisposable
     {
         app = Snapshot(app);
         ValidateWebsite(app);
-        var gate = _gates.GetOrAdd(app.AppId, _ => new(1, 1));
+        var gate = _gates.For(app.AppId);
         await gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -179,6 +179,8 @@ public sealed class BrowserBridgeService : IDisposable
                 Directory.Exists(app.BrowserProfileDirectory) && File.Exists(app.BrowserExecutablePath) &&
                 (!_bootstraps.TryGetValue(bootstrapKey, out var previous) || DateTime.UtcNow - previous > TimeSpan.FromSeconds(30)))
             {
+                foreach (var expired in _bootstraps.Where(entry => DateTime.UtcNow - entry.Value > TimeSpan.FromSeconds(30)))
+                    _bootstraps.TryRemove(expired);
                 _bootstraps[bootstrapKey] = DateTime.UtcNow;
                 var start = new ProcessStartInfo(app.BrowserExecutablePath) { UseShellExecute = false };
                 var profile = Path.GetFullPath(app.BrowserProfileDirectory);

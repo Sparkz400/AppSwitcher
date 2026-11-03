@@ -170,7 +170,7 @@
                         <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding SelectedApp.WatchdogEnabled}" Margin="0,10">
                             <TextBlock Text="{DynamicResource Settings_Watchdog}" Foreground="{DynamicResource TextPrimary}" FontSize="14" TextWrapping="Wrap" />
                         </CheckBox>
-                        <Grid Margin="25,5,0,0" Visibility="{Binding SelectedApp.WatchdogEnabled, Converter={StaticResource BoolToVis}}">
+                        <Grid Margin="25,5,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="120" />
                                 <ColumnDefinition />
@@ -182,7 +182,7 @@
                             <TextBlock Text="{DynamicResource Settings_RequireConfirmation}" Foreground="{DynamicResource TextPrimary}" FontSize="14" TextWrapping="Wrap" />
                         </CheckBox>
                         <StackPanel Margin="0,0,8,0" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
-                            <Expander Header="{DynamicResource UI_HealthChecks}" Margin="0,8,0,4" IsExpanded="{Binding HealthChecksExpanded}"><StackPanel Margin="0,8,0,8"><Label Content="{DynamicResource Settings_HealthCheck}" FontWeight="SemiBold" />
+                            <Expander Header="{DynamicResource UI_HealthChecks}" Margin="0,8,0,4" IsExpanded="{Binding HealthChecksExpanded}"><StackPanel Margin="0,8,0,8">
                             <Grid Margin="0,5,0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="160" />
@@ -192,7 +192,7 @@
                                 <TextBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" Text="{Binding SelectedApp.HealthCheckUrl, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" HorizontalAlignment="Stretch" AutomationProperties.Name="{DynamicResource Settings_HealthCheckUrl}" />
                             </Grid>
                             <TextBlock Text="{DynamicResource Settings_HealthCheckHint}" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,15" TextWrapping="Wrap" />
-                            <Label Content="{DynamicResource Settings_ResourceMonitoring}" FontWeight="SemiBold" />
+                            <StackPanel Visibility="{Binding SelectedApp.IsNative, Converter={StaticResource BoolToVis}}"><Label Content="{DynamicResource Settings_ResourceMonitoring}" FontWeight="SemiBold" />
                             <Grid Margin="0,5,0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="160" />
@@ -202,7 +202,7 @@
                                 <TextBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" Text="{Binding SelectedApp.MemoryThresholdMB, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="80" HorizontalAlignment="Stretch" AutomationProperties.Name="{DynamicResource Settings_MemoryThreshold}" />
                             </Grid>
                             <TextBlock Text="{DynamicResource Settings_MemoryThresholdHint}" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,15" TextWrapping="Wrap" />
-                        </StackPanel></Expander></StackPanel>
+                        </StackPanel></StackPanel></Expander></StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -244,9 +244,9 @@
             <TabItem Header="{DynamicResource UI_Advanced}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
                     <StackPanel Margin="0,0,8,0">
-                        <Label Content="{DynamicResource Settings_StartArgs}" />
+                        <StackPanel Visibility="{Binding SelectedApp.IsNative, Converter={StaticResource BoolToVis}}"><Label Content="{DynamicResource Settings_StartArgs}" />
                         <TextBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Text="{Binding SelectedApp.Args, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Margin="0,0,0,10" AutomationProperties.Name="{DynamicResource Settings_StartArgs}" />
-                        <Label Content="{DynamicResource Settings_DisplayMode}" />
+                        </StackPanel><Label Content="{DynamicResource Settings_DisplayMode}" />
                         <ComboBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" SelectedValue="{Binding SelectedApp.Mode}" SelectedValuePath="Value" DisplayMemberPath="Label" ItemsSource="{Binding DisplayModeChoices}" Style="{DynamicResource ModernComboBox}" MaxWidth="200" HorizontalAlignment="Left" Margin="0,0,0,10" AutomationProperties.Name="{DynamicResource Settings_DisplayMode}">
                 </ComboBox>
                         <Label Content="{DynamicResource Settings_CustomIcon}" />

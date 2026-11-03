@@ -44,6 +44,7 @@ public class ConfigValidationService
         var apps = config.Apps ?? [];
         var groups = config.Groups ?? [];
         var layouts = config.Layouts ?? [];
+        if (config.Version > 12) result.AddError("Version", LocalizationService.T("Diag_UnsupportedValue", "Version"));
 
         AddDuplicateAppNameIssues(apps, result);
         foreach (var duplicate in apps.GroupBy(a => a.AppId, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
@@ -53,8 +54,19 @@ public class ConfigValidationService
         AddGlobalSettingIssues(settings, result);
         ValidateDisplayIdentity(settings.PreferredMonitorId, LocalizationService.T("Settings_PreferredMonitor"), result);
         foreach (var layout in layouts)
+        {
             foreach (var position in layout.Positions ?? [])
+            {
                 ValidateDisplayIdentity(position.MonitorDeviceId, layout.Name, result);
+                if (!double.IsFinite(position.Left) || !double.IsFinite(position.Top)
+                    || !double.IsFinite(position.Width) || !double.IsFinite(position.Height)
+                    || position.Width <= 0 || position.Height <= 0 || position.MonitorIndex < 0
+                    || !double.IsFinite(position.SavedMonitorLeft) || !double.IsFinite(position.SavedMonitorTop)
+                    || !double.IsFinite(position.SavedMonitorWidth) || position.SavedMonitorWidth < 0
+                    || !double.IsFinite(position.SavedMonitorHeight) || position.SavedMonitorHeight < 0)
+                    result.AddError(layout.Name, LocalizationService.T("Diag_UnsupportedValue", "Positions"));
+            }
+        }
 
         foreach (var group in groups)
         {
@@ -77,6 +89,10 @@ public class ConfigValidationService
         foreach (var app in apps)
         {
             var appName = GetAppSubject(app);
+            if (!Enum.IsDefined(app.Mode)) result.AddError(appName, LocalizationService.T("Diag_UnsupportedValue", nameof(app.Mode)));
+            ValidateColor(app.BgColor, appName + ".BgColor", result);
+            if (app.IsWebsite && (!string.IsNullOrWhiteSpace(app.Args) || app.MemoryThresholdMB != 0))
+                result.AddError(appName, LocalizationService.T("Diag_WebsiteNativeOptions"));
             ValidateDisplayIdentity(app.ForcedMonitorId, appName, result);
             foreach (var issue in WebsiteConfiguration.Validate(app, settings)) result.AddError(appName, issue);
             if (WebsiteConfiguration.IsLegacyWebsite(app)) result.AddWarning(appName, LocalizationService.T("Browser_ConvertRequired"));
@@ -250,6 +266,28 @@ public class ConfigValidationService
 
     private static void AddGlobalSettingIssues(AppSettings settings, ConfigValidationResult result)
     {
+        Range(settings.ButtonSize, 44, 200, nameof(settings.ButtonSize));
+        Range(settings.ButtonOpacity, .2, 1, nameof(settings.ButtonOpacity));
+        Range(settings.MenuWidth, 360, 600, nameof(settings.MenuWidth));
+        Range(settings.MenuItemHeight, 44, 120, nameof(settings.MenuItemHeight));
+        Range(settings.PosX, -1000000, 1000000, nameof(settings.PosX));
+        Range(settings.PosY, -1000000, 1000000, nameof(settings.PosY));
+        Choice(settings.Shape, ["Hexagon", "Circle", "Square", "RoundedSquare", "Diamond", "Pentagon", "Octagon", "Star"], nameof(settings.Shape));
+        Choice(settings.IconStyle, ["Hamburger", "Dots", "Arrow", "Ring", "Power"], nameof(settings.IconStyle));
+        Choice(settings.Theme, ["Dark", "Light"], nameof(settings.Theme));
+        Choice(settings.Language, ["de", "en"], nameof(settings.Language));
+        ValidateColor(settings.BgColor, nameof(settings.BgColor), result);
+        ValidateColor(settings.FgColor, nameof(settings.FgColor), result);
+
+        void Range(double value, double min, double max, string field)
+        {
+            if (!double.IsFinite(value) || value < min || value > max)
+                result.AddError(field, LocalizationService.T("Diag_ValueRange", field, min, max));
+        }
+        void Choice(string value, string[] choices, string field)
+        {
+            if (!choices.Contains(value, StringComparer.Ordinal)) result.AddError(field, LocalizationService.T("Diag_UnsupportedValue", field));
+        }
         if (!SecurityService.IsSupportedHash(settings.AdminPasswordHash)
             || !SecurityService.IsSupportedHash(settings.OperatorPasswordHash))
             result.AddError(LocalizationService.T("Settings_OperatorAccess"), LocalizationService.T("Diag_InvalidPinHash"));
@@ -262,6 +300,16 @@ public class ConfigValidationService
                 LocalizationService.T("Settings_PreferredMonitor"),
                 LocalizationService.T("Diag_InvalidPreferredMonitor", settings.PreferredMonitor));
         }
+    }
+
+    private static void ValidateColor(string value, string field, ConfigValidationResult result)
+    {
+        try
+        {
+            if (System.Windows.Media.ColorConverter.ConvertFromString(value) is not System.Windows.Media.Color) throw new FormatException();
+        }
+        catch (Exception ex) when (ex is FormatException or ArgumentException or NotSupportedException)
+        { result.AddError(field, LocalizationService.T("Diag_UnsupportedValue", field)); }
     }
 
     private static void ValidateOperatorScope(

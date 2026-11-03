@@ -8,6 +8,14 @@ public partial class MainViewModel
     internal async Task RestoreEditorSnapshotAsync(string json)
     {
         if (!CanAdminister) return;
+        await RestoreSnapshotCoreAsync(json);
+    }
+
+    // On expiry only our persisted configuration may be restored, never a caller's input.
+    internal Task DiscardEditorChangesAsync() => RestoreSnapshotCoreAsync(PersistedEditorSnapshot);
+
+    private async Task RestoreSnapshotCoreAsync(string json)
+    {
         var snapshot = JsonSerializer.Deserialize<ConfigRoot>(json, AppJsonOptions.Default)
             ?? throw new InvalidDataException("Invalid editor snapshot.");
         _suppressSettingsNotifications = true;

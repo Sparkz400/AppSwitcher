@@ -66,11 +66,15 @@ public partial class KioskStatus : ObservableObject
 
 public partial class OperatorScopeSettings : ObservableObject
 {
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasRestrictions))] private bool _restricted;
     [ObservableProperty] private string[] _allowedAppNames = [];
     [ObservableProperty] private string[] _allowedGroupKeys = [];
 
     [JsonIgnore]
-    public bool HasRestrictions => AllowedAppNames.Length > 0 || AllowedGroupKeys.Length > 0;
+    public bool HasRestrictions => Restricted || AllowedAppNames.Length > 0 || AllowedGroupKeys.Length > 0;
+
+    partial void OnAllowedAppNamesChanged(string[] value) { if (value?.Length > 0) Restricted = true; }
+    partial void OnAllowedGroupKeysChanged(string[] value) { if (value?.Length > 0) Restricted = true; }
 
     public void Normalize()
     {
@@ -78,7 +82,11 @@ public partial class OperatorScopeSettings : ObservableObject
         AllowedGroupKeys = NormalizeEntries(AllowedGroupKeys);
     }
 
-    public void SetAllowedAppNames(IEnumerable<string>? names) => AllowedAppNames = NormalizeEntries(names);
+    public void SetAllowedAppNames(IEnumerable<string>? names)
+    {
+        var normalized = NormalizeEntries(names);
+        if (!AllowedAppNames.SequenceEqual(normalized, StringComparer.Ordinal)) AllowedAppNames = normalized;
+    }
 
     public void SetAllowedGroupKeys(IEnumerable<string>? keys) => AllowedGroupKeys = NormalizeEntries(keys);
 
@@ -95,6 +103,7 @@ public partial class OperatorScopeSettings : ObservableObject
 
     public void RenameAppName(string? oldName, string? newName)
     {
+        if (string.IsNullOrWhiteSpace(newName)) return;
         var normalizedOldName = NormalizeEntry(oldName);
         if (string.IsNullOrEmpty(normalizedOldName))
             return;
@@ -104,7 +113,7 @@ public partial class OperatorScopeSettings : ObservableObject
                 ? newName
                 : name);
 
-        AllowedAppNames = NormalizeEntries(updated.OfType<string>());
+        SetAllowedAppNames(updated.OfType<string>());
     }
 
     public void RemoveGroupKey(string? groupKey)
@@ -138,7 +147,7 @@ public partial class AppSettings : ObservableObject
     [ObservableProperty] private string _borderColor = "#3e4152";
     [ObservableProperty] private double _buttonOpacity = 1.0;
     [ObservableProperty] private bool _glowEnabled = false;
-    [ObservableProperty] private double _menuWidth = 220;
+    [ObservableProperty] private double _menuWidth = 390;
     [ObservableProperty] private double _menuItemHeight = 50;
     [ObservableProperty] private bool _autoClose = true;
     [ObservableProperty] private double _posX = 100;
@@ -238,6 +247,21 @@ public partial class AppItem : ObservableObject
 
     // HTTP health check URL (optional)
     [ObservableProperty] private string _healthCheckUrl = "";
+
+    // Invalidates results already in flight, including changes away and back.
+    [JsonIgnore] internal long HealthRevision { get; private set; }
+    partial void OnHealthCheckUrlChanged(string value) => InvalidateHealthCheck();
+    partial void OnPathChanged(string value) => InvalidateHealthCheck();
+    partial void OnWebsiteUrlChanged(string value) => InvalidateHealthCheck();
+    partial void OnBrowserProfileIdChanged(string value) => InvalidateHealthCheck();
+    partial void OnTargetKindChanged(AppTargetKind value) => InvalidateHealthCheck();
+    partial void OnIsRunningChanged(bool value) => InvalidateHealthCheck();
+    private void InvalidateHealthCheck()
+    {
+        HealthRevision++;
+        HealthStatus = "";
+        if (State == AppState.Unhealthy) State = IsRunning ? AppState.Running : AppState.Stopped;
+    }
 
     // Memory threshold in MB for alert (0 = disabled)
     [ObservableProperty] private int _memoryThresholdMB = 0;
@@ -442,7 +466,7 @@ public class GroupListJsonConverter : JsonConverter<List<GroupDefinition>>
 
 public class ConfigRoot
 {
-    public int Version { get; set; } = 11;
+    public int Version { get; set; } = 12;
     public AppSettings Settings { get; set; } = new();
 
     [JsonConverter(typeof(GroupListJsonConverter))]

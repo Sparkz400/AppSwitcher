@@ -37,7 +37,7 @@ public class OperatorScopeTests
             var imported = await service.ImportAsync(tempPath);
 
             Assert.NotNull(imported);
-            Assert.Equal(11, imported!.Version);
+            Assert.Equal(12, imported!.Version);
             Assert.NotNull(imported.Settings.OperatorScope);
             Assert.Empty(imported.Settings.OperatorScope.AllowedAppNames);
             Assert.Empty(imported.Settings.OperatorScope.AllowedGroupKeys);

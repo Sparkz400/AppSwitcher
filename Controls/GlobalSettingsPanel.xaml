@@ -65,7 +65,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Label Content="{DynamicResource Settings_Size}" VerticalAlignment="Center" />
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <Slider IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Minimum="40" Maximum="200" Value="{Binding Settings.ButtonSize}" Width="150" VerticalAlignment="Center" AutomationProperties.Name="{DynamicResource Settings_Size}" />
+                                        <Slider IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Minimum="44" Maximum="200" Value="{Binding Settings.ButtonSize}" Width="150" VerticalAlignment="Center" AutomationProperties.Name="{DynamicResource Settings_Size}" />
                                         <TextBlock Text="{Binding Settings.ButtonSize, StringFormat={}{0:0} px}" VerticalAlignment="Center" Margin="10,0" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Grid>
@@ -85,14 +85,7 @@
                                     <Label Content="{DynamicResource Settings_FgColor}" VerticalAlignment="Center" />
                                     <ToggleButton IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" Template="{DynamicResource ColorPickerFgTemplate}" Content="{Binding Settings.FgColor}" Width="150" HorizontalAlignment="Left" Height="44" AutomationProperties.Name="{DynamicResource Settings_FgColor}" />
                                 </Grid>
-                                <Grid Margin="0,5">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <Label Content="{DynamicResource Settings_BorderColor}" VerticalAlignment="Center" />
-                                    <ToggleButton IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Grid.Column="1" Template="{DynamicResource ColorPickerBorderTemplate}" Content="{Binding Settings.BorderColor}" Width="150" HorizontalAlignment="Left" Height="44" AutomationProperties.Name="{DynamicResource Settings_BorderColor}" />
-                                </Grid>
+
                                 <Grid Margin="0,5">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="140" />
@@ -104,14 +97,15 @@
                                         <TextBlock Text="{Binding Settings.ButtonOpacity, StringFormat={}{0:P0}}" VerticalAlignment="Center" Margin="10,0" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Grid>
-                                <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding Settings.GlowEnabled}" Margin="0,8">
-                                    <TextBlock Text="{DynamicResource Settings_GlowEffect}" Foreground="{DynamicResource TextPrimary}" FontSize="14" TextWrapping="Wrap" />
-                                </CheckBox>
+
                             </StackPanel>
                         </Border>
                         <CheckBox IsChecked="{Binding Settings.GlobalShortcutEnabled}" Content="{DynamicResource Shortcut_Enable}" Margin="0,0,0,8" />
                         <TextBlock Text="{Binding Runtime.ShortcutStatus}" TextWrapping="Wrap" Foreground="{DynamicResource WarningFg}" Margin="0,0,0,12" Visibility="{Binding Runtime.ShortcutStatus, Converter={StaticResource StringNotEmptyToVis}}" />
-                        <Label Content="{DynamicResource Settings_BehaviorPosition}" />
+                        <Expander Header="{DynamicResource Settings_MenuDimensions}" Margin="0,0,0,12"><StackPanel Margin="0,8,0,0">
+<Label Content="{DynamicResource Settings_MenuWidth}"/><Slider Minimum="360" Maximum="600" Value="{Binding Settings.MenuWidth}" AutomationProperties.Name="{DynamicResource Settings_MenuWidth}"/>
+<Label Content="{DynamicResource Settings_MenuItemHeight}"/><Slider Minimum="44" Maximum="120" Value="{Binding Settings.MenuItemHeight}" AutomationProperties.Name="{DynamicResource Settings_MenuItemHeight}"/>
+</StackPanel></Expander><Label Content="{DynamicResource Settings_BehaviorPosition}" />
                         <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
                             <StackPanel>
                                 <CheckBox IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" IsChecked="{Binding Settings.PositionLocked}" Margin="0,5">
@@ -353,7 +347,7 @@
                                     </StackPanel>
                                     <Separator Background="{DynamicResource SeparatorColor}" Margin="0,15,0,10" />
                                     <TextBlock Text="{DynamicResource Settings_OperatorAccess}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
-                                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource AccentBrush}" FontSize="12" Margin="0,0,0,10" Text="{DynamicResource Settings_OperatorAccessHint}" />
+                                    <CheckBox IsChecked="{Binding AllowAllOperatorApps}" Content="{DynamicResource Settings_AllOperatorApps}" Margin="0,0,0,8"/><TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,0,0,10" Text="{DynamicResource Settings_OperatorAccessHint}" />
                                     <Grid Margin="0,0,0,5">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -631,11 +625,11 @@
                                                         </StackPanel>
                                                         <StackPanel Grid.Column="2" Margin="8,0,0,0">
                                                             <TextBlock Text="{DynamicResource Audit_Action}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />
-                                                            <TextBlock Text="{Binding Action}" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding ActionDisplay}" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
                                                         </StackPanel>
                                                         <StackPanel Grid.Column="3" Margin="8,0,0,0">
                                                             <TextBlock Text="{DynamicResource Audit_Outcome}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />
-                                                            <TextBlock Text="{Binding Outcome}" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding OutcomeDisplay}" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" />
                                                         </StackPanel>
                                                         <StackPanel Grid.Column="0" Margin="0,12,0,0" Grid.Row="1" Grid.ColumnSpan="4">
                                                             <TextBlock Text="{DynamicResource Audit_Target}" Foreground="{DynamicResource TextMuted}" FontSize="12" TextWrapping="Wrap" />

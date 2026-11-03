@@ -10,7 +10,7 @@ public class ConfigService : IDisposable
 {
     private const string ConfigFileName = "app_config.json";
     private const string BundledDefaultConfigResourceName = "AppSwitcher.DefaultConfig.app_config.json";
-    private const int CurrentVersion = 11;
+    private const int CurrentVersion = 12;
     private bool _migrationNeedsSave;
     private static readonly byte[] MagicHeader = [0x41, 0x53, 0x43, 0x45]; // "ASCE"
     private const int WatcherDebounceMilliseconds = 500;
@@ -267,6 +267,16 @@ public class ConfigService : IDisposable
             _logger.LogInformation("Migration v8→v9: Lifecycle hooks support added");
         }
 
+        if (config.Version < 12)
+        {
+            // Previous releases allowed a 40px setting but rendered at least 44px,
+            // and defaulted menu width below the actual popup minimum.
+            if (config.Settings.ButtonSize is >= 40 and < 44) config.Settings.ButtonSize = 44;
+            if (config.Settings.MenuWidth is > 0 and < 360) config.Settings.MenuWidth = 360;
+            if (config.Settings.MenuItemHeight is > 0 and < 44) config.Settings.MenuItemHeight = 44;
+            foreach (var app in config.Apps.Where(app => app.IsWebsite))
+            { app.Args = ""; app.MemoryThresholdMB = 0; }
+        }
         config.Version = CurrentVersion;
         return config;
     }

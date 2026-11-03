@@ -38,7 +38,7 @@ public class ConfigServiceTests
             var config = await service.ImportAsync(path);
 
             Assert.NotNull(config);
-            Assert.Equal(11, config!.Version);
+            Assert.Equal(12, config!.Version);
             Assert.Equal(ReadinessMode.None, config.Apps[0].Readiness);
             Assert.False(config.Settings.GlobalShortcutEnabled);
             Assert.Equal(string.Empty, config.Apps[0].PreLaunchHookPath);

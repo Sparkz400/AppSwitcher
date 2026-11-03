@@ -8,15 +8,15 @@
      <TextBlock Text="{Binding AccessLevelLabel}" HorizontalAlignment="Right" FontWeight="SemiBold"/>
      <TextBlock Text="{Binding SessionTimeoutLabel}" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}" FontSize="12" Visibility="{Binding Runtime.IsSessionTimeoutActive, Converter={StaticResource BoolToVis}}"/>
     </StackPanel>
-    <StackPanel><TextBlock Text="{DynamicResource Settings_Configuration}" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="{DynamicResource UI_ReadOnly}" Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsAdmin}" Value="False"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></StackPanel>
+    <StackPanel><TextBlock x:Name="ConfigurationHeading" Text="{DynamicResource Settings_Configuration}" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="{DynamicResource UI_ReadOnly}" Foreground="{DynamicResource TextSecondary}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsAdmin}" Value="False"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></StackPanel>
    </DockPanel>
   </Border>
   <Grid Grid.Row="1">
-   <Grid.ColumnDefinitions><ColumnDefinition Width="184"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-   <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,1,0" Padding="12,16" Background="{DynamicResource SidebarBg}">
+   <Grid.ColumnDefinitions><ColumnDefinition x:Name="NavigationColumn" Width="184"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+   <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,1,0" Padding="8,16" Background="{DynamicResource SidebarBg}">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
      <StackPanel>
-      <TextBlock Text="{DynamicResource UI_SettingsSearch}" Foreground="{DynamicResource TextSecondary}" Margin="4,0,0,6"/>
+      <TextBlock TextWrapping="Wrap" Text="{DynamicResource UI_SettingsSearch}" Foreground="{DynamicResource TextSecondary}" Margin="4,0,0,6"/>
       <TextBox x:Name="SettingsSearchBox" Text="{Binding SettingsSearch, UpdateSourceTrigger=PropertyChanged, Delay=150}" AutomationProperties.Name="{DynamicResource UI_SettingsSearch}" PreviewKeyDown="SettingsSearch_KeyDown" Margin="0,0,0,8"/>
       <Border Visibility="{Binding HasSettingsSearch, Converter={StaticResource BoolToVis}}" Background="{DynamicResource PanelBg}" Margin="0,0,0,10">
        <StackPanel><TextBlock Text="{DynamicResource UI_SearchResults}" Margin="8,6" Foreground="{DynamicResource TextSecondary}"/>
@@ -25,14 +25,14 @@
         </ListBox>
        </StackPanel>
       </Border>
-      <ListBox x:Name="SectionList" SelectedValue="{Binding ActiveSection}" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource UI_Workspace}">
+      <ListBox x:Name="SectionList" SelectedValue="{Binding ActiveSection}" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource UI_Workspace}"><ListBox.ItemContainerStyle><Style TargetType="ListBoxItem" BasedOn="{StaticResource ConsoleListBoxItem}"><Setter Property="Padding" Value="6,10"/></Style></ListBox.ItemContainerStyle>
        <ListBoxItem Tag="Setup" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"><TextBlock Text="{DynamicResource UI_Setup}" TextWrapping="Wrap"/></ListBoxItem>
-       <ListBoxItem Tag="Applications" Content="{DynamicResource UI_Applications}"/>
-       <ListBoxItem Tag="Monitoring" Content="{DynamicResource UI_Monitoring}"/>
-       <ListBoxItem Tag="Layouts" Content="{DynamicResource UI_Layouts}"/>
-       <ListBoxItem Tag="Access" Content="{DynamicResource UI_Access}" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
-       <ListBoxItem Tag="Audit" Content="{DynamicResource UI_Audit}" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
-       <ListBoxItem Tag="System" Content="{DynamicResource UI_System}"/>
+       <ListBoxItem Tag="Applications" ><TextBlock Text="{DynamicResource UI_Applications}" TextWrapping="Wrap"/></ListBoxItem>
+       <ListBoxItem Tag="Monitoring" ><TextBlock Text="{DynamicResource UI_Monitoring}" TextWrapping="Wrap"/></ListBoxItem>
+       <ListBoxItem Tag="Layouts" ><TextBlock Text="{DynamicResource UI_Layouts}" TextWrapping="Wrap"/></ListBoxItem>
+       <ListBoxItem Tag="Access"  Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"><TextBlock Text="{DynamicResource UI_Access}" TextWrapping="Wrap"/></ListBoxItem>
+       <ListBoxItem Tag="Audit"  Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"><TextBlock Text="{DynamicResource UI_Audit}" TextWrapping="Wrap"/></ListBoxItem>
+       <ListBoxItem Tag="System" ><TextBlock Text="{DynamicResource UI_System}" TextWrapping="Wrap"/></ListBoxItem>
        <ListBoxItem Tag="Browsers" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"><TextBlock Text="{DynamicResource UI_Browsers}" TextWrapping="Wrap"/></ListBoxItem>
       </ListBox>
      </StackPanel>

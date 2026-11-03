@@ -2,15 +2,15 @@
 
 [![Windows verification](https://github.com/Sparkz400/AppSwitcher/actions/workflows/verify.yml/badge.svg?branch=main)](https://github.com/Sparkz400/AppSwitcher/actions/workflows/verify.yml)
 [![CodeQL](https://github.com/Sparkz400/AppSwitcher/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/Sparkz400/AppSwitcher/actions/workflows/codeql.yml)
-[![Latest beta](https://img.shields.io/github/v/release/Sparkz400/AppSwitcher?include_prereleases&label=beta)](https://github.com/Sparkz400/AppSwitcher/releases)
+[![Latest prerelease](https://img.shields.io/github/v/release/Sparkz400/AppSwitcher?include_prereleases&label=prerelease)](https://github.com/Sparkz400/AppSwitcher/releases)
 
 A native Windows launcher for operator and maintenance workstations. Keep assigned applications within reach, return to the same browser tab, inspect software health and restore window layouts from one compact interface.
 
-[Download the unsigned beta](https://github.com/Sparkz400/AppSwitcher/releases) · [Installation and rollback](docs/INSTALLATION.md) · [Examples](examples/README.md) · [Get help](SUPPORT.md) · [Roadmap](ROADMAP.md) · [Contribute](CONTRIBUTING.md)
+[Download the latest prerelease](https://github.com/Sparkz400/AppSwitcher/releases) · [Installation and rollback](docs/INSTALLATION.md) · [Examples](examples/README.md) · [Get help](SUPPORT.md) · [Roadmap](ROADMAP.md) · [Contribute](CONTRIBUTING.md)
 
-[Watch the short demo](docs/images/quick-tour.gif) · [Demo walkthrough](docs/DEMO.md) · [Keyboard reference](docs/KEYBOARD.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
+[View the candidate UI](docs/images/maintenance-light.png) · [Demo walkthrough](docs/DEMO.md) · [Keyboard reference](docs/KEYBOARD.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
 
-![AppSwitcher monitoring two synthetic demonstration applications](docs/images/demo-monitoring.jpg)
+![AppSwitcher monitoring two synthetic demonstration applications](docs/images/candidate-monitoring.png)
 
 ## What it does
 
@@ -21,11 +21,11 @@ A native Windows launcher for operator and maintenance workstations. Keep assign
 - A first-run checklist, live needs-attention filter, backup/import previews and authenticated recovery of damaged configuration.
 - Stable Windows display identities, English/German, light/dark themes, Windows high contrast and keyboard-accessible controls.
 
-AppSwitcher is a **beta**. It is not a machine safety controller. PIN access protects application controls and does not replace Windows account security. Site-specific kiosk, power-loss, touch and display behavior needs [workstation acceptance](docs/WORKSTATION_ACCEPTANCE.md).
+The current source targets **1.2.0-rc.1**. Stable release still requires the [recorded acceptance gates](docs/release-readiness.json). It is not a machine safety controller. PIN access protects application controls and does not replace Windows account security. Site-specific kiosk, power-loss, touch and display behavior needs [workstation acceptance](docs/WORKSTATION_ACCEPTANCE.md).
 
 ## Start in a few minutes
 
-1. Download the `win-x64-…-setup.exe` or complete portable ZIP and its adjacent checksum from [Releases](https://github.com/Sparkz400/AppSwitcher/releases). This beta is unsigned; follow the [download verification instructions](docs/INSTALLATION.md).
+1. Download the `win-x64-…-setup.exe` or complete portable ZIP and its adjacent checksum from [Releases](https://github.com/Sparkz400/AppSwitcher/releases). Beta/RC packages are unsigned; follow the [download verification instructions](docs/INSTALLATION.md).
 2. Install as the intended Windows user, or extract the complete ZIP and open `app\AppSwitcher.exe`. The .NET runtime is included; no SDK or internet connection is needed on the target PC for installation.
 3. Choose an administrator PIN and follow **Settings → Setup checklist**. Add an application, use **Add from an open window**, or import a [safe starter example](examples/README.md).
 4. For websites, follow [browser setup](docs/BROWSER_INTEGRATION.md) and select the connected profile. The offline package includes unpacked Chrome/Edge extensions and the Mozilla-signed Firefox 1.1.0 extension. Browser session restoration must also be enabled in the chosen profile.

@@ -172,14 +172,19 @@ internal class WindowPolicyEnforcementService : IDisposable
             _windowStates.Remove(hwnd);
         }
 
-        if (!_windowStates.TryGetValue(hwnd, out var state))
+        var firstObservation = !_windowStates.TryGetValue(hwnd, out var state);
+        if (state == null)
         {
             state = new TrackedWindowState { AppKey = appKey };
             _windowStates[hwnd] = state;
         }
 
         if (_platform.IsWindowMinimized(hwnd))
+        {
+            // A periodic observation is not a request to activate a manually minimized app.
+            if (!firstObservation && !immediateRequested && !app.ReapplyPlacementContinuously) return;
             _platform.RestoreWindow(hwnd);
+        }
 
         var monitors = _platform.GetMonitors();
         if (monitors.Count == 0)

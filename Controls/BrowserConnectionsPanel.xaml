@@ -12,7 +12,7 @@
        <WrapPanel><TextBlock Text="{Binding Heading}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,10,16,8"/>
        <Button Content="{Binding ActionLabel}" Command="{Binding DataContext.ConfigureBrowserConnectionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" HorizontalAlignment="Left" Margin="0,0,0,4"/>
       </WrapPanel><TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite"/>
-       <Expander Header="{DynamicResource UI_Details}" Margin="0,6,0,0"><StackPanel><TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="0,6,0,0"/><TextBlock Text="{Binding Detail}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+       <TextBlock Text="{DynamicResource Setup_RestartUnverified}" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap" Margin="0,6,0,0"/><Expander Header="{DynamicResource UI_Details}" Margin="0,6,0,0"><StackPanel><TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="0,6,0,0"/><TextBlock Text="{Binding Detail}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,6,0,0"/>
        <TextBlock Text="{Binding HostStatus}" TextWrapping="Wrap" Margin="0,6,0,0"/>
        <TextBlock Text="{Binding ActionHint}" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,8,0,0"/>
        </StackPanel></Expander></StackPanel>

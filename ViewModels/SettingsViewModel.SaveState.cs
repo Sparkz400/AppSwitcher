@@ -21,11 +21,13 @@ public partial class SettingsViewModel
 
     private void RefreshSaveState()
     {
-        HasUnsavedChanges = _mainVm.HasUnsavedConfiguration;
+        if (_restoringEditor) return;
+        var snapshot = _mainVm.EditorSnapshot;
+        HasUnsavedChanges = snapshot != _mainVm.PersistedEditorSnapshot;
         SaveStatus = LocalizationService.T(!IsAdmin ? "UI_ReadOnly"
             : HasInputErrors ? "UI_FieldErrors"
             : HasUnsavedChanges ? "UI_SaveHint" : "UI_NoChanges");
-        TrackEditorChanges();
+        TrackEditorChanges(snapshot);
         RefreshSetupSteps();
     }
 
