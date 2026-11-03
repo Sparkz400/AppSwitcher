@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 — prepared 2026-11-03
+
+- Support unsigned stable Windows releases under the owner's zero-cost distribution policy. Remove mandatory publisher signing from stable builds and acceptance records; retain workstation and offline-browser acceptance, exact-commit verification, security scans, checksums, manifests, SPDX inventories, attestations and immutable release assets. Optional installer signatures must still be valid.
+- Update release and installation guidance to disclose unsigned stable distribution. The existing Mozilla-signed Firefox payload is unchanged.
+- Scope acceptance to the intended workstations with no audio output: make actual Narrator speech testing optional while retaining keyboard navigation, visible focus/errors/status, high contrast, touch usability and automated accessibility checks.
+- Record offline VM qualification of the published RC, including actual installer upgrade/rollback/uninstall, released browser-bridge recovery, and persistent Chrome/Edge installations with two unattended offline restarts each. Keep their manual folder-picker walkthrough and target-workstation acceptance open. Update installer wording for beta, RC and stable packages.
+- Fix the browser test helper's disconnect handling so it consumes POST bodies before replying and clears stale connections before a reconnect check; add a regression that fails against the old helper. Released application and extension behavior is unchanged.
+
+This **unsigned Windows x64 1.2.0 package** is prepared for final verification and acceptance. Preparation is not public publication or completed workstation qualification. The Mozilla-signed offline Firefox bridge remains byte-for-byte 1.1.0, and configuration remains schema 12. Stable publication still requires the recorded workstation/offline-browser acceptance and exact-main CI; signing and Narrator speech are not required for the agreed deployment scope.
+
 ## 1.2.0-rc.1 — 2026-11-03
 
 - Repair session timeout transitions, scheduler retries, lifecycle cancellation, manual minimization and stale HTTP health results.

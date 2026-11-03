@@ -1,14 +1,14 @@
 # Maintenance and release policy
 
-AppSwitcher is a community-maintained release candidate. There is no promised release schedule, response time, service-level agreement or machine certification. The repository is available for inspection, modification and independent builds under MIT. Report reproducible bugs with synthetic data; production deployments remain the operator's responsibility.
+AppSwitcher is a community-maintained project preparing its first stable release. There is no promised release schedule, response time, service-level agreement or machine certification. The repository is available for inspection, modification and independent builds under MIT. Report reproducible bugs with synthetic data; production deployments remain the operator's responsibility.
 
 ## Supported line
 
-The latest `1.2.0-rc.*` and `main` receive fixes. Older betas are retained for controlled rollback, not maintained in parallel. Version numbers use `major.minor.patch` with a beta or RC suffix while interfaces and configuration behavior are still being qualified. An incompatible configuration or bridge protocol change must be called out in the changelog with migration and rollback instructions.
+The `1.2` line and `main` receive fixes. Older betas are retained for controlled rollback, not maintained in parallel. Version numbers use `major.minor.patch`, with a beta or RC suffix for prereleases. Preparing a stable-version package does not bypass its publication acceptance gates. An incompatible configuration or bridge protocol change must be called out in the changelog with migration and rollback instructions.
 
 The release target is Windows 11 x64 with a self-contained .NET runtime. The installer permits compatible Windows 10 build 19041 or later, but installation compatibility is not an operating-system support commitment. Use a Windows edition still supported under your organization's Microsoft servicing arrangement. ARM64 emulation, Windows Server, remote desktop, specific kiosk editions, unusual display drivers and physical touch panels require separate acceptance. The desktop app is not supported on macOS or Linux.
 
-The extension manifests declare Chrome/Edge 120+ and Firefox 142+ compatibility. Deploy a browser with current vendor security support and test the exact version/profile/policy combination. Manifest minimums are API floors, not a promise to support obsolete browsers. Store approval and code signing are separate distribution steps; this beta is unsigned and uses offline extension installation.
+The extension manifests declare Chrome/Edge 120+ and Firefox 142+ compatibility. Deploy a browser with current vendor security support and test the exact version/profile/policy combination. Manifest minimums are API floors, not a promise to support obsolete browsers. AppSwitcher uses offline extension installation and supports unsigned Windows releases, including stable. The project requires no paid signing identity or paid store distribution.
 
 ## Before each release
 
@@ -16,7 +16,7 @@ The extension manifests declare Chrome/Edge 120+ and Firefox 142+ compatibility.
 2. Restore locked packages; review vulnerability results, dependency licenses and asset/source provenance. Review new dependencies before updating the inventory.
 3. Run full Windows CI at the exact source commit and retain native captures, test reports and installer evidence. Re-run real browser/restart checks when browser integration changes.
 4. For a deployment candidate, record a sustained-run result and complete [workstation acceptance](docs/WORKSTATION_ACCEPTANCE.md) for the target site. No unattended update is enabled.
-5. Build from a clean tagged source revision. Verify the archive manifest, setup/ZIP checksums, unsigned status and bundled Firefox payload. Publish release notes with exact evidence boundaries.
+5. Build from a clean tagged source revision. Verify the archive manifest, setup/ZIP checksums, actual signing status and bundled Firefox payload. Unsigned releases are supported; any optional publisher signature must be valid. Publish release notes with exact evidence boundaries and disclose the signing status.
 6. Keep the previous release and a pre-update configuration backup for rollback. Publish a correction or replacement version if a release is faulty; never silently replace a published asset.
 
 Dependency update proposals are checked weekly by automation. That cadence is a check, not a promise that updates will be merged weekly. Security reports and user-visible regressions take priority over feature work.
@@ -35,14 +35,18 @@ GitHub generates the immutable release attestation after publication. Verificati
 
 Keep repository immutable releases enabled and the active `v*` tag ruleset in place, with updates/deletion denied and creation allowed. Existing beta.1/beta.2 assets remain unchanged and do not gain immutable status retroactively. Main builds produce provenance for all eight assets and an SBOM attestation for the desktop ZIP/installer only; pull requests do not produce publication attestations. See [download verification and inventory scope](docs/VERIFY_DOWNLOADS.md).
 
-Beta/RC artifacts remain unsigned prereleases. Stable tags additionally require reviewed evidence in `docs/release-readiness.json` (workstation, Narrator, offline browsers, publisher signing), an ancestor qualification revision without subsequent code/build changes, and a valid Authenticode signature on the exact installer. Stable publication becomes the latest release; prereleases do not. Missing evidence blocks stable publication. No certificate or signing service is bundled.
+Beta, RC and stable artifacts may be unsigned. Stable tags additionally require reviewed evidence in `docs/release-readiness.json` (workstation, offline browsers) and an ancestor qualification revision without subsequent code/build changes. Stable publication becomes the latest release; prereleases do not. Missing acceptance evidence blocks stable publication. Windows publisher signing is optional and is not a release gate; no certificate purchase or paid signing service is required. Checksums, manifests, SPDX inventory, security scans, exact-commit CI, build/release attestations and immutable assets remain required. An optional installer publisher signature must be valid; invalid or untrusted signatures are rejected.
+
+The owner selected zero-cost, unsigned Windows distribution on 3 November 2026. Release notes and installation guidance must disclose that Windows may show an unknown-publisher or reputation warning. GitHub attestations verify build/release provenance; they do not provide a Windows publisher signature. The bundled Mozilla-signed Firefox bridge is separate and remains unchanged.
+
+The intended workstations have no audio output. Actual Narrator speech testing is optional follow-up work, outside this deployment's stable-release acceptance scope; it is not recorded as passed. Keyboard navigation, visible focus, visible errors/status, high contrast and touch/glove usability remain part of workstation acceptance. Existing automated accessible-name and UI Automation checks remain enabled. A deployment that needs spoken screen-reader output requires separate qualification of that flow.
 
 Schema 12 preserves explicit empty operator restrictions and migrates the old 40px launcher/menu defaults. Roll back using the old binary **and its pre-upgrade configuration backup**; older versions cannot safely interpret the new empty-restricted scope. Do not feed schema-12 configuration to a beta launcher. Encryption remains tied to its Windows account. Retain browser ownership journals/profiles for rollback; never regenerate identities to bypass recovery.
 
 Normal release preparation never changes main protection or invents a reviewer. The sole-maintainer PR policy remains in effect; add required second-person review when an actual reviewer is available.
 
-## Publisher signing preparation
+## Optional publisher signing
 
 An authorized signing runner may set `APPSWITCHER_SIGNING_CERTIFICATE_THUMBPRINT` to a code-signing certificate already provisioned in its current-user certificate store, and `APPSWITCHER_SIGNING_TIMESTAMP_SERVER` to the publisher-approved timestamp service. No private key or certificate is committed, exported or installed by these scripts. Only the four AppSwitcher-owned app/host EXE/DLL files and the distributable installer are signed, before manifests, hashes and attestations are generated. Third-party binaries and the Mozilla XPI are preserved. Test installers use a separate product identity and remain unsigned.
 
-The helper uses [Windows Authenticode signing](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-authenticodesignature), checks code-signing usage, certificate dates/private-key presence, signature validity and timestamp presence. Without configured signing, RC builds explicitly remain unsigned and stable builds stop. Hosted CI has no signing credential configured by this change; the real signing path must be qualified by the publisher before marking its gate passed.
+The helper uses [Windows Authenticode signing](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-authenticodesignature), checks code-signing usage, certificate dates/private-key presence, signature validity and timestamp presence. Without configured signing, beta, RC and stable builds explicitly remain unsigned. Hosted CI has no signing credential configured. If signing is introduced later, qualify that path and update the disclosed signing status before publishing signed artifacts; this is not required for the zero-cost release.

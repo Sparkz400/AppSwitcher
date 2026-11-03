@@ -1,6 +1,6 @@
 # Public roadmap
 
-AppSwitcher is a usable unsigned beta. This roadmap distinguishes software maintenance from work that requires publisher accounts or real workstation access. Priorities are intentions, not delivery dates. Bugs and private security reports can change the order.
+AppSwitcher is an unsigned release candidate. Stable Windows releases will also support unsigned distribution with no paid signing requirement. This roadmap distinguishes software maintenance from work that requires real workstation access or optional publisher accounts. Priorities are intentions, not delivery dates. Bugs and private security reports can change the order.
 
 ## Current foundation
 
@@ -16,10 +16,10 @@ The [3 November release audit](docs/RELEASE_AUDIT_2026-11-03.md) found additiona
 
 | Priority | Work | Completion evidence / dependency |
 | --- | --- | --- |
-| High | [Representative workstation acceptance #9](https://github.com/Sparkz400/AppSwitcher/issues/9) | Target displays, touch/gloves, kiosk recovery, reboot/power interruption and sustained workload; requires a workstation owner. |
-| High | [Narrator and keyboard validation #10](https://github.com/Sparkz400/AppSwitcher/issues/10) | Actual speech/focus results in English and German; interactive Windows testing welcome. |
-| High | [Windows publisher signing #11](https://github.com/Sparkz400/AppSwitcher/issues/11) | Owner provisions signing credentials, then downloaded signatures and installer behavior are verified. |
-| Normal | [Browser-store distribution #12](https://github.com/Sparkz400/AppSwitcher/issues/12) | Publisher accounts, approvals and restart/pairing checks on the actual installed store packages. |
+| High | [Representative workstation acceptance #9](https://github.com/Sparkz400/AppSwitcher/issues/9) | Target displays, keyboard/visible focus, visual feedback without sound, touch/gloves, kiosk recovery, reboot/power interruption and sustained workload; requires a workstation owner. |
+| Optional | [Narrator speech validation #10](https://github.com/Sparkz400/AppSwitcher/issues/10) | Spoken English/German screen-reader results remain unverified. Final workstations have no audio output, so speech testing is outside this release scope; keyboard checks remain required under workstation acceptance. |
+| Optional | [Windows publisher signing #11](https://github.com/Sparkz400/AppSwitcher/issues/11) | Deferred under the zero-cost release policy; unsigned stable releases are supported. No certificate purchase is required. |
+| Optional | [Browser-store distribution #12](https://github.com/Sparkz400/AppSwitcher/issues/12) | Publisher accounts, approvals and restart/pairing checks on the actual installed store packages; paid store distribution is not required for release. |
 
 CI does not close hardware acceptance. Prepared store files do not mean store approval, and checksums do not mean publisher signing. Follow each issue for its current state; report a concrete defect separately instead of expanding a broad checklist indefinitely.
 

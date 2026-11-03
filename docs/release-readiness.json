@@ -3,8 +3,6 @@
   "qualifiedCommit": null,
   "gates": {
     "workstation": { "status": "pending", "reviewedBy": null, "evidence": null },
-    "narrator": { "status": "pending", "reviewedBy": null, "evidence": null },
-    "offlineBrowsers": { "status": "pending", "reviewedBy": null, "evidence": null },
-    "publisherSigning": { "status": "pending", "reviewedBy": null, "evidence": null }
+    "offlineBrowsers": { "status": "pending", "reviewedBy": null, "evidence": null }
   }
 }

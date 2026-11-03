@@ -35,10 +35,16 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.headers.authorization !== token) { res.writeHead(403).end(); return; }
   try {
-    if (req.url === "/status") { res.end(JSON.stringify([...clients.values()].map(c => c.identity))); return; }
-    if (req.url === "/disconnect") { for (const c of clients.values()) c.socket.destroy(); res.end('{}'); return; }
-    if (req.url !== "/command") { res.writeHead(404).end(); return; }
+    if (!["/status", "/disconnect", "/command"].includes(req.url)) { res.writeHead(404).end(); return; }
+    // Drain POST bodies before replying so keep-alive clients do not see a reset.
     const chunks = []; for await (const chunk of req) chunks.push(chunk);
+    if (req.url === "/status") { res.end(JSON.stringify([...clients.values()].map(c => c.identity))); return; }
+    if (req.url === "/disconnect") {
+      const disconnected = [...clients.values()];
+      clients.clear();
+      res.end('{}', () => { for (const c of disconnected) c.socket.destroy(); });
+      return;
+    }
     const { browser, request } = JSON.parse(Buffer.concat(chunks));
     const client = clients.get(browser); if (!client) throw new Error("Browser not connected");
     const id = randomUUID();

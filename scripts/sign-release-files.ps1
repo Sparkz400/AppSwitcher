@@ -4,7 +4,7 @@ param([Parameter(Mandatory)][string[]]$Path)
 $ErrorActionPreference = 'Stop'
 $thumbprint = $env:APPSWITCHER_SIGNING_CERTIFICATE_THUMBPRINT
 if ([string]::IsNullOrWhiteSpace($thumbprint)) {
-    Write-Output 'Publisher signing not configured; candidate files remain unsigned.'
+    Write-Output 'Publisher signing not configured; release files remain unsigned (supported for beta, RC and stable).'
     return
 }
 if ($thumbprint -notmatch '^[A-Fa-f0-9]{40}$') { throw 'Invalid signing certificate selector.' }

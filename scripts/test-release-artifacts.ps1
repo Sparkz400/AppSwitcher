@@ -5,6 +5,19 @@ $root = Join-Path (Split-Path -Parent $PSScriptRoot) ('artifacts/release-artifac
 $commit = '0123456789abcdef0123456789abcdef01234567'
 $name = "AppSwitcher-$version-win-x64-$($commit.Substring(0, 8))"
 
+# Synthetic installers exercise signature policy without requiring a certificate.
+function Get-AuthenticodeSignature {
+    param([string]$LiteralPath)
+    $scenario = Split-Path -Leaf (Split-Path -Parent $LiteralPath)
+    $status = switch ($scenario) {
+        'valid-signed' { 'Valid' }
+        'invalid-publisher-signature' { 'HashMismatch' }
+        'untrusted-publisher-signature' { 'NotTrusted' }
+        default { 'NotSigned' }
+    }
+    [pscustomobject]@{ Status = $status }
+}
+
 function Write-Fixture([string]$Scenario) {
     $path = Join-Path $root $Scenario
     New-Item -ItemType Directory -Path $path | Out-Null
@@ -74,8 +87,11 @@ function Write-Fixture([string]$Scenario) {
 try {
     $valid = Write-Fixture 'valid'
     & "$PSScriptRoot/check-release-artifacts.ps1" -Path $valid -Version $version -Commit $commit
+    $signed = Write-Fixture 'valid-signed'
+    & "$PSScriptRoot/check-release-artifacts.ps1" -Path $signed -Version $version -Commit $commit
     $scenarios = @('dirty', 'missing-dirty', 'wrong-source', 'wrong-version', 'tampered-payload', 'wrong-size', 'duplicate-manifest', 'dirty-store', 'submitted-store', 'extra-entry', 'unsafe-entry', 'duplicate-entry', 'missing-manifest', 'bad-checksum', 'extra-asset', 'missing-asset', 'sbom-schema', 'sbom-source', 'sbom-dependency', 'sbom-hash', 'sbom-duplicate', 'sbom-relationship', 'sbom-app-version')
     $scenarios += @('sbom-bridge-version', 'sbom-installer-version', 'sbom-license')
+    $scenarios += @('invalid-publisher-signature', 'untrusted-publisher-signature')
     foreach ($scenario in $scenarios) {
         $path = Write-Fixture $scenario
         $rejected = $false
