@@ -186,6 +186,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         Apps.CollectionChanged += OnAppsCollectionChanged;
         Groups.CollectionChanged += OnGroupsCollectionChanged;
         Layouts.CollectionChanged += OnLayoutsCollectionChanged;
+        RefreshWorkspaceCards();
         SetObservedOperatorScope(Settings.OperatorScope);
         TrackApps(Apps);
 
@@ -826,7 +827,12 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
 
         var existing = Layouts.FirstOrDefault(l => l.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         if (existing != null)
+        {
+            var choices = WorkspaceChoices;
+            if (!_mainVm.ConfirmOperation(LocalizationService.T("Workspace_ReplaceConfirm", existing.Name),
+                LocalizationService.T("Workspace_ReplaceDetails", WorkspaceEditor.Summary(existing, Apps, choices), WorkspaceEditor.Summary(layout, Apps, choices)))) return;
             Layouts.Remove(existing);
+        }
 
         Layouts.Add(layout);
         NewLayoutName = "";
@@ -847,7 +853,8 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private void DeleteLayout(ScreenLayout? layout)
     {
         if (!CanEditApps || layout == null) return;
-        if (!_mainVm.ConfirmOperation(LocalizationService.T("UI_DeleteLayoutConfirm", layout.Name), destructive: true)) return;
+        if (!_mainVm.ConfirmOperation(LocalizationService.T("UI_DeleteLayoutConfirm", layout.Name),
+            LocalizationService.T("Workspace_DeleteDetails", WorkspaceEditor.Summary(layout, Apps, WorkspaceChoices)), destructive: true)) return;
 
         Layouts.Remove(layout);
         _notificationService.Show(LocalizationService.T("Msg_LayoutDeleted", layout.Name), NotificationType.Info);

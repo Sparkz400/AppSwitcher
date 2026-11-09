@@ -33,7 +33,11 @@ public partial class SettingsViewModel
 
     partial void OnHasInputErrorsChanged(bool value) => RefreshSaveState();
 
-    private void OnLayoutsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshSaveState();
+    private void OnLayoutsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        RefreshWorkspaceCards();
+        RefreshSaveState();
+    }
 
     private void TrackGroupNames()
     {

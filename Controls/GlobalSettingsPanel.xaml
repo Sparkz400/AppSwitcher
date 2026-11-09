@@ -684,16 +684,36 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
-                                <ItemsControl ItemsSource="{Binding Layouts}">
+                                <ItemsControl ItemsSource="{Binding WorkspaceCards}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Border Background="{DynamicResource InputBg}" CornerRadius="4" Padding="10,6" Margin="0,2">
                                                 <StackPanel>
-                                                    <TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Layout.Name}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Foreground="{DynamicResource WarningFg}" Margin="0,2,0,0" Visibility="{Binding Status, Converter={StaticResource StringNotEmptyToVis}}" />
                                                     <WrapPanel Margin="0,6,0,0">
-                                                        <Button Content="{DynamicResource Workspace_Start}" Command="{Binding DataContext.StartWorkspaceCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" IsEnabled="{Binding DataContext.CanManageApps, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,8,4" />
-                                                        <Button Content="{DynamicResource Settings_RestoreLayout}" Command="{Binding DataContext.RestoreLayoutCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="0,0,8,4" />
-                                                        <Button Content="{DynamicResource UI_DeleteLayout}" Command="{Binding DataContext.DeleteLayoutCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="0,0,0,4" />
+                                                        <Button Content="{DynamicResource Workspace_Start}" Command="{Binding DataContext.StartWorkspaceCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Layout}" IsEnabled="{Binding DataContext.CanManageApps, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,8,4" />
+                                                        <Button Content="{DynamicResource Settings_RestoreLayout}" Command="{Binding DataContext.RestoreLayoutCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Layout}" Margin="0,0,8,4" />
+                                                        <Button Content="{DynamicResource UI_DeleteLayout}" Command="{Binding DataContext.DeleteLayoutCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Layout}" Margin="0,0,0,4" />
+                                                    </WrapPanel>
+                                                    <TextBlock Text="{DynamicResource Workspace_Members}" FontWeight="SemiBold" Margin="0,8,0,2" />
+                                                    <ItemsControl ItemsSource="{Binding Members}" IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Margin="0,4,0,4">
+                                                                    <TextBlock TextWrapping="Wrap"><Run Text="{Binding DisplayName, Mode=OneWay}" /><Run Text=" — " Foreground="{DynamicResource TextSecondary}" /><Run Text="{Binding Detail, Mode=OneWay}" Foreground="{DynamicResource TextSecondary}" /></TextBlock>
+                                                                    <WrapPanel Margin="0,4,0,0">
+                                                                        <ComboBox ItemsSource="{Binding ReplacementChoices}" SelectedItem="{Binding Replacement}" DisplayMemberPath="Label" MinWidth="160" Margin="0,0,8,4" AutomationProperties.Name="{Binding ReplaceName}" />
+                                                                        <Button Content="{DynamicResource Workspace_Replace}" Command="{Binding DataContext.ReplaceWorkspaceMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" AutomationProperties.Name="{Binding ReplaceName}" Margin="0,0,8,4" />
+                                                                        <Button Content="{DynamicResource Workspace_Remove}" Command="{Binding DataContext.RemoveWorkspaceMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" AutomationProperties.Name="{Binding RemoveName}" Margin="0,0,0,4" />
+                                                                    </WrapPanel>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                    <WrapPanel Margin="0,6,0,0" IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                        <ComboBox ItemsSource="{Binding AdditionChoices}" SelectedItem="{Binding Addition}" DisplayMemberPath="Label" MinWidth="160" Margin="0,0,8,4" AutomationProperties.Name="{Binding AddName}" />
+                                                        <Button Content="{DynamicResource Workspace_Add}" Command="{Binding DataContext.AddWorkspaceMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" AutomationProperties.Name="{Binding AddName}" Margin="0,0,0,4" />
                                                     </WrapPanel>
                                                 </StackPanel>
                                             </Border>
