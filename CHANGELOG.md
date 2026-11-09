@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Make workspace repair practical: Settings → Layouts shows each workspace's apps and groups, flags missing (renamed or deleted) members, and lets you replace, remove or add individual members without recapturing. Deleting or replacing a layout now states what it contains. Configuration remains schema 12.
+
 ## 1.2.0 — 2026-11-03
 
 - Support unsigned stable Windows releases under the owner's zero-cost distribution policy. Remove mandatory publisher signing from stable builds and acceptance records; retain workstation and offline-browser acceptance, exact-commit verification, security scans, checksums, manifests, SPDX inventories, attestations and immutable release assets. Optional installer signatures must still be valid.

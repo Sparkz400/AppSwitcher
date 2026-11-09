@@ -49,6 +49,7 @@ public partial class SettingsViewModel
     partial void OnActiveSectionChanged(string value)
     {
         if (value is "Applications" or "System") RefreshMonitorChoices();
+        if (value == "Layouts") RefreshWorkspaceCards();
         if (value == "Setup" && IsAdmin) { RefreshBackups(); RefreshSetupSteps(); }
         if (value == "Browsers" && IsAdmin && !RefreshBrowserConnectionsCommand.IsRunning)
             _ = RefreshBrowserConnectionsCommand.ExecuteAsync(null);
