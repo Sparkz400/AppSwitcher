@@ -39,12 +39,10 @@
     - The keyboard hook is refreshed periodically.
   - **Browsers.**
     - A disconnect before a request is sent no longer leaves the website stuck in "Recovering".
-    - Closing the marker tab first, and child tabs opened into the managed group, are handled.
     - A trailing `\` in a profile path is accepted.
     - An interrupted Setup reuses its earlier host copy.
-    - The extension backs off reconnect attempts up to 60 seconds.
     - The retired `Install-BrowserHost.ps1`/`Uninstall-BrowserHost.ps1` scripts are removed; use Settings → Browsers → Set up.
-  - **Release note.** The browser extension source changed, so the bundled Mozilla-signed Firefox 1.1.0 file no longer matches it. Bump the extension version and re-sign it before the next release.
+    - The extension source is unchanged, so the Mozilla-signed Firefox 1.1.0 payload still matches. Its fixes wait on branch `fix/extension-audit-followups` for a new, re-signed extension version: marker tab closed first, child tabs opened into the managed group, and reconnect backoff.
   - **Clean-up.** Removed dead code and 36 unused text entries.
   - **Follow-ups.**
     - PIN sign-in rules now live in their own UI-free class (`PinSignIn`) with unit tests.
