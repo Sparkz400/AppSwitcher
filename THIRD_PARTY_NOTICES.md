@@ -12,7 +12,7 @@ The complete exact-version inventory, copyright holders and upstream source comm
 | Serilog | 4.2.0 | [Apache 2.0](third-party/serilog-LICENSE.txt); Copyright Serilog Contributors |
 | Serilog.Extensions.Logging | 10.0.0 | [Apache 2.0](third-party/serilog-extensions-logging-LICENSE.txt); Copyright Serilog Contributors |
 | Serilog.Sinks.File | 7.0.0 | [Apache 2.0](third-party/serilog-sinks-file-LICENSE.txt); Copyright Serilog Contributors |
-| .NET and Windows Desktop runtime, Windows x64 | 10.0.14 | [MIT](third-party/dotnet-runtime-MIT.txt), [.NET notices](third-party/dotnet-runtime-NOTICES.txt), [WPF notices](third-party/wpf-NOTICES.txt), [Windows Forms notices](third-party/winforms-NOTICES.txt) |
+| .NET and Windows Desktop runtime, Windows x64 | 10.0.15 | [MIT](third-party/dotnet-runtime-MIT.txt), [.NET notices](third-party/dotnet-runtime-NOTICES.txt), [WPF notices](third-party/wpf-NOTICES.txt), [Windows Forms notices](third-party/winforms-NOTICES.txt) |
 | Inno Setup installer engine/compiler | 7.1.1 | [Inno Setup license](third-party/InnoSetup-LICENSE.txt), Copyright 1997–2026 Jordan Russell; portions Copyright 2000–2026 Martijn Laan. The compiler is downloaded for builds and is not included in the release ZIP. |
 
 MIT/notice files were retained from the locked NuGet packages. The three Serilog LICENSE files were retrieved from the exact repository commits recorded in the inventory; none of those three source trees has a separate NOTICE file. WPF and Windows Forms notices come from `dotnet/dotnet` commit `0427b9abbead3fa64c6655eb4290c537397131fa`, matching the Windows Desktop runtime package. Inno Setup's license comes from its `is-7_1_1` tag.
