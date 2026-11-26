@@ -48,22 +48,59 @@ public class KioskMachineLockdownTests
     }
 
     [Fact]
+    public void Machine_Data_Directory_That_Is_A_Link_Is_Refused()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"appswitcher-link-test-{Guid.NewGuid():N}");
+        var target = Path.Combine(root, "target");
+        var link = Path.Combine(root, "link");
+        Directory.CreateDirectory(target);
+        try
+        {
+            Directory.CreateSymbolicLink(link, target);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Symbolic links need Developer Mode or admin rights; fall back to a junction, which any user can create.
+            using var mklink = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{target}\"")
+                { CreateNoWindow = true, UseShellExecute = false })!;
+            mklink.WaitForExit();
+        }
+
+        try
+        {
+            Assert.True(new DirectoryInfo(link).Attributes.HasFlag(FileAttributes.ReparsePoint));
+            Assert.Throws<IOException>(() => KioskMachineLockdownManager.SecureMachineDataDirectory(link));
+        }
+        finally
+        {
+            Directory.Delete(link);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public void MachineState_Saves_Atomically_And_Preserves_Corrupt_File()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"appswitcher-kiosk-test-{Guid.NewGuid():N}");
         var path = Path.Combine(directory, "kiosk-machine-state.json");
         try
         {
+            Directory.CreateDirectory(directory);
+            File.WriteAllText(path + ".tmp", "planted"); // A predictable name must never be followed or truncated.
             KioskMachineLockdownManager.SaveMachineState(path, ["Win+L"]);
             var saved = KioskMachineLockdownManager.LoadMachineState(path, out var note);
             Assert.Equal(["Win+L"], saved.OwnedPredefinedKeys);
+            Assert.False(saved.Unreadable);
             Assert.Empty(note);
-            Assert.False(File.Exists(path + ".tmp"));
+            Assert.Equal("planted", File.ReadAllText(path + ".tmp"));
+            Assert.Single(Directory.GetFiles(directory, "*.tmp"));
 
             File.WriteAllText(path, "{\"OwnedPredefinedKeys\": [\"Win");
             var recovered = KioskMachineLockdownManager.LoadMachineState(path, out note);
 
-            Assert.Contains("Ctrl+Alt+Del", recovered.OwnedPredefinedKeys);
+            // Unknown ownership fails closed: nothing is claimed, so nothing would be removed.
+            Assert.True(recovered.Unreadable);
+            Assert.Empty(recovered.OwnedPredefinedKeys);
             Assert.NotEmpty(note);
             Assert.True(File.Exists(path));
             Assert.Single(Directory.GetFiles(directory, "*.corrupt-*"));

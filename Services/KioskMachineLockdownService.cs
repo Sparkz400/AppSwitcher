@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Management;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Microsoft.Win32;
 
 namespace AppSwitcher.Services;
@@ -362,6 +364,10 @@ internal enum KeyboardFilterFeatureState
 internal sealed class KioskMachineState
 {
     public List<string> OwnedPredefinedKeys { get; set; } = [];
+
+    // Set when the record existed but could not be read: ownership is unknown, so nothing may be removed.
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool Unreadable { get; init; }
 }
 
 internal static class KioskMachineLockdownManager
@@ -417,6 +423,7 @@ internal static class KioskMachineLockdownManager
 
         try
         {
+            SecureMachineDataDirectory(AppPaths.MachineDataDirectory);
             var scope = CreateManagementScope();
             EnsureAdministratorsExcluded(scope);
 
@@ -474,8 +481,30 @@ internal static class KioskMachineLockdownManager
 
     private static async Task<KioskMachineLockdownResult> RemoveAsync(string editionLabel)
     {
-        var currentState = LoadMachineState(out var recoveryNote);
+        KioskMachineState currentState;
+        string recoveryNote;
+        try
+        {
+            SecureMachineDataDirectory(AppPaths.MachineDataDirectory);
+            currentState = LoadMachineState(out recoveryNote);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            return KioskMachineLockdownResult.Failed("The kiosk machine state could not be read safely.", ex.Message);
+        }
+
         editionLabel = AppendNote(editionLabel, recoveryNote);
+        if (currentState.Unreadable)
+        {
+            // Fail closed: leave every rule in place. The damaged record is preserved; drop it so kiosk can still be
+            // turned off in the app without another elevation prompt.
+            DeleteMachineState();
+            return KioskMachineLockdownResult.ExternallyManaged(
+                "The record of AppSwitcher's Keyboard Filter rules was unreadable, so no rule was removed. Review Keyboard Filter manually.",
+                configured: true,
+                technicalDetails: editionLabel);
+        }
+
         if (currentState.OwnedPredefinedKeys.Count == 0)
         {
             var queryResult = await QueryAsync(editionLabel);
@@ -687,11 +716,40 @@ internal static class KioskMachineLockdownManager
         {
         }
 
-        // The file only exists after AppSwitcher enabled keys, so an unreadable one must not mean "nothing owned".
-        var backupPath = $"{path}.corrupt-{DateTime.UtcNow:yyyyMMddHHmmss}";
-        File.Copy(path, backupPath, overwrite: true);
-        recoveryNote = $"Kiosk machine state file was unreadable; preserved as '{backupPath}' and all target keys were treated as AppSwitcher-owned.";
-        return new KioskMachineState { OwnedPredefinedKeys = [.. TargetPredefinedKeys] };
+        // Ownership is unknown. Fail closed: keep the record for review and remove nothing, so keys another
+        // administrator enabled are never switched off on the strength of a damaged (or planted) file.
+        var backupPath = $"{path}.corrupt-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}";
+        File.Copy(path, backupPath, overwrite: false);
+        recoveryNote = $"Kiosk machine state file was unreadable and was preserved as '{backupPath}'. No Keyboard Filter rule was removed; an administrator must review them.";
+        return new KioskMachineState { Unreadable = true };
+    }
+
+    // Runs elevated. Earlier versions let the non-elevated app create this folder, so a standard user may own it and have
+    // planted files or links. Take it over before any read or write: administrators own it, users may only read.
+    internal static void SecureMachineDataDirectory(string directory)
+    {
+        static void RefuseLink(DirectoryInfo info)
+        {
+            info.Refresh();
+            if (info.Exists && info.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                throw new IOException($"Refusing to use '{info.FullName}' because it is a link.");
+        }
+
+        var info = new DirectoryInfo(directory);
+        RefuseLink(info);
+        var admins = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+        var security = new DirectorySecurity();
+        security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
+        security.SetOwner(admins);
+        const InheritanceFlags inherit = InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit;
+        security.AddAccessRule(new(admins, FileSystemRights.FullControl, inherit, PropagationFlags.None, AccessControlType.Allow));
+        security.AddAccessRule(new(new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null),
+            FileSystemRights.FullControl, inherit, PropagationFlags.None, AccessControlType.Allow));
+        security.AddAccessRule(new(new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null),
+            FileSystemRights.ReadAndExecute, inherit, PropagationFlags.None, AccessControlType.Allow));
+        if (info.Exists) info.SetAccessControl(security);
+        else info.Create(security);
+        RefuseLink(info); // Swapped for a link between the check and the ACL change.
     }
 
     private static void SaveMachineState(IEnumerable<string> ownedKeys) =>
@@ -711,15 +769,22 @@ internal static class KioskMachineLockdownManager
             return;
         }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(path) ?? AppPaths.MachineDataDirectory);
-        var tempPath = path + ".tmp";
-        using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+        // A fresh, unpredictable temp name opened with CreateNew never follows or truncates a planted file.
+        var tempPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        try
         {
-            JsonSerializer.Serialize(stream, state, new JsonSerializerOptions { WriteIndented = true });
-            stream.Flush(flushToDisk: true);
-        }
+            using (var stream = new FileStream(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                JsonSerializer.Serialize(stream, state, new JsonSerializerOptions { WriteIndented = true });
+                stream.Flush(flushToDisk: true);
+            }
 
-        File.Move(tempPath, path, overwrite: true);
+            File.Move(tempPath, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
     }
 
     private static string AppendNote(string details, string note) =>

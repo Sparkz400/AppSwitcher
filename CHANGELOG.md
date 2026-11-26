@@ -27,7 +27,8 @@
     - Repeated notifications are merged and the queue is capped.
     - Group names are matched case-insensitively everywhere.
   - **Kiosk.**
-    - Keyboard Filter ownership is recorded after each key and written atomically. A damaged record is preserved and no longer read as "nothing owned".
+    - Keyboard Filter ownership is recorded after each key and written atomically. A damaged record is preserved and reported, and no rule is removed on its basis.
+    - The elevated helper now owns `%ProgramData%\AppSwitcher`: it takes over the folder with an administrators-only ACL (users read-only), refuses links, and never writes through predictable file names. The non-elevated app no longer creates that folder.
     - Turning kiosk off no longer needs elevation when nothing machine-wide was changed.
     - Uninstall removes AppSwitcher's Keyboard Filter rules.
     - Taskbar and edge-swipe settings are restored after a crash.
