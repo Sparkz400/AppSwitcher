@@ -705,7 +705,17 @@ internal static class KioskMachineLockdownManager
             return new KioskMachineState { Unreadable = true };
         }
 
-        var state = LoadMachineState(AppPaths.KioskMachineStateFilePath, out recoveryNote);
+        // The folder is admin-controlled now, but a file could predate that (e.g. an ACL tightened by hand). Check it too.
+        var statePath = AppPaths.KioskMachineStateFilePath;
+        if (File.Exists(statePath) && !IsTrustedFile(statePath))
+        {
+            var untrustedCopy = $"{statePath}.untrusted-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}";
+            File.Move(statePath, untrustedCopy); // Renames a link itself, never its target.
+            recoveryNote = $"The Keyboard Filter record was not exclusively controlled by administrators; it was moved to '{untrustedCopy}' and not trusted. No Keyboard Filter rule was removed; an administrator must review them.";
+            return new KioskMachineState { Unreadable = true };
+        }
+
+        var state = LoadMachineState(statePath, out recoveryNote);
         if (quarantined != null)
             recoveryNote = AppendNote(recoveryNote, $"An untrusted machine data folder was moved to '{quarantined}'.");
         return state;
@@ -784,15 +794,48 @@ internal static class KioskMachineLockdownManager
         var acl = info.GetAccessControl();
         if (acl.GetOwner(typeof(SecurityIdentifier)) is not SecurityIdentifier owner || (owner != AdministratorsSid && owner != SystemSid))
             return false;
-        if (!acl.AreAccessRulesProtected) return false;
+        return acl.AreAccessRulesProtected && OnlyAdministratorsCanModify(acl);
+    }
+
+    // Trusted: a regular file (no link, exactly one hard link), owned by Administrators or SYSTEM, that nobody else can modify.
+    internal static bool IsTrustedFile(string path)
+    {
+        if (File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint)) return false;
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        if (!GetFileInformationByHandle(stream.SafeFileHandle, out var information) || information.NumberOfLinks != 1) return false;
+        var acl = stream.GetAccessControl();
+        return acl.GetOwner(typeof(SecurityIdentifier)) is SecurityIdentifier owner
+            && (owner == AdministratorsSid || owner == SystemSid)
+            && OnlyAdministratorsCanModify(acl);
+    }
+
+    private static bool OnlyAdministratorsCanModify(FileSystemSecurity acl)
+    {
         foreach (FileSystemAccessRule rule in acl.GetAccessRules(includeExplicit: true, includeInherited: true, typeof(SecurityIdentifier)))
         {
-            if (rule.AccessControlType == AccessControlType.Allow && (rule.FileSystemRights & ModifyingRights) != 0
+            // Raw ACEs can carry generic rights, which FileSystemRights does not name.
+            var mask = (int)rule.FileSystemRights;
+            var modifies = (rule.FileSystemRights & ModifyingRights) != 0 || (mask & (GenericWrite | GenericAll)) != 0;
+            if (rule.AccessControlType == AccessControlType.Allow && modifies
                 && rule.IdentityReference != AdministratorsSid && rule.IdentityReference != SystemSid)
                 return false;
         }
         return true;
     }
+
+    private const int GenericWrite = 0x40000000, GenericAll = 0x10000000;
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    private struct ByHandleFileInformation
+    {
+        public uint FileAttributes;
+        public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime, LastAccessTime, LastWriteTime;
+        public uint VolumeSerialNumber, FileSizeHigh, FileSizeLow, NumberOfLinks, FileIndexHigh, FileIndexLow;
+    }
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    private static extern bool GetFileInformationByHandle(Microsoft.Win32.SafeHandles.SafeFileHandle file, out ByHandleFileInformation information);
 
     private static void SaveMachineState(IEnumerable<string> ownedKeys) =>
         SaveMachineState(AppPaths.KioskMachineStateFilePath, ownedKeys);

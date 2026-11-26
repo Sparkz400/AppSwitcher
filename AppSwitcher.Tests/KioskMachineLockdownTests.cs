@@ -72,6 +72,14 @@ public class KioskMachineLockdownTests
             Assert.False(KioskMachineLockdownManager.IsTrustedDirectory(new DirectoryInfo(link)));
             // Created by this (standard) user, with an inherited ACL: anything inside it could have been planted.
             Assert.False(KioskMachineLockdownManager.IsTrustedDirectory(new DirectoryInfo(target)));
+
+            var file = Path.Combine(target, "kiosk-machine-state.json");
+            File.WriteAllText(file, "{}");
+            Assert.False(KioskMachineLockdownManager.IsTrustedFile(file)); // Writable by its (non-admin) creator.
+            using var hardLink = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+                "cmd.exe", $"/c mklink /H \"{file}.alias\" \"{file}\"") { CreateNoWindow = true, UseShellExecute = false })!;
+            hardLink.WaitForExit();
+            Assert.False(KioskMachineLockdownManager.IsTrustedFile(file + ".alias")); // Second hard link.
         }
         finally
         {
