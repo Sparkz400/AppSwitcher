@@ -49,6 +49,29 @@ public class KioskForegroundPolicyTests
     }
 
     [Fact]
+    public void Evaluate_Blocks_Explorer_Folder_Window()
+    {
+        var snapshot = CreateSnapshot("Downloads", "CabinetWClass", "explorer");
+
+        var decision = _policy.Evaluate(snapshot, isOwnedWindow: false, isConfiguredAppWindow: false);
+
+        Assert.Equal(KioskForegroundDisposition.Block, decision.Disposition);
+    }
+
+    [Theory]
+    [InlineData("Shell_TrayWnd")]
+    [InlineData("Progman")]
+    [InlineData("MultitaskingViewFrame")]
+    public void Evaluate_Blocks_Shell_Even_When_Explorer_Is_A_Configured_App(string className)
+    {
+        var snapshot = CreateSnapshot(string.Empty, className, "explorer");
+
+        var decision = _policy.Evaluate(snapshot, isOwnedWindow: false, isConfiguredAppWindow: true);
+
+        Assert.Equal(KioskForegroundDisposition.Block, decision.Disposition);
+    }
+
+    [Fact]
     public void Evaluate_Ignores_Unknown_Third_Party_Window()
     {
         var snapshot = CreateSnapshot("Google Chrome", "Chrome_WidgetWin_1", "chrome");

@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Management;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Microsoft.Win32;
 
 namespace AppSwitcher.Services;
@@ -150,7 +152,6 @@ internal interface IKioskMachineLockdownService
 {
     Task<KioskMachineLockdownResult> ApplyAsync(CancellationToken cancellationToken = default);
     Task<KioskMachineLockdownResult> RemoveAsync(CancellationToken cancellationToken = default);
-    Task<KioskMachineLockdownResult> QueryAsync(CancellationToken cancellationToken = default);
 }
 
 internal sealed class ElevatedKioskMachineLockdownService : IKioskMachineLockdownService
@@ -167,9 +168,6 @@ internal sealed class ElevatedKioskMachineLockdownService : IKioskMachineLockdow
 
     public Task<KioskMachineLockdownResult> RemoveAsync(CancellationToken cancellationToken = default) =>
         ExecuteAsync(KioskMachineLockdownOperation.Remove, cancellationToken);
-
-    public Task<KioskMachineLockdownResult> QueryAsync(CancellationToken cancellationToken = default) =>
-        ExecuteAsync(KioskMachineLockdownOperation.Status, cancellationToken);
 
     private async Task<KioskMachineLockdownResult> ExecuteAsync(
         KioskMachineLockdownOperation operation,
@@ -209,8 +207,16 @@ internal sealed class ElevatedKioskMachineLockdownService : IKioskMachineLockdow
 
             var json = await File.ReadAllTextAsync(resultPath, cancellationToken);
             var result = KioskMachineLockdownSerialization.DeserializeResult(json);
-            return result ?? KioskMachineLockdownResult.Failed(
-                "The elevated kiosk helper returned an unreadable result payload.");
+            if (result == null)
+            {
+                return KioskMachineLockdownResult.Failed(
+                    "The elevated kiosk helper returned an unreadable result payload.");
+            }
+
+            _logger.LogInformation(
+                "Kiosk machine lockdown {Operation} returned {State}: {Message} ({Details})",
+                operation, result.State, result.Message, result.TechnicalDetails);
+            return result;
         }
         catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
         {
@@ -358,6 +364,10 @@ internal enum KeyboardFilterFeatureState
 internal sealed class KioskMachineState
 {
     public List<string> OwnedPredefinedKeys { get; set; } = [];
+
+    // Set when the record existed but could not be read: ownership is unknown, so nothing may be removed.
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool Unreadable { get; init; }
 }
 
 internal static class KioskMachineLockdownManager
@@ -413,10 +423,11 @@ internal static class KioskMachineLockdownManager
 
         try
         {
+            var currentState = LoadTrustedMachineState(out var recoveryNote);
             var scope = CreateManagementScope();
             EnsureAdministratorsExcluded(scope);
 
-            var currentState = LoadMachineState();
+            var details = AppendNote(editionLabel, recoveryNote);
             var ownedKeys = new HashSet<string>(currentState.OwnedPredefinedKeys, StringComparer.OrdinalIgnoreCase);
             using var loadedKeys = LoadPredefinedKeys(scope);
 
@@ -427,7 +438,7 @@ internal static class KioskMachineLockdownManager
                 {
                     return KioskMachineLockdownResult.Failed(
                         "A required Keyboard Filter predefined key could not be resolved.",
-                        targetKey);
+                        AppendNote(targetKey, recoveryNote));
                 }
 
                 if (IsPredefinedKeyEnabled(keyObject))
@@ -436,29 +447,28 @@ internal static class KioskMachineLockdownManager
                 keyObject["Enabled"] = true;
                 keyObject.Put();
                 ownedKeys.Add(targetKey);
+                // Record ownership right away so an early return or a later Put failure cannot orphan this key.
+                SaveMachineState(ownedKeys);
                 changed = true;
             }
 
-            SaveMachineState(new KioskMachineState
-            {
-                OwnedPredefinedKeys = ownedKeys.OrderBy(key => key, StringComparer.OrdinalIgnoreCase).ToList()
-            });
+            SaveMachineState(ownedKeys);
 
             if (changed)
             {
                 return KioskMachineLockdownResult.Applied(
                     "Keyboard Filter secure-key blocking was applied.",
-                    editionLabel);
+                    details);
             }
 
             return currentState.OwnedPredefinedKeys.Count > 0
                 ? KioskMachineLockdownResult.AlreadyApplied(
                     "Keyboard Filter secure-key blocking was already configured by AppSwitcher.",
-                    editionLabel)
+                    details)
                 : KioskMachineLockdownResult.ExternallyManaged(
                     "Keyboard Filter secure-key blocking is already configured outside AppSwitcher.",
                     configured: true,
-                    technicalDetails: editionLabel);
+                    technicalDetails: details);
         }
         catch (Exception ex)
         {
@@ -470,7 +480,29 @@ internal static class KioskMachineLockdownManager
 
     private static async Task<KioskMachineLockdownResult> RemoveAsync(string editionLabel)
     {
-        var currentState = LoadMachineState();
+        KioskMachineState currentState;
+        string recoveryNote;
+        try
+        {
+            currentState = LoadTrustedMachineState(out recoveryNote);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            return KioskMachineLockdownResult.Failed("The kiosk machine state could not be read safely.", ex.Message);
+        }
+
+        editionLabel = AppendNote(editionLabel, recoveryNote);
+        if (currentState.Unreadable)
+        {
+            // Fail closed: leave every rule in place. The damaged record is preserved; drop it so kiosk can still be
+            // turned off in the app without another elevation prompt.
+            DeleteMachineState();
+            return KioskMachineLockdownResult.ExternallyManaged(
+                "The record of AppSwitcher's Keyboard Filter rules was unreadable, so no rule was removed. Review Keyboard Filter manually.",
+                configured: true,
+                technicalDetails: editionLabel);
+        }
+
         if (currentState.OwnedPredefinedKeys.Count == 0)
         {
             var queryResult = await QueryAsync(editionLabel);
@@ -575,7 +607,7 @@ internal static class KioskMachineLockdownManager
         {
             var scope = CreateManagementScope();
             using var loadedKeys = LoadPredefinedKeys(scope);
-            var state = LoadMachineState();
+            var state = LoadTrustedMachineState(out _);
             var allEnabled = TargetPredefinedKeys.All(targetKey =>
                 loadedKeys.TryGetValue(targetKey, out var keyObject) && IsPredefinedKeyEnabled(keyObject));
 
@@ -603,7 +635,7 @@ internal static class KioskMachineLockdownManager
         }
     }
 
-    private static bool TryGetSupportedEdition(out string editionLabel)
+    internal static bool TryGetSupportedEdition(out string editionLabel)
     {
         using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", writable: false);
         var editionId = key?.GetValue("EditionID") as string ?? string.Empty;
@@ -663,34 +695,185 @@ internal static class KioskMachineLockdownManager
     private static bool IsPredefinedKeyEnabled(ManagementObject managementObject) =>
         managementObject["Enabled"] is bool enabled && enabled;
 
-    private static KioskMachineState LoadMachineState()
+    // Elevated entry point: secure the folder first; a record found in an untrusted folder may have been planted.
+    private static KioskMachineState LoadTrustedMachineState(out string recoveryNote)
     {
-        try
+        var quarantined = SecureMachineDataDirectory(AppPaths.MachineDataDirectory);
+        if (quarantined != null && File.Exists(Path.Combine(quarantined, Path.GetFileName(AppPaths.KioskMachineStateFilePath))))
         {
-            if (!File.Exists(AppPaths.KioskMachineStateFilePath))
-                return new KioskMachineState();
+            recoveryNote = $"An earlier Keyboard Filter record was in a folder standard users could change; it was moved to '{quarantined}' and not trusted. No Keyboard Filter rule was removed; an administrator must review them.";
+            return new KioskMachineState { Unreadable = true };
+        }
 
-            var json = File.ReadAllText(AppPaths.KioskMachineStateFilePath);
-            return JsonSerializer.Deserialize<KioskMachineState>(json) ?? new KioskMachineState();
-        }
-        catch
+        // The folder is admin-controlled now, but a file could predate that (e.g. an ACL tightened by hand). Check it too.
+        var statePath = AppPaths.KioskMachineStateFilePath;
+        if (File.Exists(statePath) && !IsTrustedFile(statePath))
         {
-            return new KioskMachineState();
+            var untrustedCopy = $"{statePath}.untrusted-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}";
+            File.Move(statePath, untrustedCopy); // Renames a link itself, never its target.
+            recoveryNote = $"The Keyboard Filter record was not exclusively controlled by administrators; it was moved to '{untrustedCopy}' and not trusted. No Keyboard Filter rule was removed; an administrator must review them.";
+            return new KioskMachineState { Unreadable = true };
         }
+
+        var state = LoadMachineState(statePath, out recoveryNote);
+        if (quarantined != null)
+            recoveryNote = AppendNote(recoveryNote, $"An untrusted machine data folder was moved to '{quarantined}'.");
+        return state;
     }
 
-    private static void SaveMachineState(KioskMachineState state)
+    internal static KioskMachineState LoadMachineState(string path, out string recoveryNote)
     {
+        recoveryNote = string.Empty;
+        if (!File.Exists(path))
+            return new KioskMachineState();
+
+        try
+        {
+            var state = JsonSerializer.Deserialize<KioskMachineState>(File.ReadAllText(path));
+            if (state?.OwnedPredefinedKeys != null)
+                return state;
+        }
+        catch (JsonException)
+        {
+        }
+
+        // Ownership is unknown. Fail closed: keep the record for review and remove nothing, so keys another
+        // administrator enabled are never switched off on the strength of a damaged (or planted) file.
+        var backupPath = $"{path}.corrupt-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}";
+        File.Copy(path, backupPath, overwrite: false);
+        recoveryNote = $"Kiosk machine state file was unreadable and was preserved as '{backupPath}'. No Keyboard Filter rule was removed; an administrator must review them.";
+        return new KioskMachineState { Unreadable = true };
+    }
+
+    private static readonly SecurityIdentifier AdministratorsSid = new(WellKnownSidType.BuiltinAdministratorsSid, null);
+    private static readonly SecurityIdentifier SystemSid = new(WellKnownSidType.LocalSystemSid, null);
+
+    private const FileSystemRights ModifyingRights = FileSystemRights.WriteData | FileSystemRights.AppendData
+        | FileSystemRights.WriteAttributes | FileSystemRights.WriteExtendedAttributes | FileSystemRights.Delete
+        | FileSystemRights.DeleteSubdirectoriesAndFiles | FileSystemRights.ChangePermissions | FileSystemRights.TakeOwnership;
+
+    /// <summary>
+    /// Runs elevated, before any read or write of the machine state. Earlier versions let the non-elevated app (or an
+    /// inherited ProgramData ACL) leave this folder writable by standard users, who could plant files or links in it.
+    /// An existing folder is never modified in place: unless it is already trusted it is moved aside, and a new one is
+    /// created with an administrators-only ACL and checked again. Returns the quarantined folder, or null.
+    /// </summary>
+    internal static string? SecureMachineDataDirectory(string directory)
+    {
+        var info = new DirectoryInfo(directory);
+        string? quarantined = null;
+        if (info.Exists && !IsTrustedDirectory(info))
+        {
+            // Directory.Move renames a link itself, never its target.
+            quarantined = $"{directory}.untrusted-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}";
+            Directory.Move(directory, quarantined);
+        }
+
+        var security = new DirectorySecurity();
+        security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
+        security.SetOwner(AdministratorsSid);
+        const InheritanceFlags inherit = InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit;
+        security.AddAccessRule(new(AdministratorsSid, FileSystemRights.FullControl, inherit, PropagationFlags.None, AccessControlType.Allow));
+        security.AddAccessRule(new(SystemSid, FileSystemRights.FullControl, inherit, PropagationFlags.None, AccessControlType.Allow));
+        security.AddAccessRule(new(new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null),
+            FileSystemRights.ReadAndExecute, inherit, PropagationFlags.None, AccessControlType.Allow));
+        info.Create(security); // The descriptor is applied at creation; an existing folder is left untouched here.
+
+        // Something may have re-created the folder (or a link) between the move and the creation: fail closed.
+        info.Refresh();
+        if (!IsTrustedDirectory(info))
+            throw new IOException($"Refusing to use '{directory}': it is not exclusively controlled by administrators.");
+        return quarantined;
+    }
+
+    // Trusted: a real folder (not a link), owned by Administrators or SYSTEM, with a protected ACL that lets nobody
+    // else modify it. Files inside such a folder can only have been written by administrators.
+    internal static bool IsTrustedDirectory(DirectoryInfo info)
+    {
+        if (!info.Exists || info.Attributes.HasFlag(FileAttributes.ReparsePoint)) return false;
+        var acl = info.GetAccessControl();
+        if (acl.GetOwner(typeof(SecurityIdentifier)) is not SecurityIdentifier owner || (owner != AdministratorsSid && owner != SystemSid))
+            return false;
+        return acl.AreAccessRulesProtected && OnlyAdministratorsCanModify(acl);
+    }
+
+    // Trusted: a regular file (no link, exactly one hard link), owned by Administrators or SYSTEM, that nobody else can modify.
+    internal static bool IsTrustedFile(string path)
+    {
+        if (File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint)) return false;
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        if (!GetFileInformationByHandle(stream.SafeFileHandle, out var information) || information.NumberOfLinks != 1) return false;
+        var acl = stream.GetAccessControl();
+        return acl.GetOwner(typeof(SecurityIdentifier)) is SecurityIdentifier owner
+            && (owner == AdministratorsSid || owner == SystemSid)
+            && OnlyAdministratorsCanModify(acl);
+    }
+
+    private static bool OnlyAdministratorsCanModify(FileSystemSecurity acl)
+    {
+        foreach (FileSystemAccessRule rule in acl.GetAccessRules(includeExplicit: true, includeInherited: true, typeof(SecurityIdentifier)))
+        {
+            // Raw ACEs can carry generic rights, which FileSystemRights does not name.
+            var mask = (int)rule.FileSystemRights;
+            var modifies = (rule.FileSystemRights & ModifyingRights) != 0 || (mask & (GenericWrite | GenericAll)) != 0;
+            if (rule.AccessControlType == AccessControlType.Allow && modifies
+                && rule.IdentityReference != AdministratorsSid && rule.IdentityReference != SystemSid)
+                return false;
+        }
+        return true;
+    }
+
+    private const int GenericWrite = 0x40000000, GenericAll = 0x10000000;
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    private struct ByHandleFileInformation
+    {
+        public uint FileAttributes;
+        public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime, LastAccessTime, LastWriteTime;
+        public uint VolumeSerialNumber, FileSizeHigh, FileSizeLow, NumberOfLinks, FileIndexHigh, FileIndexLow;
+    }
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    private static extern bool GetFileInformationByHandle(Microsoft.Win32.SafeHandles.SafeFileHandle file, out ByHandleFileInformation information);
+
+    private static void SaveMachineState(IEnumerable<string> ownedKeys) =>
+        SaveMachineState(AppPaths.KioskMachineStateFilePath, ownedKeys);
+
+    internal static void SaveMachineState(string path, IEnumerable<string> ownedKeys)
+    {
+        var state = new KioskMachineState
+        {
+            OwnedPredefinedKeys = ownedKeys.OrderBy(key => key, StringComparer.OrdinalIgnoreCase).ToList()
+        };
+
         if (state.OwnedPredefinedKeys.Count == 0)
         {
-            DeleteMachineState();
+            if (File.Exists(path))
+                File.Delete(path);
             return;
         }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(AppPaths.KioskMachineStateFilePath) ?? AppPaths.MachineDataDirectory);
-        var json = JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(AppPaths.KioskMachineStateFilePath, json);
+        // A fresh, unpredictable temp name opened with CreateNew never follows or truncates a planted file.
+        var tempPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var stream = new FileStream(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                JsonSerializer.Serialize(stream, state, new JsonSerializerOptions { WriteIndented = true });
+                stream.Flush(flushToDisk: true);
+            }
+
+            File.Move(tempPath, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
     }
+
+    private static string AppendNote(string details, string note) =>
+        string.IsNullOrEmpty(note) ? details : $"{details}; {note}";
 
     private static void DeleteMachineState()
     {

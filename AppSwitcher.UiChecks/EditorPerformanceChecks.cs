@@ -22,7 +22,7 @@ internal static partial class Program
             using var session = new SessionTimeoutService(NullLogger<SessionTimeoutService>.Instance);
             using var editor = new SettingsViewModel(fixture.ViewModel, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
                 new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-                new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session);
+                session);
             var window = new SettingsWindow { DataContext = editor };
             var open = Stopwatch.StartNew();
             window.Show(); await Render(); open.Stop();

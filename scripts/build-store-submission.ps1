@@ -9,9 +9,7 @@ if (Test-Path -LiteralPath $output) { throw "Submission output already exists: $
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 $build = Join-Path $output 'source'
 node (Join-Path $PSScriptRoot 'build-browser-extension.mjs') $build | Out-Host
-foreach ($name in @('Install-BrowserHost.ps1','Uninstall-BrowserHost.ps1','extension-ids.json')) {
-    Remove-Item -LiteralPath (Join-Path $build $name)
-}
+Remove-Item -LiteralPath (Join-Path $build 'extension-ids.json')
 $version = '1.1.1'
 Copy-Item -LiteralPath (Join-Path $repoPath 'docs/store/assets') -Destination $output -Recurse
 Get-ChildItem -LiteralPath (Join-Path $repoPath 'docs/store') -File | Copy-Item -Destination $output

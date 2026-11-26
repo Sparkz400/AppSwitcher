@@ -166,7 +166,7 @@ internal static partial class Program
             await runtime.SaveConfigAsync(); // This scenario tests owner closure, not discard confirmation.
             using var settings = new SettingsViewModel(runtime, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
                 new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-                new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session, AccessLevel.Admin);
+                session, AccessLevel.Admin);
             var owner = new SettingsWindow { DataContext = settings };
             runtime.PrepareWindow(owner, privileged: true);
             owner.Show(); await Render();

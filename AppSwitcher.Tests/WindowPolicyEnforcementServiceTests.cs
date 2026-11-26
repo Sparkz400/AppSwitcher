@@ -26,6 +26,24 @@ public class WindowPolicyEnforcementServiceTests
         Assert.Equal(continuous, platform.Calls.Contains("Restore:111"));
     }
     [Fact]
+    public void HungWindowIsSkippedUntilItRespondsAgain()
+    {
+        var resolver = new FakeWindowHandleResolver();
+        var platform = CreatePlatform();
+        var hwnd = (IntPtr)112;
+        var target = new AppProcessTarget(@"C:\Apps\worker.exe");
+        resolver.SetHandle(target, hwnd);
+        platform.Windows[hwnd] = new FakeWindow { Rect = NativeRect.FromPositionAndSize(50, 50, 800, 600), Style = new WindowStyleState(0x00CF0000, 0) };
+        platform.Hung.Add(hwnd);
+        using var service = CreateService(resolver, platform);
+        var app = new AppItem { Name = "Worker", Path = target.Path, PlacementMode = WindowPlacementMode.Fullscreen, AlwaysOnTop = true };
+        service.EnforceNow([app]);
+        Assert.Empty(platform.Calls);
+        platform.Hung.Clear();
+        service.EnforceNow([app]);
+        Assert.Contains("SetStyle:112", platform.Calls);
+    }
+    [Fact]
     public void ForcedIdentitySurvivesReorderAndRecoversFromDisconnectWithoutChangingConfiguration()
     {
         var resolver = new FakeWindowHandleResolver();
@@ -258,8 +276,10 @@ public class WindowPolicyEnforcementServiceTests
         public Dictionary<IntPtr, FakeWindow> Windows { get; } = [];
         public List<NativeMonitorInfo> Monitors { get; set; } = [];
         public List<string> Calls { get; } = [];
+        public HashSet<IntPtr> Hung { get; } = [];
 
         public bool IsWindow(IntPtr hwnd) => Windows.ContainsKey(hwnd);
+        public bool IsHung(IntPtr hwnd) => Hung.Contains(hwnd);
 
         public bool IsWindowMinimized(IntPtr hwnd) => Windows[hwnd].IsMinimized;
 

@@ -118,6 +118,35 @@ public class BrowserIntegrationTests
     }
 
     [Fact]
+    public async Task Unsent_Create_Request_Returns_To_Reserved_And_Can_Be_Retried()
+    {
+        using var temp = new TempDirectory();
+        var pipe = $"AppSwitcher.Tests.{Guid.NewGuid():N}";
+        var app = Website();
+        var journal = Path.Combine(temp.Path, "ownership.json");
+        BrowserReply Respond(BrowserRequest request) => request.Action == "inspect" ? new("Absent", "Absent") : new("CreatedNew", "Present", 1, 1);
+        using var bridge = new BrowserBridgeService(NullLogger<BrowserBridgeService>.Instance, journal, pipe);
+        var first = await FakeBrowser.ConnectAsync(pipe, app, Respond);
+        await WaitForProfile(bridge);
+        async Task Disconnect() { first.Dispose(); await WaitForProfile(bridge, 0); }
+        await Assert.ThrowsAsync<InvalidOperationException>(() => bridge.OpenAsync(app, true, Disconnect, default));
+        Assert.DoesNotContain(first.Requests, r => r.Action == "ensure");
+        var reserved = new BrowserOwnershipStore(journal).Get(app.AppId)!;
+        Assert.Equal("Reserved", reserved.Phase);
+        using var second = await FakeBrowser.ConnectAsync(pipe, app, Respond);
+        await WaitForProfile(bridge);
+        Assert.Equal(AppLaunchKind.StartedNewProcess, (await bridge.OpenAsync(app, true, null, default)).Kind);
+        Assert.Contains(second.Requests, r => r.Action == "ensure" && r.AllowCreate && r.Generation == reserved.Generation);
+    }
+
+    [Theory]
+    [InlineData(@"C:\Users\A\AppData\Local\Google\Chrome\User Data\Default\")]
+    [InlineData(@"C:\Users\A\AppData\Local\Google\Chrome\User Data\Default")]
+    public void Chromium_Profile_Path_Splits_Into_User_Data_And_Profile_Name(string directory) =>
+        Assert.Equal([@"--user-data-dir=C:\Users\A\AppData\Local\Google\Chrome\User Data", "--profile-directory=Default"],
+            BrowserBridgeService.ProfileArguments(BrowserKind.Chrome, directory));
+
+    [Fact]
     public async Task Activation_Cannot_Reserve_Or_Create_A_Tab()
     {
         using var temp = new TempDirectory();

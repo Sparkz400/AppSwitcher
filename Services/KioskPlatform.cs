@@ -144,33 +144,38 @@ internal sealed partial class WindowsKioskPlatform : IKioskPlatform
         var title = GetWindowTitle(handle);
         GetWindowThreadProcessId(handle, out var processId);
 
-        string processName = string.Empty;
-        string? processPath = null;
-
-        if (processId != 0)
+        // Runs five times a second: look the process up only when another window or process comes to the front.
+        if (handle != _foregroundHandle || processId != _foregroundProcessId)
         {
-            try
-            {
-                using var process = Process.GetProcessById((int)processId);
-                processName = process.ProcessName;
-
-                try
-                {
-                    processPath = process.MainModule?.FileName;
-                }
-                catch (Exception)
-                {
-                    processPath = null;
-                }
-            }
-            catch
-            {
-                processName = string.Empty;
-                processPath = null;
-            }
+            (_foregroundProcessName, _foregroundProcessPath) = processId == 0 ? (string.Empty, null) : ReadProcessIdentity((int)processId);
+            _foregroundHandle = handle;
+            _foregroundProcessId = processId;
         }
 
-        return new KioskWindowSnapshot(handle, className, title, processName, processPath);
+        return new KioskWindowSnapshot(handle, className, title, _foregroundProcessName, _foregroundProcessPath);
+    }
+
+    private IntPtr _foregroundHandle;
+    private uint _foregroundProcessId;
+    private string _foregroundProcessName = string.Empty;
+    private string? _foregroundProcessPath;
+
+    private static (string Name, string? Path) ReadProcessIdentity(int processId)
+    {
+        // Limited query rights also work for elevated processes, where MainModule throws.
+        var path = ProcessHelper.QueryImagePath(processId);
+        if (path != null)
+            return (System.IO.Path.GetFileNameWithoutExtension(path), path);
+
+        try
+        {
+            using var process = Process.GetProcessById(processId);
+            return (process.ProcessName, null);
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return (string.Empty, null);
+        }
     }
 
     public bool RestoreWindow(IntPtr hwnd) => hwnd != IntPtr.Zero && NativeShowWindow(hwnd, SW_RESTORE);

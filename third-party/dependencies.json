@@ -89,18 +89,18 @@
   },
   {
     "name": "runtimepack.Microsoft.NETCore.App.Runtime.win-x64",
-    "version": "10.0.14",
+    "version": "10.0.15",
     "license": "MIT",
     "copyright": "Copyright (c) .NET Foundation and Contributors",
     "source": "https://github.com/dotnet/dotnet",
-    "commit": "0427b9abbead3fa64c6655eb4290c537397131fa"
+    "commit": "8e0f8ed2312954727f8919d7d1c2f78b483b4ee7"
   },
   {
     "name": "runtimepack.Microsoft.WindowsDesktop.App.Runtime.win-x64",
-    "version": "10.0.14",
+    "version": "10.0.15",
     "license": "MIT",
     "copyright": "Copyright (c) .NET Foundation and Contributors",
     "source": "https://github.com/dotnet/dotnet",
-    "commit": "0427b9abbead3fa64c6655eb4290c537397131fa"
+    "commit": "8e0f8ed2312954727f8919d7d1c2f78b483b4ee7"
   }
 ]

@@ -106,7 +106,7 @@ public class ReleaseRegressionTests
         });
         using var editor = new SettingsViewModel(fixture.ViewModel, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
             new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-            new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), new SessionTimeoutService(NullLogger<SessionTimeoutService>.Instance));
+            new SessionTimeoutService(NullLogger<SessionTimeoutService>.Instance));
         editor.Apps[0].Name = "";
         editor.Apps[0].Name = "B";
         Assert.Equal(["A"], editor.Settings.OperatorScope.AllowedAppNames);

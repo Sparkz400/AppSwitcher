@@ -139,7 +139,7 @@ public class WatchdogService : IDisposable
                 return;
 
             _crashHistory.RecordCrash(app.Name, app.Path);
-            IncrementCrashCount(target, now);
+            IncrementCrashCount(target);
 
             var state = GetOrCreateState(target);
             var openedCircuit = false;
@@ -228,7 +228,7 @@ public class WatchdogService : IDisposable
         try
         {
             ct.ThrowIfCancellationRequested();
-            IncrementRestartCount(target, now);
+            IncrementRestartCount(target);
             _crashHistory.RecordRestart(app.Name, app.Path, pendingAttemptNumber);
             await _appLifecycleService.LaunchAsync(app, ct);
             _logger.LogInformation("Watchdog restarted {Name} (attempt {Count})", app.Name, pendingAttemptNumber);
@@ -239,8 +239,10 @@ public class WatchdogService : IDisposable
         }
         catch (Exception ex)
         {
-            if (ex is AppLifecycleException lifecycleException)
-                _notifications.Show(lifecycleException.Message, NotificationType.Error);
+            // Readiness timeouts and other failures leave the app down; the operator must see that too.
+            _notifications.Show(ex is AppLifecycleException lifecycleException
+                ? lifecycleException.Message
+                : LocalizationService.T("Msg_LaunchFailed", app.Name, ex.Message), NotificationType.Error);
 
             _logger.LogError(ex, "Failed to restart {Name}", app.Name);
         }
@@ -289,7 +291,7 @@ public class WatchdogService : IDisposable
         {
             lock (stats)
             {
-                ResetDailyStatsIfNeeded(stats, UtcNow);
+                ResetDailyStatsIfNeeded(stats, LocalToday);
                 return (stats.CrashCountToday, stats.TotalRestarts);
             }
         }
@@ -312,33 +314,34 @@ public class WatchdogService : IDisposable
     }
 
     private DateTime UtcNow => _timeProvider.GetUtcNow().UtcDateTime;
+    // "Crashes today" follows the operator's shift day, not the UTC date.
+    private DateTime LocalToday => _timeProvider.GetLocalNow().Date;
 
     private RestartState GetOrCreateState(AppProcessTarget target) =>
         _restartStates.GetOrAdd(target.Key, _ => new RestartState { Target = target });
 
-    private void IncrementCrashCount(AppProcessTarget target, DateTime now)
+    private void IncrementCrashCount(AppProcessTarget target)
     {
         var stats = _crashStats.GetOrAdd(target.Key, _ => new CrashStats());
         lock (stats)
         {
-            ResetDailyStatsIfNeeded(stats, now);
+            ResetDailyStatsIfNeeded(stats, LocalToday);
             stats.CrashCountToday++;
         }
     }
 
-    private void IncrementRestartCount(AppProcessTarget target, DateTime now)
+    private void IncrementRestartCount(AppProcessTarget target)
     {
         var stats = _crashStats.GetOrAdd(target.Key, _ => new CrashStats());
         lock (stats)
         {
-            ResetDailyStatsIfNeeded(stats, now);
+            ResetDailyStatsIfNeeded(stats, LocalToday);
             stats.TotalRestarts++;
         }
     }
 
-    private static void ResetDailyStatsIfNeeded(CrashStats stats, DateTime now)
+    private static void ResetDailyStatsIfNeeded(CrashStats stats, DateTime today)
     {
-        var today = now.Date;
         if (stats.LastResetDate == today)
             return;
 
@@ -429,6 +432,6 @@ public class WatchdogService : IDisposable
     {
         public int CrashCountToday;
         public int TotalRestarts;
-        public DateTime LastResetDate = DateTime.UtcNow.Date;
+        public DateTime LastResetDate;
     }
 }

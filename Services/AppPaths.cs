@@ -47,17 +47,11 @@ public static class AppPaths
 
     public static string AuditLogPath => Path.Combine(DataDirectory, "audit_log.csv");
 
-    public static string MachineDataDirectory
-    {
-        get
-        {
-            var path = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                AppDirectoryName);
-            Directory.CreateDirectory(path);
-            return path;
-        }
-    }
+    // Not created here: a folder created by the non-elevated app would be owned by, and writable for, the operator.
+    // Only the elevated kiosk helper creates it, with an administrators-only ACL.
+    public static string MachineDataDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+        AppDirectoryName);
 
     public static string KioskMachineStateFilePath => Path.Combine(MachineDataDirectory, "kiosk-machine-state.json");
 

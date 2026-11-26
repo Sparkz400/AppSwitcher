@@ -30,7 +30,7 @@ No host permissions, content scripts, remote code, analytics, advertisements or 
 ## Reviewer setup
 
 1. Use a disposable Windows user/profile and the public AppSwitcher beta package. Install the app and its local bridge using the documented browser setup. No website credentials are required for testing.
-2. For a Chrome/Edge draft listing, record the **issued store extension ID**. From the complete desktop package, run `Install-BrowserHost.ps1` with the corresponding `-ChromeExtensionId` / `-EdgeExtensionId`. This registers the real store origin; the default offline ID does not identify the new store listing.
+2. For a Chrome/Edge draft listing, record the **issued store extension ID**. Put the issued IDs into `distribution.json`, build with `build-browser-package.ps1 -DistributionFile`, then run **Settings → Browsers → Set up**. This registers the real store origin; the default offline ID does not identify the new store listing.
 3. Start AppSwitcher, choose a PIN for the disposable configuration, and pair the test profile. Add a website named `Example dashboard` using `https://example.com` and the connected profile.
 4. Activate it repeatedly, then minimize and activate again. Verify that the same managed tab is restored. Open an unrelated tab at the same URL; it must not become the managed tab.
 5. Enable browser session restoration, restart the browser and verify ownership recovery. Remove/duplicate an identity marker only in the disposable test profile and verify that the app reports uncertainty rather than opening duplicates.

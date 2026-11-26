@@ -38,7 +38,6 @@ public class MainViewModelAuditTests
             new SecurityService(),
             harness.NotificationService,
             new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, harness.ProcessHelper),
-            new CrashHistoryService(NullLogger<CrashHistoryService>.Instance),
             new SessionTimeoutService(NullLogger<SessionTimeoutService>.Instance),
             AccessLevel.Admin);
 
@@ -296,9 +295,6 @@ public class MainViewModelAuditTests
 
         public Task<KioskMachineLockdownResult> RemoveAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(KioskMachineLockdownResult.Removed("removed"));
-
-        public Task<KioskMachineLockdownResult> QueryAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult(KioskMachineLockdownResult.NotConfigured("not configured"));
     }
 
     private sealed class TestConfiguredAppMatcher : IKioskConfiguredAppMatcher

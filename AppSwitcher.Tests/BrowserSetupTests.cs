@@ -115,6 +115,23 @@ public class BrowserSetupTests
     }
 
     [Fact]
+    public async Task Interrupted_Host_Copy_Is_Repaired_Once_And_Then_Reused()
+    {
+        using var files = new TempDirectory();
+        var (bundle, destination) = Bundle(files.Path);
+        string? registered = null;
+        var service = new BrowserSetupService(bundle, destination, (_, path) => registered = path);
+        await service.PrepareAsync(BrowserKind.Chrome, default);
+        var hosts = Path.GetDirectoryName(Path.GetDirectoryName(registered))!;
+        File.Delete(Path.Combine(Path.GetDirectoryName(registered)!, "coreclr.dll"));
+        await service.PrepareAsync(BrowserKind.Chrome, default);
+        var repaired = registered;
+        await service.PrepareAsync(BrowserKind.Chrome, default);
+        Assert.Equal(repaired, registered);
+        Assert.Equal(2, Directory.GetDirectories(hosts).Length);
+    }
+
+    [Fact]
     public async Task Repair_Preserves_An_Existing_Store_Extension_Origin()
     {
         using var files = new TempDirectory();

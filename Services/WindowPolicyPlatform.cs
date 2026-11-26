@@ -34,6 +34,7 @@ internal interface IWindowPolicyPlatform
     bool SetWindowStyle(IntPtr hwnd, WindowStyleState style);
     IReadOnlyList<NativeMonitorInfo> GetMonitors();
     int GetCurrentMonitorIndex(IntPtr hwnd);
+    bool IsHung(IntPtr hwnd) => false;
 }
 
 internal sealed partial class WindowsWindowPolicyPlatform : IWindowPolicyPlatform
@@ -63,6 +64,8 @@ internal sealed partial class WindowsWindowPolicyPlatform : IWindowPolicyPlatfor
     private const uint SwpNoActivate = 0x0010;
     private const uint SwpFrameChanged = 0x0020;
     private const uint SwpShowWindow = 0x0040;
+    // Foreign windows: post the change instead of waiting for the owning thread.
+    private const uint SwpAsyncWindowPos = 0x4000;
 
     private static readonly IntPtr HwndTopmost = new(-1);
     private static readonly IntPtr HwndNotTopmost = new(-2);
@@ -82,7 +85,11 @@ internal sealed partial class WindowsWindowPolicyPlatform : IWindowPolicyPlatfor
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool ShowWindow(IntPtr hwnd, int nCmdShow);
+    private static partial bool ShowWindowAsync(IntPtr hwnd, int nCmdShow);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool IsHungAppWindow(IntPtr hwnd);
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -112,9 +119,11 @@ internal sealed partial class WindowsWindowPolicyPlatform : IWindowPolicyPlatfor
 
     public bool IsWindowMinimized(IntPtr hwnd) => hwnd != IntPtr.Zero && IsIconic(hwnd);
 
-    public bool RestoreWindow(IntPtr hwnd) => hwnd != IntPtr.Zero && ShowWindow(hwnd, SwRestore);
+    public bool IsHung(IntPtr hwnd) => hwnd != IntPtr.Zero && IsHungAppWindow(hwnd);
 
-    public bool MaximizeWindow(IntPtr hwnd) => hwnd != IntPtr.Zero && ShowWindow(hwnd, SwMaximize);
+    public bool RestoreWindow(IntPtr hwnd) => hwnd != IntPtr.Zero && ShowWindowAsync(hwnd, SwRestore);
+
+    public bool MaximizeWindow(IntPtr hwnd) => hwnd != IntPtr.Zero && ShowWindowAsync(hwnd, SwMaximize);
 
     public bool TryGetWindowRect(IntPtr hwnd, out NativeRect rect)
     {
@@ -131,7 +140,7 @@ internal sealed partial class WindowsWindowPolicyPlatform : IWindowPolicyPlatfor
         if (hwnd == IntPtr.Zero)
             return false;
 
-        var flags = SwpNoZOrder | SwpShowWindow;
+        var flags = SwpNoZOrder | SwpShowWindow | SwpAsyncWindowPos;
         if (!activate)
             flags |= SwpNoActivate;
 
@@ -146,7 +155,7 @@ internal sealed partial class WindowsWindowPolicyPlatform : IWindowPolicyPlatfor
         if (hwnd == IntPtr.Zero)
             return false;
 
-        var flags = SwpNoMove | SwpNoSize | SwpShowWindow;
+        var flags = SwpNoMove | SwpNoSize | SwpShowWindow | SwpAsyncWindowPos;
         if (!activate)
             flags |= SwpNoActivate;
 
@@ -181,7 +190,7 @@ internal sealed partial class WindowsWindowPolicyPlatform : IWindowPolicyPlatfor
                 rect.Top,
                 rect.Width,
                 rect.Height,
-                SwpNoZOrder | SwpNoActivate | SwpShowWindow | SwpFrameChanged);
+                SwpNoZOrder | SwpNoActivate | SwpShowWindow | SwpFrameChanged | SwpAsyncWindowPos);
     }
 
     public IReadOnlyList<NativeMonitorInfo> GetMonitors()

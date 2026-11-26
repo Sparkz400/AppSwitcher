@@ -7,7 +7,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private readonly SecurityService _securityService;
     private readonly NotificationService _notificationService;
     private readonly ScreenLayoutService _screenLayoutService;
-    private readonly CrashHistoryService _crashHistoryService;
     private readonly SessionTimeoutService _sessionTimeoutService;
     private readonly AuditLogService _auditLogService;
     private readonly Dictionary<AppItem, string> _trackedAppNames = [];
@@ -130,10 +129,8 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     public bool CanEditApps => AccessLevel == AccessLevel.Admin;
     public bool CanEditSecurity => AccessLevel == AccessLevel.Admin;
     public bool CanEditKiosk => AccessLevel == AccessLevel.Admin;
-    public bool CanEditDiagnostics => AccessLevel == AccessLevel.Admin;
     public bool CanViewDiagnostics => AccessLevel == AccessLevel.Admin;
     public bool IsOperatorPinConfigured => !string.IsNullOrEmpty(Settings.OperatorPasswordHash);
-    public int MonitorCount { get; } = MonitorHelper.GetMonitorWorkAreas().Count;
     public ObservableCollection<LocalizedOption<int>> MonitorChoices { get; } = [];
     public ObservableCollection<LocalizedOption<DisplayMode>> DisplayModeChoices { get; } = [];
     public ObservableCollection<LocalizedOption<int>> WindowPolicyMonitorChoices { get; } = [];
@@ -159,7 +156,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         SecurityService securityService,
         NotificationService notificationService,
         ScreenLayoutService screenLayoutService,
-        CrashHistoryService crashHistoryService,
         SessionTimeoutService sessionTimeoutService,
         AccessLevel accessLevel = AccessLevel.Admin)
     {
@@ -168,7 +164,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         _securityService = securityService;
         _notificationService = notificationService;
         _screenLayoutService = screenLayoutService;
-        _crashHistoryService = crashHistoryService;
         _sessionTimeoutService = sessionTimeoutService;
         _auditLogService = mainVm.AuditLogService;
         AccessLevel = accessLevel;
@@ -681,7 +676,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         else SetGlobalColor(hex);
     }
 
-    [RelayCommand]
     private void SetGlobalColor(string hex)
     {
         if (CanEditApps && !string.IsNullOrEmpty(hex))
@@ -702,7 +696,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
             Settings.BorderColor = hex;
     }
 
-    [RelayCommand]
     private void SetAppColor(string hex)
     {
         if (CanEditApps && !string.IsNullOrEmpty(hex) && SelectedApp != null)
@@ -735,17 +728,17 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
     private void DeleteGroup(GroupDefinition? group)
     {
         if (!CanEditApps || group == null || string.IsNullOrEmpty(group.Key)) return;
-        var members = Apps.Where(app => app.Group == group.Key).Select(app => app.Name).ToArray();
-        var workspaces = Layouts.Where(layout => layout.GroupKeys.Contains(group.Key)).Select(layout => layout.Name).ToArray();
+        var members = Apps.Where(app => string.Equals(app.Group, group.Key, StringComparison.OrdinalIgnoreCase)).Select(app => app.Name).ToArray();
+        var workspaces = Layouts.Where(layout => layout.GroupKeys.Contains(group.Key, StringComparer.OrdinalIgnoreCase)).Select(layout => layout.Name).ToArray();
         if (!_mainVm.ConfirmOperation(LocalizationService.T("UI_DeleteGroupConfirm", group.GetDisplayName(Settings.Language)),
             LocalizationService.T("UI_DeleteGroupReferences", string.Join(", ", members), string.Join(", ", workspaces)), destructive: true)) return;
 
         Settings.OperatorScope.RemoveGroupKey(group.Key);
         Groups.Remove(group);
         OnPropertyChanged(nameof(GroupChoices));
-        foreach (var app in Apps.Where(a => a.Group == group.Key))
+        foreach (var app in Apps.Where(a => string.Equals(a.Group, group.Key, StringComparison.OrdinalIgnoreCase)))
             app.Group = "";
-        foreach (var layout in Layouts) layout.GroupKeys.RemoveAll(key => key == group.Key);
+        foreach (var layout in Layouts) layout.GroupKeys.RemoveAll(key => string.Equals(key, group.Key, StringComparison.OrdinalIgnoreCase));
         RefreshOperatorScopeEntries();
     }
 
@@ -758,6 +751,7 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         _mainVm.PrepareDialog(dialog, privileged: true);
         if (dialog.ShowDialog() == true && _mainVm.CanAdminister)
         {
+            if (RejectPinMatching(dialog.Password, Settings.OperatorPasswordHash)) return;
             Settings.AdminPasswordHash = _securityService.HashPassword(dialog.Password);
             _notificationService.Show(LocalizationService.T("Msg_PinSet"), NotificationType.Info);
         }
@@ -793,10 +787,18 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         _mainVm.PrepareDialog(dialog, privileged: true);
         if (dialog.ShowDialog() == true && _mainVm.CanAdminister)
         {
+            if (RejectPinMatching(dialog.Password, Settings.AdminPasswordHash)) return;
             Settings.OperatorPasswordHash = _securityService.HashPassword(dialog.Password);
             OnPropertyChanged(nameof(IsOperatorPinConfigured));
             _notificationService.Show(LocalizationService.T("Msg_OperatorPinSet"), NotificationType.Info);
         }
+    }
+
+    internal bool RejectPinMatching(string newPin, string otherHash)
+    {
+        if (!_mainVm.PinSignIn.SharesPin(newPin, otherHash)) return false;
+        _notificationService.Show(LocalizationService.T("Msg_PinsMustDiffer"), NotificationType.Error);
+        return true;
     }
 
     [RelayCommand]
@@ -877,8 +879,15 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
                 Apps = [.. Apps],
                 Layouts = [.. Layouts]
             };
-            await _configService.ExportAsync(dlg.FileName, root);
-            _notificationService.Show(LocalizationService.T("Msg_ConfigExported"), NotificationType.Info);
+            try
+            {
+                await _configService.ExportAsync(dlg.FileName, root);
+                _notificationService.Show(LocalizationService.T("Msg_ConfigExported"), NotificationType.Info);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _notificationService.Show(LocalizationService.T("Msg_ExportFailed", ex.Message), NotificationType.Error);
+            }
         }
     }
 
@@ -1020,8 +1029,6 @@ public partial class SettingsViewModel : ObservableObject, IDisposable
         }
     }
 
-    public List<CrashHistoryService.CrashEntry> CrashHistory => _crashHistoryService.GetHistory();
-    public Dictionary<string, int> CrashCountsByApp => _crashHistoryService.GetCrashCountsByApp();
 
     private string BuildUniqueAppName(string baseName)
     {

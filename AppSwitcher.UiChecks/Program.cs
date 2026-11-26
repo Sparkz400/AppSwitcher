@@ -191,7 +191,7 @@ internal static partial class Program
             vm.Settings.Theme = theme;
             var settings = new SettingsViewModel(vm, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
                 new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-                new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session, AccessLevel.Admin);
+                session, AccessLevel.Admin);
             var window = new SettingsWindow { DataContext = settings, Width = width, Height = height };
             window.Show();
             CheckContrast();
@@ -294,7 +294,7 @@ internal static partial class Program
         vm.Apps.Add(app);
         using var settings = new SettingsViewModel(vm, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
             new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-            new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session, AccessLevel.Admin);
+            session, AccessLevel.Admin);
         var window = new SettingsWindow { DataContext = settings };
         vm.PrepareWindow(window, privileged: true);
         window.Show(); await Render();
@@ -561,7 +561,7 @@ internal static partial class Program
         vm.CurrentAccessLevel = AccessLevel.Operator;
         using var settings = new SettingsViewModel(vm, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
             new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-            new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session, AccessLevel.Operator);
+            session, AccessLevel.Operator);
         var window = new SettingsWindow { DataContext = settings, Width = 720, Height = 640 };
         window.Show(); await Render();
         Check(Descendants<TextBox>(window).Where(t => t.IsVisible && t.Name != "SettingsSearchBox").All(t => !t.IsEnabled), "Operator application fields are read-only");

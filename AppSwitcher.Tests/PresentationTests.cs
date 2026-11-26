@@ -277,6 +277,5 @@ public class PresentationTests
     private static SettingsViewModel CreateEditor(MainViewModelAuditTests.TestHarness fixture, AccessLevel role) => new(
         fixture.ViewModel, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
         new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-        new CrashHistoryService(NullLogger<CrashHistoryService>.Instance),
         new SessionTimeoutService(NullLogger<SessionTimeoutService>.Instance), role);
 }

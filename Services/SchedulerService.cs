@@ -87,7 +87,8 @@ public class SchedulerService : IDisposable
                 if (!await timer.WaitForNextTickAsync(ct))
                     break;
 
-                await CheckSchedulesAsync(getApps, ct);
+                // Launches run as tracked operations; the loop does not wait for them.
+                _ = CheckSchedulesAsync(getApps, ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
             catch (OperationCanceledException) { /* Maintenance cancelled this pass, not the scheduler. */ }
@@ -98,22 +99,25 @@ public class SchedulerService : IDisposable
         }
     }
 
-    internal async Task CheckSchedulesAsync(Func<IReadOnlyList<AppItem>> getApps, CancellationToken ct)
+    /// <summary>Queues due actions; the returned task completes when this pass's launches have finished.</summary>
+    internal Task CheckSchedulesAsync(Func<IReadOnlyList<AppItem>> getApps, CancellationToken ct)
     {
-        if (_maintenance?.IsPaused == true) return;
+        if (_maintenance?.IsPaused == true) return Task.CompletedTask;
         var shutdown = ct;
         using var automatic = CancellationTokenSource.CreateLinkedTokenSource(ct, _maintenance?.AutomaticToken ?? CancellationToken.None);
         ct = automatic.Token;
         var now = DateTime.Now;
         var todayKey = now.ToString("yyyyMMdd");
         var apps = getApps();
+        var launches = new List<Task>();
 
         foreach (var app in apps)
         {
             ct.ThrowIfCancellationRequested();
 
-            await CheckScheduledLaunchAsync(app, now, todayKey, getApps, ct);
             // Queued operations outlive this pass and must link to the original shutdown token.
+            // A slow launch (hooks, readiness) must not push other apps' same-minute actions out of their window.
+            launches.Add(QueueScheduledLaunch(app, now, todayKey, getApps, shutdown));
             QueueScheduledRestart(app, now, todayKey, getApps, shutdown);
             QueueScheduledShutdown(app, now, todayKey, getApps, shutdown);
         }
@@ -121,9 +125,10 @@ public class SchedulerService : IDisposable
         PurgeStaleKeys(_launchedToday, todayKey);
         PurgeStaleKeys(_restartedToday, todayKey);
         PurgeStaleKeys(_shutdownToday, todayKey);
+        return Task.WhenAll(launches);
     }
 
-    private async Task CheckScheduledLaunchAsync(
+    private Task QueueScheduledLaunch(
         AppItem app,
         DateTime now,
         string todayKey,
@@ -131,42 +136,49 @@ public class SchedulerService : IDisposable
         CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(app.ScheduleTime))
-            return;
+            return Task.CompletedTask;
         if (!TryParseScheduledTime(app.ScheduleTime, out var scheduledTime))
-            return;
-        if (_maintenance?.Covers(new DateTimeOffset(now.Date + scheduledTime.ToTimeSpan())) == true) return;
+            return Task.CompletedTask;
+        if (_maintenance?.Covers(new DateTimeOffset(now.Date + scheduledTime.ToTimeSpan())) == true) return Task.CompletedTask;
 
         var key = $"launch_{NormalizeIdentity(app.Name)}_{todayKey}";
         if (_launchedToday.ContainsKey(key))
-            return;
-        if (TimeOnly.FromDateTime(now) < scheduledTime)
-            return;
-        if ((TimeOnly.FromDateTime(now) - scheduledTime).TotalMinutes > 5)
-            return;
+            return Task.CompletedTask;
+        if (!IsDue(scheduledTime, now, TimeZoneInfo.Local))
+            return Task.CompletedTask;
         if (_processHelper.IsAppRunning(app.ProcessTarget))
-            return;
+            return Task.CompletedTask;
 
-        try
-        {
-            await StartScheduledAppWithDependenciesAsync(app, getApps(), ct);
-            _launchedToday[key] = now;
-            _logger.LogInformation("Scheduled launch: {Name} at {Time}", app.Name, app.ScheduleTime);
-            _notifications.Show(
-                LocalizationService.T("Msg_ScheduledLaunch", app.Name, app.ScheduleTime),
-                NotificationType.Info);
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogDebug("Scheduled launch cancelled for {Name}", app.Name);
-            throw;
-        }
-        catch (Exception ex)
-        {
-            if (ex is AppLifecycleException lifecycleException)
-                _notifications.Show(lifecycleException.Message, NotificationType.Error);
+        return TrackOperationAsync(
+            key,
+            operationCt => ExecuteScheduledLaunchAsync(app, key, now, getApps, operationCt),
+            ct);
+    }
 
-            _logger.LogError(ex, "Scheduled launch failed for {Name}", app.Name);
-        }
+    private async Task ExecuteScheduledLaunchAsync(
+        AppItem app,
+        string key,
+        DateTime triggeredAt,
+        Func<IReadOnlyList<AppItem>> getApps,
+        CancellationToken ct)
+    {
+        if (_maintenance?.IsPaused == true) return;
+        using var automatic = CancellationTokenSource.CreateLinkedTokenSource(ct, _maintenance?.AutomaticToken ?? CancellationToken.None);
+        await StartScheduledAppWithDependenciesAsync(app, getApps(), automatic.Token);
+        _launchedToday[key] = triggeredAt;
+        _logger.LogInformation("Scheduled launch: {Name} at {Time}", app.Name, app.ScheduleTime);
+        _notifications.Show(
+            LocalizationService.T("Msg_ScheduledLaunch", app.Name, app.ScheduleTime),
+            NotificationType.Info);
+    }
+
+    /// <summary>Due from the scheduled local time for five minutes; a time skipped by a DST gap fires right after the gap.</summary>
+    internal static bool IsDue(TimeOnly scheduledTime, DateTime now, TimeZoneInfo zone)
+    {
+        var due = now.Date + scheduledTime.ToTimeSpan();
+        while (zone.IsInvalidTime(due))
+            due = due.AddMinutes(1);
+        return now >= due && (now - due).TotalMinutes <= 5;
     }
 
     private void QueueScheduledRestart(
@@ -185,9 +197,7 @@ public class SchedulerService : IDisposable
         var key = $"restart_{NormalizeIdentity(app.Name)}_{todayKey}";
         if (_restartedToday.ContainsKey(key))
             return;
-        if (TimeOnly.FromDateTime(now) < scheduledTime)
-            return;
-        if ((TimeOnly.FromDateTime(now) - scheduledTime).TotalMinutes > 5)
+        if (!IsDue(scheduledTime, now, TimeZoneInfo.Local))
             return;
         if (!_processHelper.IsAppRunning(app.ProcessTarget))
             return;
@@ -214,9 +224,7 @@ public class SchedulerService : IDisposable
         var key = $"shutdown_{NormalizeIdentity(app.Name)}_{todayKey}";
         if (_shutdownToday.ContainsKey(key))
             return;
-        if (TimeOnly.FromDateTime(now) < scheduledTime)
-            return;
-        if ((TimeOnly.FromDateTime(now) - scheduledTime).TotalMinutes > 5)
+        if (!IsDue(scheduledTime, now, TimeZoneInfo.Local))
             return;
         if (!_processHelper.IsAppRunning(app.ProcessTarget))
             return;

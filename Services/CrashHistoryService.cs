@@ -97,42 +97,5 @@ public class CrashHistoryService
         return value;
     }
 
-    private static string[] ParseCsvLine(string line)
-    {
-        var result = new List<string>();
-        var current = new System.Text.StringBuilder();
-        bool inQuotes = false;
-
-        for (int i = 0; i < line.Length; i++)
-        {
-            if (inQuotes)
-            {
-                if (line[i] == '"' && i + 1 < line.Length && line[i + 1] == '"')
-                {
-                    current.Append('"');
-                    i++;
-                }
-                else if (line[i] == '"')
-                    inQuotes = false;
-                else
-                    current.Append(line[i]);
-            }
-            else
-            {
-                if (line[i] == '"')
-                    inQuotes = true;
-                else if (line[i] == ',')
-                {
-                    result.Add(current.ToString());
-                    current.Clear();
-                }
-                else
-                    current.Append(line[i]);
-            }
-        }
-        result.Add(current.ToString());
-        return [.. result];
-    }
-
     public record CrashEntry(DateTime Timestamp, string AppName, string AppPath, string Event);
 }

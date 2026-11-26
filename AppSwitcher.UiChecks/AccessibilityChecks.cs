@@ -25,7 +25,7 @@ internal static partial class Program
         var theme = new ThemeService(NullLogger<ThemeService>.Instance);
         using var settings = new SettingsViewModel(runtime, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
             new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-            new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session);
+            session);
         var launcher = new MainWindow(session) { DataContext = runtime };
         var editor = new SettingsWindow { DataContext = settings, Width = 720, Height = 640 };
         launcher.Show(); editor.Show();

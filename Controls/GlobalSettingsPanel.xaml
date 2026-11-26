@@ -103,8 +103,8 @@
                         <CheckBox IsChecked="{Binding Settings.GlobalShortcutEnabled}" Content="{DynamicResource Shortcut_Enable}" Margin="0,0,0,8" />
                         <TextBlock Text="{Binding Runtime.ShortcutStatus}" TextWrapping="Wrap" Foreground="{DynamicResource WarningFg}" Margin="0,0,0,12" Visibility="{Binding Runtime.ShortcutStatus, Converter={StaticResource StringNotEmptyToVis}}" />
                         <Expander Header="{DynamicResource Settings_MenuDimensions}" Margin="0,0,0,12"><StackPanel Margin="0,8,0,0">
-<Label Content="{DynamicResource Settings_MenuWidth}"/><Slider Minimum="360" Maximum="600" Value="{Binding Settings.MenuWidth}" AutomationProperties.Name="{DynamicResource Settings_MenuWidth}"/>
-<Label Content="{DynamicResource Settings_MenuItemHeight}"/><Slider Minimum="44" Maximum="120" Value="{Binding Settings.MenuItemHeight}" AutomationProperties.Name="{DynamicResource Settings_MenuItemHeight}"/>
+<Label Content="{DynamicResource Settings_MenuWidth}"/><Slider IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Minimum="360" Maximum="600" Value="{Binding Settings.MenuWidth}" AutomationProperties.Name="{DynamicResource Settings_MenuWidth}"/>
+<Label Content="{DynamicResource Settings_MenuItemHeight}"/><Slider IsEnabled="{Binding DataContext.CanEditApps, RelativeSource={RelativeSource AncestorType=Window}}" Minimum="44" Maximum="120" Value="{Binding Settings.MenuItemHeight}" AutomationProperties.Name="{DynamicResource Settings_MenuItemHeight}"/>
 </StackPanel></Expander><Label Content="{DynamicResource Settings_BehaviorPosition}" />
                         <Border Background="{DynamicResource PanelBg}" CornerRadius="4" Padding="15" Margin="0,5,0,20">
                             <StackPanel>

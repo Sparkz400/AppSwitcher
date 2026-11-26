@@ -89,3 +89,16 @@ begin
   Result := Error = '';
   if not Result then SuppressibleMsgBox(Error, mbError, MB_OK, IDOK);
 end;
+
+{ Done here instead of [UninstallRun]: Check functions there are evaluated at install time, not at uninstall. }
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  ResultCode: Integer;
+begin
+  { Undo the Keyboard Filter rules AppSwitcher enabled; the state file exists only if it enabled any. }
+  if (CurUninstallStep = usUninstall) and
+     FileExists(ExpandConstant('{commonappdata}\AppSwitcher\kiosk-machine-state.json')) then
+    ShellExec('runas', ExpandConstant('{app}\app\AppSwitcher.exe'),
+      '--kiosk-machine remove --result-file "' + ExpandConstant('{tmp}\kiosk-remove.json') + '"',
+      '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;

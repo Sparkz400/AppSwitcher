@@ -78,7 +78,7 @@ public class SetupAndMonitoringTests
         using var session = new SessionTimeoutService(NullLogger<SessionTimeoutService>.Instance);
         using var editor = new SettingsViewModel(vm, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
             new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-            new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session);
+            session);
         Assert.Equal("Setup_Review", editor.SetupSteps[0].Status);
         vm.Apps.Add(new() { Name = "Native", Path = "native.exe" });
         Assert.Equal("Setup_Configured", editor.SetupSteps[0].Status);
@@ -119,7 +119,7 @@ public class SetupAndMonitoringTests
             using var session = new SessionTimeoutService(NullLogger<SessionTimeoutService>.Instance);
             using var editor = new SettingsViewModel(fixture.ViewModel, config, new SecurityService(), fixture.NotificationService,
                 new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-                new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session);
+                session);
             Assert.Equal("Setup", editor.ActiveSection);
             using var existing = new ConfigService(NullLogger<ConfigService>.Instance, new(NullLogger<ConfigValidationService>.Instance), folder);
             await existing.LoadAsync();
