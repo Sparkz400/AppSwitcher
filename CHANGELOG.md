@@ -28,7 +28,10 @@
     - Group names are matched case-insensitively everywhere.
   - **Kiosk.**
     - Keyboard Filter ownership is recorded after each key and written atomically. A damaged record is preserved and reported, and no rule is removed on its basis.
-    - The elevated helper now owns `%ProgramData%\AppSwitcher`: it takes over the folder with an administrators-only ACL (users read-only), refuses links, and never writes through predictable file names. The non-elevated app no longer creates that folder.
+    - The elevated helper now owns `%ProgramData%\AppSwitcher`, and the non-elevated app no longer creates that folder.
+      - An existing folder is never changed in place. Unless it is a real folder owned by Administrators/SYSTEM that nobody else can modify, it is moved aside and recreated with an administrators-only ACL (users read-only), then checked again.
+      - A Keyboard Filter record found in a moved-aside folder is not trusted, and no rule is removed on its basis.
+      - Temp and backup files use fresh names and never overwrite.
     - Turning kiosk off no longer needs elevation when nothing machine-wide was changed.
     - Uninstall removes AppSwitcher's Keyboard Filter rules.
     - Taskbar and edge-swipe settings are restored after a crash.

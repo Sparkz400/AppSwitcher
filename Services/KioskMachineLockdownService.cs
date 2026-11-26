@@ -423,11 +423,10 @@ internal static class KioskMachineLockdownManager
 
         try
         {
-            SecureMachineDataDirectory(AppPaths.MachineDataDirectory);
+            var currentState = LoadTrustedMachineState(out var recoveryNote);
             var scope = CreateManagementScope();
             EnsureAdministratorsExcluded(scope);
 
-            var currentState = LoadMachineState(out var recoveryNote);
             var details = AppendNote(editionLabel, recoveryNote);
             var ownedKeys = new HashSet<string>(currentState.OwnedPredefinedKeys, StringComparer.OrdinalIgnoreCase);
             using var loadedKeys = LoadPredefinedKeys(scope);
@@ -485,8 +484,7 @@ internal static class KioskMachineLockdownManager
         string recoveryNote;
         try
         {
-            SecureMachineDataDirectory(AppPaths.MachineDataDirectory);
-            currentState = LoadMachineState(out recoveryNote);
+            currentState = LoadTrustedMachineState(out recoveryNote);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
@@ -609,7 +607,7 @@ internal static class KioskMachineLockdownManager
         {
             var scope = CreateManagementScope();
             using var loadedKeys = LoadPredefinedKeys(scope);
-            var state = LoadMachineState(out _);
+            var state = LoadTrustedMachineState(out _);
             var allEnabled = TargetPredefinedKeys.All(targetKey =>
                 loadedKeys.TryGetValue(targetKey, out var keyObject) && IsPredefinedKeyEnabled(keyObject));
 
@@ -697,8 +695,21 @@ internal static class KioskMachineLockdownManager
     private static bool IsPredefinedKeyEnabled(ManagementObject managementObject) =>
         managementObject["Enabled"] is bool enabled && enabled;
 
-    internal static KioskMachineState LoadMachineState(out string recoveryNote) =>
-        LoadMachineState(AppPaths.KioskMachineStateFilePath, out recoveryNote);
+    // Elevated entry point: secure the folder first; a record found in an untrusted folder may have been planted.
+    private static KioskMachineState LoadTrustedMachineState(out string recoveryNote)
+    {
+        var quarantined = SecureMachineDataDirectory(AppPaths.MachineDataDirectory);
+        if (quarantined != null && File.Exists(Path.Combine(quarantined, Path.GetFileName(AppPaths.KioskMachineStateFilePath))))
+        {
+            recoveryNote = $"An earlier Keyboard Filter record was in a folder standard users could change; it was moved to '{quarantined}' and not trusted. No Keyboard Filter rule was removed; an administrator must review them.";
+            return new KioskMachineState { Unreadable = true };
+        }
+
+        var state = LoadMachineState(AppPaths.KioskMachineStateFilePath, out recoveryNote);
+        if (quarantined != null)
+            recoveryNote = AppendNote(recoveryNote, $"An untrusted machine data folder was moved to '{quarantined}'.");
+        return state;
+    }
 
     internal static KioskMachineState LoadMachineState(string path, out string recoveryNote)
     {
@@ -724,32 +735,63 @@ internal static class KioskMachineLockdownManager
         return new KioskMachineState { Unreadable = true };
     }
 
-    // Runs elevated. Earlier versions let the non-elevated app create this folder, so a standard user may own it and have
-    // planted files or links. Take it over before any read or write: administrators own it, users may only read.
-    internal static void SecureMachineDataDirectory(string directory)
+    private static readonly SecurityIdentifier AdministratorsSid = new(WellKnownSidType.BuiltinAdministratorsSid, null);
+    private static readonly SecurityIdentifier SystemSid = new(WellKnownSidType.LocalSystemSid, null);
+
+    private const FileSystemRights ModifyingRights = FileSystemRights.WriteData | FileSystemRights.AppendData
+        | FileSystemRights.WriteAttributes | FileSystemRights.WriteExtendedAttributes | FileSystemRights.Delete
+        | FileSystemRights.DeleteSubdirectoriesAndFiles | FileSystemRights.ChangePermissions | FileSystemRights.TakeOwnership;
+
+    /// <summary>
+    /// Runs elevated, before any read or write of the machine state. Earlier versions let the non-elevated app (or an
+    /// inherited ProgramData ACL) leave this folder writable by standard users, who could plant files or links in it.
+    /// An existing folder is never modified in place: unless it is already trusted it is moved aside, and a new one is
+    /// created with an administrators-only ACL and checked again. Returns the quarantined folder, or null.
+    /// </summary>
+    internal static string? SecureMachineDataDirectory(string directory)
     {
-        static void RefuseLink(DirectoryInfo info)
+        var info = new DirectoryInfo(directory);
+        string? quarantined = null;
+        if (info.Exists && !IsTrustedDirectory(info))
         {
-            info.Refresh();
-            if (info.Exists && info.Attributes.HasFlag(FileAttributes.ReparsePoint))
-                throw new IOException($"Refusing to use '{info.FullName}' because it is a link.");
+            // Directory.Move renames a link itself, never its target.
+            quarantined = $"{directory}.untrusted-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}";
+            Directory.Move(directory, quarantined);
         }
 
-        var info = new DirectoryInfo(directory);
-        RefuseLink(info);
-        var admins = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
         var security = new DirectorySecurity();
         security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
-        security.SetOwner(admins);
+        security.SetOwner(AdministratorsSid);
         const InheritanceFlags inherit = InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit;
-        security.AddAccessRule(new(admins, FileSystemRights.FullControl, inherit, PropagationFlags.None, AccessControlType.Allow));
-        security.AddAccessRule(new(new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null),
-            FileSystemRights.FullControl, inherit, PropagationFlags.None, AccessControlType.Allow));
+        security.AddAccessRule(new(AdministratorsSid, FileSystemRights.FullControl, inherit, PropagationFlags.None, AccessControlType.Allow));
+        security.AddAccessRule(new(SystemSid, FileSystemRights.FullControl, inherit, PropagationFlags.None, AccessControlType.Allow));
         security.AddAccessRule(new(new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null),
             FileSystemRights.ReadAndExecute, inherit, PropagationFlags.None, AccessControlType.Allow));
-        if (info.Exists) info.SetAccessControl(security);
-        else info.Create(security);
-        RefuseLink(info); // Swapped for a link between the check and the ACL change.
+        info.Create(security); // The descriptor is applied at creation; an existing folder is left untouched here.
+
+        // Something may have re-created the folder (or a link) between the move and the creation: fail closed.
+        info.Refresh();
+        if (!IsTrustedDirectory(info))
+            throw new IOException($"Refusing to use '{directory}': it is not exclusively controlled by administrators.");
+        return quarantined;
+    }
+
+    // Trusted: a real folder (not a link), owned by Administrators or SYSTEM, with a protected ACL that lets nobody
+    // else modify it. Files inside such a folder can only have been written by administrators.
+    internal static bool IsTrustedDirectory(DirectoryInfo info)
+    {
+        if (!info.Exists || info.Attributes.HasFlag(FileAttributes.ReparsePoint)) return false;
+        var acl = info.GetAccessControl();
+        if (acl.GetOwner(typeof(SecurityIdentifier)) is not SecurityIdentifier owner || (owner != AdministratorsSid && owner != SystemSid))
+            return false;
+        if (!acl.AreAccessRulesProtected) return false;
+        foreach (FileSystemAccessRule rule in acl.GetAccessRules(includeExplicit: true, includeInherited: true, typeof(SecurityIdentifier)))
+        {
+            if (rule.AccessControlType == AccessControlType.Allow && (rule.FileSystemRights & ModifyingRights) != 0
+                && rule.IdentityReference != AdministratorsSid && rule.IdentityReference != SystemSid)
+                return false;
+        }
+        return true;
     }
 
     private static void SaveMachineState(IEnumerable<string> ownedKeys) =>

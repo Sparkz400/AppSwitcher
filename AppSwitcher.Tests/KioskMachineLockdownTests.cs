@@ -48,7 +48,7 @@ public class KioskMachineLockdownTests
     }
 
     [Fact]
-    public void Machine_Data_Directory_That_Is_A_Link_Is_Refused()
+    public void Links_And_User_Writable_Folders_Are_Not_Trusted_For_Machine_State()
     {
         var root = Path.Combine(Path.GetTempPath(), $"appswitcher-link-test-{Guid.NewGuid():N}");
         var target = Path.Combine(root, "target");
@@ -69,7 +69,9 @@ public class KioskMachineLockdownTests
         try
         {
             Assert.True(new DirectoryInfo(link).Attributes.HasFlag(FileAttributes.ReparsePoint));
-            Assert.Throws<IOException>(() => KioskMachineLockdownManager.SecureMachineDataDirectory(link));
+            Assert.False(KioskMachineLockdownManager.IsTrustedDirectory(new DirectoryInfo(link)));
+            // Created by this (standard) user, with an inherited ACL: anything inside it could have been planted.
+            Assert.False(KioskMachineLockdownManager.IsTrustedDirectory(new DirectoryInfo(target)));
         }
         finally
         {
