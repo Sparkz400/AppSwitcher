@@ -61,6 +61,7 @@
      <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
       <Button Content="{DynamicResource UI_Monitoring}" Command="{Binding OpenDashboardCommand}" Margin="0,0,0,8"/>
       <Button Content="{DynamicResource UI_Maintenance}" Command="{Binding OpenSettingsCommand}"/>
+      <Button Content="{DynamicResource UI_SignOut}" Command="{Binding SignOutCommand}" Margin="0,8,0,0" Visibility="{Binding CanManageApps, Converter={StaticResource BoolToVis}}"/>
      </StackPanel>
      <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
       <StackPanel>

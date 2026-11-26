@@ -4,7 +4,7 @@ if (typeof importScripts === "function") importScripts("core.js");
   const api = globalThis.browser || globalThis.chrome;
   const firefox = typeof globalThis.browser !== "undefined" && /Firefox\//.test(navigator.userAgent);
   const browserName = firefox ? "Firefox" : /Edg\//.test(navigator.userAgent) ? "Edge" : "Chrome";
-  let port, controller, identity, retryTimer, snapshotPending, eventTimer, snapshotDirty;
+  let port, controller, identity, retryTimer, snapshotPending, eventTimer, snapshotDirty, retryDelay = 5000;
   const ready = (async () => {
     const local = await api.storage.local.get(["profileId", "profileName"]);
     const session = await api.storage.session.get("sessionId");
@@ -28,6 +28,12 @@ if (typeof importScripts === "function") importScripts("core.js");
     clearTimeout(eventTimer);
     eventTimer = setTimeout(snapshot, 100);
   }
+  function retry() {
+    // Back off while AppSwitcher is closed: every attempt starts a native host process.
+    clearTimeout(retryTimer);
+    retryTimer = setTimeout(connect, retryDelay);
+    retryDelay = Math.min(retryDelay * 2, 60000);
+  }
   async function connect() {
     await ready;
     if (port) return;
@@ -36,11 +42,11 @@ if (typeof importScripts === "function") importScripts("core.js");
       port.onDisconnect.addListener(() => {
         void api.runtime.lastError;
         port = undefined;
-        clearTimeout(retryTimer);
-        retryTimer = setTimeout(connect, 5000);
+        retry();
       });
       port.onMessage.addListener(async message => {
         if (message.protocol !== 1 || message.type !== "request" || !message.requestId) return;
+        retryDelay = 5000;
         let reply;
         try { reply = await controller.handle(message.request); }
         catch { reply = { code: "Recovering", state: "Unknown" }; }
@@ -49,7 +55,7 @@ if (typeof importScripts === "function") importScripts("core.js");
       });
       send({ type: "hello", browser: browserName, extensionVersion: api.runtime.getManifest().version, ...identity });
       await snapshot();
-    } catch { clearTimeout(retryTimer); retryTimer = setTimeout(connect, 5000); }
+    } catch { retry(); }
   }
   api.tabs.onRemoved.addListener((id, info) => { ready.then(() => controller.removed(id, info)).then(snapshot).catch(() => {}); });
   api.tabs.onReplaced?.addListener((added, removed) => { ready.then(() => controller.replaced(added, removed)).then(snapshot).catch(() => {}); });

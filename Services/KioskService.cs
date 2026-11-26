@@ -18,7 +18,7 @@ internal sealed partial class KioskService : IDisposable
         User
     }
 
-    private readonly record struct EdgeSwipePolicyState(bool Exists, object? Value, RegistryValueKind? Kind)
+    private readonly record struct EdgeSwipePolicyState(bool Exists, object? Value, RegistryValueKind? Kind, bool SetByAppSwitcher = false)
     {
         public bool IsDisabled => Value is int intValue && intValue == 0;
     }
@@ -35,6 +35,7 @@ internal sealed partial class KioskService : IDisposable
 
     private const string EdgeSwipeRegistryPath = @"SOFTWARE\Policies\Microsoft\Windows\EdgeUI";
     private const string EdgeSwipeValueName = "AllowEdgeSwipe";
+    private const string EdgeSwipeMarkerValueName = "AppSwitcherSetAllowEdgeSwipe";
 
     private readonly ILogger<KioskService> _logger;
     private readonly IKioskPlatform _platform;
@@ -44,10 +45,13 @@ internal sealed partial class KioskService : IDisposable
     private readonly DispatcherTimer _enforcementTimer;
     private readonly HashSet<Window> _ownedWindows = [];
     private readonly HashSet<IntPtr> _hiddenTaskbarHandles = [];
+    private readonly Func<bool> _machineLockdownStateExists;
 
     private Func<IReadOnlyCollection<AppProcessTarget>>? _configuredAppTargetsProvider;
     private IntPtr _hookId = IntPtr.Zero;
     private KioskKeyboardProc? _hookProc;
+    private long _hookInstalledAtTicks;
+    private bool _crashRecoveryDone;
     private bool _isActive;
     private bool _edgeSwipeWasDisabled;
     private bool _lastKeyboardHookInstalled;
@@ -67,9 +71,10 @@ internal sealed partial class KioskService : IDisposable
     [DllImport("user32.dll")]
     private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
+    // Windows silently drops low-level hooks that exceed LowLevelHooksTimeout, so re-hook periodically.
+    internal TimeSpan KeyboardHookRefreshInterval { get; set; } = TimeSpan.FromSeconds(45);
+
     public bool IsActive => _isActive;
-    public bool LastKeyboardHookInstalled => _lastKeyboardHookInstalled;
-    public bool LastEdgeSwipePolicyApplied => _lastEdgeSwipePolicyApplied;
     public KioskMachineLockdownResult LastMachineLockdownResult => _lastMachineLockdownResult;
     public KioskStatus Status { get; } = new()
     {
@@ -95,9 +100,11 @@ internal sealed partial class KioskService : IDisposable
         IKioskConfiguredAppMatcher configuredAppMatcher,
         KioskForegroundPolicy foregroundPolicy,
         IKioskMachineLockdownService machineLockdownService,
-        DispatcherTimer? enforcementTimer = null)
+        DispatcherTimer? enforcementTimer = null,
+        Func<bool>? machineLockdownStateExists = null)
     {
         _logger = logger;
+        _machineLockdownStateExists = machineLockdownStateExists ?? MachineLockdownStateFileExists;
         _platform = platform;
         _configuredAppMatcher = configuredAppMatcher;
         _foregroundPolicy = foregroundPolicy;
@@ -130,7 +137,11 @@ internal sealed partial class KioskService : IDisposable
             window.Closed -= OwnedWindow_Closed;
     }
 
-    public async Task<KioskMachineLockdownResult> ActivateAsync(CancellationToken cancellationToken = default)
+    public Task<KioskMachineLockdownResult> ActivateAsync(CancellationToken cancellationToken = default) =>
+        ActivateAsync(applyMachineLockdown: true, cancellationToken);
+
+    /// <param name="applyMachineLockdown">False skips the elevated Keyboard Filter helper (no UAC prompt), e.g. on app start.</param>
+    public async Task<KioskMachineLockdownResult> ActivateAsync(bool applyMachineLockdown, CancellationToken cancellationToken = default)
     {
         if (_isActive)
         {
@@ -145,7 +156,17 @@ internal sealed partial class KioskService : IDisposable
         _isActive = true;
         _enforcementTimer.Start();
 
-        _lastMachineLockdownResult = await _machineLockdownService.ApplyAsync(cancellationToken);
+        if (applyMachineLockdown)
+            _lastMachineLockdownResult = await _machineLockdownService.ApplyAsync(cancellationToken);
+        else if (!KioskMachineLockdownManager.TryGetSupportedEdition(out var editionLabel))
+            _lastMachineLockdownResult = KioskMachineLockdownResult.Unsupported(
+                "Keyboard Filter is not supported on this Windows edition.", editionLabel);
+        else
+            _lastMachineLockdownResult = _machineLockdownStateExists()
+                ? KioskMachineLockdownResult.AlreadyApplied(
+                    "Keyboard Filter rules recorded by AppSwitcher were not re-checked at startup.")
+                : KioskMachineLockdownResult.NotConfigured(
+                    "Keyboard Filter lockdown was not applied at startup.");
         RecordStatus("Activation", BuildActivationResult());
         _logger.LogInformation(
             "Kiosk mode activated (KeyboardFilterState={State})",
@@ -158,12 +179,21 @@ internal sealed partial class KioskService : IDisposable
     {
         if (!_isActive)
         {
+            RecoverFromUncleanShutdown();
             UpdateStatus();
             return _lastMachineLockdownResult;
         }
 
         var previousMachineResult = _lastMachineLockdownResult;
-        var machineResult = await _machineLockdownService.RemoveAsync(cancellationToken);
+        // Without a state file nothing machine-level is owned, so skip the elevated helper (a cancelled UAC prompt would block deactivation).
+        var machineResult = _machineLockdownStateExists()
+            ? await _machineLockdownService.RemoveAsync(cancellationToken)
+            : new KioskMachineLockdownResult
+            {
+                State = KioskMachineLockdownState.AlreadyRemoved,
+                Supported = previousMachineResult.Supported,
+                Message = "No AppSwitcher-owned Keyboard Filter rules were recorded."
+            };
         if (machineResult.BlocksDeactivation)
         {
             _lastMachineLockdownResult = PreservePreviousMachineState(machineResult, previousMachineResult);
@@ -216,6 +246,7 @@ internal sealed partial class KioskService : IDisposable
             return false;
         }
 
+        _hookInstalledAtTicks = Environment.TickCount64;
         _logger.LogDebug("Keyboard hook installed");
         return true;
     }
@@ -260,9 +291,6 @@ internal sealed partial class KioskService : IDisposable
             return true;
 
         if (ctrlPressed && vkCode == VK_ESCAPE)
-            return true;
-
-        if (ctrlPressed && shiftPressed && vkCode == VK_ESCAPE)
             return true;
 
         return false;
@@ -423,6 +451,8 @@ internal sealed partial class KioskService : IDisposable
                 key.DeleteValue(EdgeSwipeValueName, false);
             }
 
+            key.DeleteValue(EdgeSwipeMarkerValueName, false);
+
             var scopeLabel = GetEdgeSwipePolicyScopeLabel(_edgeSwipePolicyScope);
             ResetEdgeSwipeTracking();
             _logger.LogDebug("Edge-swipe policy restored for {Scope}", scopeLabel);
@@ -447,7 +477,8 @@ internal sealed partial class KioskService : IDisposable
             state = new EdgeSwipePolicyState(
                 Exists: value != null,
                 Value: value,
-                Kind: value != null ? key.GetValueKind(EdgeSwipeValueName) : null);
+                Kind: value != null ? key.GetValueKind(EdgeSwipeValueName) : null,
+                SetByAppSwitcher: key.GetValue(EdgeSwipeMarkerValueName) != null);
             return true;
         }
         catch (Exception ex)
@@ -468,7 +499,11 @@ internal sealed partial class KioskService : IDisposable
             var currentValue = key.GetValue(EdgeSwipeValueName);
             var currentState = currentValue == null
                 ? previousState
-                : new EdgeSwipePolicyState(true, currentValue, key.GetValueKind(EdgeSwipeValueName));
+                : new EdgeSwipePolicyState(
+                    true,
+                    currentValue,
+                    key.GetValueKind(EdgeSwipeValueName),
+                    key.GetValue(EdgeSwipeMarkerValueName) != null);
 
             if (currentState.IsDisabled)
             {
@@ -478,6 +513,7 @@ internal sealed partial class KioskService : IDisposable
             }
 
             key.SetValue(EdgeSwipeValueName, 0, RegistryValueKind.DWord);
+            key.SetValue(EdgeSwipeMarkerValueName, 1, RegistryValueKind.DWord);
             RememberEdgeSwipeState(scope, currentState, wasModified: true);
             _logger.LogDebug("Edge swipes disabled via {Scope} registry policy", GetEdgeSwipePolicyScopeLabel(scope));
             return true;
@@ -491,6 +527,13 @@ internal sealed partial class KioskService : IDisposable
 
     private void RememberEdgeSwipeState(EdgeSwipePolicyScope scope, EdgeSwipePolicyState state, bool wasModified)
     {
+        if (state.SetByAppSwitcher)
+        {
+            // Left over from a session that crashed: the original value is unknown, so restoring removes it.
+            wasModified = true;
+            state = default;
+        }
+
         _edgeSwipePolicyScope = scope;
         _edgeSwipeWasDisabled = wasModified;
         _edgeSwipeValuePreviouslyExisted = state.Exists;
@@ -543,8 +586,20 @@ internal sealed partial class KioskService : IDisposable
             action = "Keyboard hook";
             result = _lastKeyboardHookInstalled ? "Reinstalled" : "Reinstall failed";
         }
+        else if (Environment.TickCount64 - _hookInstalledAtTicks >= (long)KeyboardHookRefreshInterval.TotalMilliseconds)
+        {
+            RemoveKeyboardHook();
+            _lastKeyboardHookInstalled = InstallKeyboardHook();
+            if (!_lastKeyboardHookInstalled)
+            {
+                action = "Keyboard hook";
+                result = "Reinstall failed";
+            }
+        }
 
-        if (AreAnyTaskbarsVisible())
+        // Enumerating top-level windows is the costly part of this 200 ms tick; do it once unless the taskbar came back.
+        var taskbarsWereVisible = AreAnyTaskbarsVisible();
+        if (taskbarsWereVisible)
         {
             HideTaskbars();
             action = "Taskbar";
@@ -581,7 +636,7 @@ internal sealed partial class KioskService : IDisposable
             RecordStatus(action, result ?? "Recovered");
         }
 
-        UpdateStatus();
+        UpdateStatus(taskbarsVisible: taskbarsWereVisible ? null : false);
     }
 
     private bool TryHandleForegroundWindow(out string? result)
@@ -782,11 +837,11 @@ internal sealed partial class KioskService : IDisposable
         _logger.LogDebug("Kiosk status update: {Action} - {Result}", action, result);
     }
 
-    private void UpdateStatus()
+    private void UpdateStatus(bool? taskbarsVisible = null)
     {
         Status.IsActive = _isActive;
         Status.KeyboardHookInstalled = _hookId != IntPtr.Zero && _lastKeyboardHookInstalled;
-        Status.TaskbarHidden = _isActive && !AreAnyTaskbarsVisible();
+        Status.TaskbarHidden = _isActive && !(taskbarsVisible ?? AreAnyTaskbarsVisible());
         Status.EdgeSwipePolicyApplied = _lastEdgeSwipePolicyApplied;
         Status.KeyboardFilterSupported = _lastMachineLockdownResult.Supported;
         Status.KeyboardFilterConfigured = _lastMachineLockdownResult.Configured;
@@ -818,6 +873,43 @@ internal sealed partial class KioskService : IDisposable
         Status.LastBlockedSurface = string.Empty;
         Status.LastAllowedForeground = string.Empty;
         Status.ShellInterventionCount = 0;
+    }
+
+    private void RecoverFromUncleanShutdown()
+    {
+        if (_crashRecoveryDone)
+            return;
+
+        _crashRecoveryDone = true;
+
+        // Only Dispose restores the shell; after a crash the taskbar and edge-swipe policy can stay locked.
+        foreach (var handle in _platform.GetTaskbarHandles())
+        {
+            if (handle != IntPtr.Zero && !_platform.IsWindowVisible(handle))
+                _platform.ShowWindow(handle);
+        }
+
+        foreach (var scope in new[] { EdgeSwipePolicyScope.Machine, EdgeSwipePolicyScope.User })
+        {
+            if (TryReadEdgeSwipePolicy(GetEdgeSwipePolicyRootKey(scope)!, scope, out var state) && state.SetByAppSwitcher)
+            {
+                RememberEdgeSwipeState(scope, state, wasModified: true);
+                EnableEdgeSwipes();
+                ResetEdgeSwipeTracking();
+            }
+        }
+    }
+
+    private static bool MachineLockdownStateFileExists()
+    {
+        try
+        {
+            return File.Exists(AppPaths.KioskMachineStateFilePath);
+        }
+        catch (Exception)
+        {
+            return true;
+        }
     }
 
     private void DeactivateAppLevelOnly()

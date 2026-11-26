@@ -297,8 +297,7 @@ internal sealed class AppLifecycleService : IAppLifecycleService
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var gate = _appLocks.For(app.ProcessTarget.Key);
-        await gate.WaitAsync(ct);
+        var gate = await _appLocks.EnterAsync(app.ProcessTarget.Key, ct);
         try
         {
             if (app.IsWebsite)
@@ -343,8 +342,7 @@ internal sealed class AppLifecycleService : IAppLifecycleService
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var gate = _appLocks.For(app.ProcessTarget.Key);
-        await gate.WaitAsync(ct);
+        var gate = await _appLocks.EnterAsync(app.ProcessTarget.Key, ct);
         try
         {
             if (app.IsWebsite)

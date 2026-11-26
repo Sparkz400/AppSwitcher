@@ -19,5 +19,4 @@ for (const browser of ["chromium", "firefox"]) {
     console.log(`Unpacked Chromium extension ID: ${id}`);
   }
 }
-for (const file of ["Install-BrowserHost.ps1", "Uninstall-BrowserHost.ps1"]) await copyFile(resolve(root, "scripts", file), resolve(output, file));
 console.log(`Extensions: ${output}`);

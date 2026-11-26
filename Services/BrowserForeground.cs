@@ -20,10 +20,12 @@ internal static class BrowserForeground
         public IntPtr Reserved1, Peb, Reserved2, Reserved3, ProcessId, ParentId;
     }
 
+    internal static string ProcessName(BrowserKind browser) => browser switch { BrowserKind.Chrome => "chrome", BrowserKind.Edge => "msedge", _ => "firefox" };
+
     // Resolve the browser from the OS-authenticated pipe client, never from extension-supplied PIDs.
     internal static uint FindBrowserProcess(SafePipeHandle pipe, BrowserKind browser)
     {
-        var expected = browser switch { BrowserKind.Chrome => "chrome", BrowserKind.Edge => "msedge", _ => "firefox" };
+        var expected = ProcessName(browser);
         try
         {
             if (!GetNamedPipeClientProcessId(pipe, out var id)) return 0;

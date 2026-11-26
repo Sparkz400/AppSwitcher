@@ -59,14 +59,21 @@ internal sealed class KioskForegroundPolicy
         if (isOwnedWindow)
             return new(KioskForegroundDisposition.Allow, "AppSwitcher", description);
 
-        if (isConfiguredAppWindow)
-            return new(KioskForegroundDisposition.Allow, "Configured app", description);
-
+        // Checked before configured apps: a configured explorer.exe must not unlock the taskbar, desktop or Task View.
         if (TaskbarClasses.Contains(snapshot.WindowClassName))
             return new(KioskForegroundDisposition.Block, "Taskbar", description);
 
         if (DesktopClasses.Contains(snapshot.WindowClassName))
             return new(KioskForegroundDisposition.Block, "Shell desktop", description);
+
+        if (ShellProcesses.Contains(snapshot.ProcessName) && ShellSurfaceClasses.Contains(snapshot.WindowClassName))
+            return new(KioskForegroundDisposition.Block, "Shell surface", description);
+
+        if (isConfiguredAppWindow)
+            return new(KioskForegroundDisposition.Allow, "Configured app", description);
+
+        if (string.Equals(snapshot.WindowClassName, "CabinetWClass", StringComparison.Ordinal))
+            return new(KioskForegroundDisposition.Block, "File Explorer", description);
 
         if (IsShellSurface(snapshot))
             return new(KioskForegroundDisposition.Block, "Shell surface", description);
@@ -98,9 +105,6 @@ internal sealed class KioskForegroundPolicy
     {
         if (!ShellProcesses.Contains(snapshot.ProcessName))
             return false;
-
-        if (ShellSurfaceClasses.Contains(snapshot.WindowClassName))
-            return true;
 
         return snapshot.WindowTitle.Contains("Start", StringComparison.OrdinalIgnoreCase)
                || snapshot.WindowTitle.Contains("Search", StringComparison.OrdinalIgnoreCase)

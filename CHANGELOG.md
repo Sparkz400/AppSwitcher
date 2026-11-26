@@ -3,6 +3,51 @@
 ## Unreleased
 
 - Make workspace repair practical: Settings → Layouts shows each workspace's apps and groups, flags missing (renamed or deleted) members, and lets you replace, remove or add individual members without recapturing. Deleting or replacing a layout now states what it contains. Configuration remains schema 12.
+- Fix findings from the 26 November code audit:
+  - **Shutdown and startup.** Closing or logging off no longer deadlocks the UI thread during shutdown. Kiosk mode no longer asks for administrator rights on every start: only a signed-in admin turning kiosk on runs the elevated Keyboard Filter step.
+  - **Supervision.**
+    - A hung "always on top" app no longer freezes window placement, crash detection or the launcher: foreign windows are moved asynchronously and hung windows are skipped.
+    - A crash during a watchdog restart is re-checked instead of dropped, and every restart failure is shown.
+    - Apps running as administrator are tracked and restarted.
+    - A configured full path that is offline never matches a different program, so the wrong process cannot be stopped.
+    - Scheduled launches no longer hold up other apps' restarts and shutdowns, and a time inside a daylight-saving gap runs right after the gap.
+    - "Crashes today" resets at local midnight.
+  - **Access.**
+    - New **Sign out** button.
+    - The admin PIN and the operator PIN must differ.
+    - An external edit of the config file can no longer change PINs, kiosk mode, operator access or hook commands; use Settings or Import.
+    - The default configuration no longer includes Notepad.
+    - Two menu-size sliders are now locked for operators.
+    - A legacy PIN upgrade is saved immediately.
+  - **Robustness.**
+    - Unexpected UI errors are logged and shown instead of closing the launcher.
+    - A failed export reports the error.
+    - Configuration saves are flushed to disk before replacing the old file.
+    - Reload, import and restore keep the live state of running apps, and an unchanged file is ignored.
+    - Repeated notifications are merged and the queue is capped.
+    - Group names are matched case-insensitively everywhere.
+  - **Kiosk.**
+    - Keyboard Filter ownership is recorded after each key and written atomically. A damaged record is preserved and no longer read as "nothing owned".
+    - Turning kiosk off no longer needs elevation when nothing machine-wide was changed.
+    - Uninstall removes AppSwitcher's Keyboard Filter rules.
+    - Taskbar and edge-swipe settings are restored after a crash.
+    - File Explorer windows are blocked, and a configured `explorer.exe` no longer unlocks the taskbar or desktop.
+    - The keyboard hook is refreshed periodically.
+  - **Browsers.**
+    - A disconnect before a request is sent no longer leaves the website stuck in "Recovering".
+    - Closing the marker tab first, and child tabs opened into the managed group, are handled.
+    - A trailing `\` in a profile path is accepted.
+    - An interrupted Setup reuses its earlier host copy.
+    - The extension backs off reconnect attempts up to 60 seconds.
+    - The retired `Install-BrowserHost.ps1`/`Uninstall-BrowserHost.ps1` scripts are removed; use Settings → Browsers → Set up.
+  - **Release note.** The browser extension source changed, so the bundled Mozilla-signed Firefox 1.1.0 file no longer matches it. Bump the extension version and re-sign it before the next release.
+  - **Clean-up.** Removed dead code and 36 unused text entries.
+  - **Follow-ups.**
+    - PIN sign-in rules now live in their own UI-free class (`PinSignIn`) with unit tests.
+    - Kiosk mode switched by Undo, discard, import or backup restore is announced and audited like a direct toggle.
+    - Launcher icons are served from cache, including "not found", so typing in the filter no longer checks the disk for every app.
+    - Each app and browser profile gets its own operation gate, so one app's readiness wait no longer delays an unrelated app.
+    - The kiosk check five times a second enumerates windows once and looks up the foreground process only when it changes.
 
 ## 1.2.0 — 2026-11-03
 

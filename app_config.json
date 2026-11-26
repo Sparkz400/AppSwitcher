@@ -30,20 +30,6 @@
     "PreferredMonitor": 0
   },
   "Groups": [],
-  "Apps": [
-    {
-      "Name": "Notepad",
-      "Path": "notepad.exe",
-      "PreLaunchHookPath": "",
-      "PreLaunchHookArgs": "",
-      "PostLaunchHookPath": "",
-      "PostLaunchHookArgs": "",
-      "PreStopHookPath": "",
-      "PreStopHookArgs": "",
-      "PostStopHookPath": "",
-      "PostStopHookArgs": "",
-      "RequireConfirmation": true
-    }
-  ],
+  "Apps": [],
   "Layouts": []
 }

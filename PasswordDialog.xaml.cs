@@ -12,11 +12,6 @@ public partial class PasswordDialog : Window
     /// </summary>
     public bool IsSetMode { get; set; }
 
-    /// <summary>
-    /// The access level determined after PIN verification (set by caller).
-    /// </summary>
-    public AccessLevel ResultAccessLevel { get; set; } = AccessLevel.None;
-
     private string? _firstPin;
 
     public PasswordDialog()

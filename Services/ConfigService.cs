@@ -61,8 +61,8 @@ public class ConfigService : IDisposable
             return new ConfigRoot
             {
                 Version = CurrentVersion,
-                Settings = new AppSettings(),
-                Apps = [new AppItem { Name = "Notepad", Path = "notepad.exe" }]
+                // No sample app: a text editor on an operator panel can open and edit the config file.
+                Settings = new AppSettings()
             };
         }
 
@@ -116,7 +116,12 @@ public class ConfigService : IDisposable
 
             Directory.CreateDirectory(Path.GetDirectoryName(ConfigFilePath) ?? AppPaths.DataDirectory);
             tempPath = $"{ConfigFilePath}.tmp";
-            await File.WriteAllBytesAsync(tempPath, output);
+            // Flush to disk before the rename so a power cut cannot leave an empty or partial config.
+            await using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                await stream.WriteAsync(output);
+                stream.Flush(flushToDisk: true);
+            }
 
             Interlocked.Exchange(
                 ref _watcherIgnoreUntilTicks,

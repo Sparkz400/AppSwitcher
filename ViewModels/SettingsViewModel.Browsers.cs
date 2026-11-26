@@ -95,7 +95,8 @@ public partial class SettingsViewModel
 
             // A refresh is explicit/on-open only; no new timer or background poller.
             using var slots = new SemaphoreSlim(4);
-            await Task.WhenAll(BrowserConnections.Where(row => row.WebsiteCount > 0).Select(async row =>
+            // Rows already coded (disconnected, no profile, conflict) keep their own label and action.
+            await Task.WhenAll(BrowserConnections.Where(row => row.StateCode == "Connected" && row.WebsiteCount > 0).Select(async row =>
             {
                 await slots.WaitAsync(_operationLifetime.Token);
                 try

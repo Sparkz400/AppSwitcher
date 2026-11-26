@@ -48,6 +48,34 @@ public class KioskMachineLockdownTests
     }
 
     [Fact]
+    public void MachineState_Saves_Atomically_And_Preserves_Corrupt_File()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"appswitcher-kiosk-test-{Guid.NewGuid():N}");
+        var path = Path.Combine(directory, "kiosk-machine-state.json");
+        try
+        {
+            KioskMachineLockdownManager.SaveMachineState(path, ["Win+L"]);
+            var saved = KioskMachineLockdownManager.LoadMachineState(path, out var note);
+            Assert.Equal(["Win+L"], saved.OwnedPredefinedKeys);
+            Assert.Empty(note);
+            Assert.False(File.Exists(path + ".tmp"));
+
+            File.WriteAllText(path, "{\"OwnedPredefinedKeys\": [\"Win");
+            var recovered = KioskMachineLockdownManager.LoadMachineState(path, out note);
+
+            Assert.Contains("Ctrl+Alt+Del", recovered.OwnedPredefinedKeys);
+            Assert.NotEmpty(note);
+            Assert.True(File.Exists(path));
+            Assert.Single(Directory.GetFiles(directory, "*.corrupt-*"));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public void MachineCommandDetection_Recognizes_Helper_Args()
     {
         var args = new[] { "--kiosk-machine", "apply", "--result-file", @"C:\temp\result.json" };

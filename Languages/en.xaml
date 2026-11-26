@@ -61,8 +61,6 @@
     <sys:String x:Key="Browser_PlacementUnsupported">Website tabs share browser windows. Disable native window placement, monitor and always-on-top policies for website entries.</sys:String>
     <sys:String x:Key="State_Recovering">Reconnecting</sys:String>
     <!-- MainWindow -->
-    <sys:String x:Key="Main_Title">AppSwitcher</sys:String>
-    <sys:String x:Key="Main_Settings">Settings</sys:String>
 
     <!-- PasswordDialog -->
     <sys:String x:Key="Password_Title">Sign in</sys:String>
@@ -77,22 +75,16 @@
     <!-- Settings: Window & Sidebar -->
     <sys:String x:Key="Settings_Title">AppSwitcher Settings</sys:String>
     <sys:String x:Key="Settings_Configuration">Configuration</sys:String>
-    <sys:String x:Key="Settings_GeneralAndButton">General &amp; Button</sys:String>
-    <sys:String x:Key="Settings_MyApps">MY APPS</sys:String>
     <sys:String x:Key="Settings_AddApp">+ Add App</sys:String>
 
     <!-- Settings: Global -->
-    <sys:String x:Key="Settings_GlobalSettings">Global Settings</sys:String>
-    <sys:String x:Key="Settings_ButtonDesign">Main Button Design</sys:String>
     <sys:String x:Key="Settings_Shape">Shape:</sys:String>
     <sys:String x:Key="Settings_IconStyle">Icon Style:</sys:String>
     <sys:String x:Key="Settings_Size">Size:</sys:String>
     <sys:String x:Key="Settings_Color">Color:</sys:String>
     <sys:String x:Key="Settings_BgColor">Background:</sys:String>
     <sys:String x:Key="Settings_FgColor">Icon Color:</sys:String>
-    <sys:String x:Key="Settings_BorderColor">Border Color:</sys:String>
     <sys:String x:Key="Settings_Opacity">Opacity:</sys:String>
-    <sys:String x:Key="Settings_GlowEffect">Enable glow effect</sys:String>
     <sys:String x:Key="Settings_BehaviorPosition">Behavior &amp; Position</sys:String>
     <sys:String x:Key="Settings_LockPosition">Lock position (button not draggable)</sys:String>
     <sys:String x:Key="Settings_AutoCloseMenu">Auto-close menu after app launch</sys:String>
@@ -103,7 +95,6 @@
     <!-- Settings: Security -->
     <sys:String x:Key="Settings_Security">Security</sys:String>
     <sys:String x:Key="Settings_AdminPin">Admin PIN</sys:String>
-    <sys:String x:Key="Settings_PinDescription">Protects access to settings with a PIN.</sys:String>
     <sys:String x:Key="Settings_SetChangePin">Set / Change PIN</sys:String>
     <sys:String x:Key="Settings_RemovePin">Remove PIN</sys:String>
     <sys:String x:Key="Settings_EncryptConfig">Encrypt configuration (DPAPI)</sys:String>
@@ -125,7 +116,6 @@
 
     <!-- Settings: Import/Export -->
     <sys:String x:Key="Settings_TransferConfig">Transfer Configuration</sys:String>
-    <sys:String x:Key="Settings_TransferDescription">Export configuration as JSON file or import from another station.</sys:String>
     <sys:String x:Key="Settings_Export">Export</sys:String>
     <sys:String x:Key="Settings_Import">Import</sys:String>
 
@@ -139,7 +129,6 @@
     <sys:String x:Key="Settings_WinTitle">Window Title Detection (Optional)</sys:String>
     <sys:String x:Key="Settings_WinTitleHint">Optional title filter within the configured executable.</sys:String>
     <sys:String x:Key="Settings_Group">Group (Optional)</sys:String>
-    <sys:String x:Key="Settings_GroupHint">Apps with the same group are grouped together in the menu.</sys:String>
     <sys:String x:Key="Settings_DisplayMode">Display Mode</sys:String>
     <sys:String x:Key="Settings_CustomIcon">Custom Icon (Optional)</sys:String>
     <sys:String x:Key="Settings_ButtonColor">Button Color (in menu)</sys:String>
@@ -163,12 +152,8 @@
     <sys:String x:Key="Settings_WindowPolicyHint">Fullscreen uses a generic borderless monitor fill and is not exclusive fullscreen.</sys:String>
 
     <!-- Tooltips -->
-    <sys:String x:Key="Tooltip_BrowseFile">Browse file</sys:String>
-    <sys:String x:Key="Tooltip_BrowseDir">Browse directory</sys:String>
-    <sys:String x:Key="Tooltip_BrowseImage">Browse image</sys:String>
 
     <!-- Notifications / Messages (used from C#) -->
-    <sys:String x:Key="Msg_AlreadyRunning">AppSwitcher is already running.</sys:String>
     <sys:String x:Key="Msg_PinReset">Admin PIN has been reset.</sys:String>
     <sys:String x:Key="Msg_KioskActivated">Kiosk mode activated</sys:String>
     <sys:String x:Key="Msg_KioskDeactivated">Kiosk mode deactivated</sys:String>
@@ -189,7 +174,6 @@
     <sys:String x:Key="Msg_SaveFailed">Could not save configuration</sys:String>
     <sys:String x:Key="Msg_ConfigValidationFailed">Configuration contains blocking errors: {0}</sys:String>
     <sys:String x:Key="Msg_AppCrashRestart">{0} crashed — Restarting ({1}/{2})</sys:String>
-    <sys:String x:Key="Msg_MaxRestartsReached">{0} — Max. restarts reached!</sys:String>
     <sys:String x:Key="Msg_MaxRestartsExhausted">{0} — All {1} restart attempts exhausted! Manual intervention required.</sys:String>
     <sys:String x:Key="Msg_NewApp">New App</sys:String>
     <sys:String x:Key="Msg_SelectWorkDir">Select working directory</sys:String>
@@ -206,16 +190,18 @@
     <sys:String x:Key="Settings_Monitor">Monitor</sys:String>
     <sys:String x:Key="Settings_PreferredMonitor">Preferred Monitor:</sys:String>
     <sys:String x:Key="Settings_MonitorAuto">Automatic (last position)</sys:String>
-    <sys:String x:Key="Settings_MonitorHint">Places the button on the selected monitor at startup.</sys:String>
-    <sys:String x:Key="Settings_AppHealth">App Health</sys:String>
-    <sys:String x:Key="Settings_NotResponding">(not responding)</sys:String>
 
     <!-- New notification messages -->
     <sys:String x:Key="Msg_ScheduledLaunch">{0} launched on schedule at {1}</sys:String>
     <sys:String x:Key="Msg_ConfigHotReloaded">Configuration updated from external source</sys:String>
     <sys:String x:Key="Msg_ConfigHotReloadRejected">Rejected external configuration update: {0}</sys:String>
     <sys:String x:Key="Msg_ConfigHotReloadSkippedDirty">Skipped external configuration update because local unsaved changes are present</sys:String>
-    <sys:String x:Key="Msg_PinSetupRequired">Please set up an admin PIN to protect the settings.</sys:String>
+    <sys:String x:Key="Msg_ConfigHotReloadProtected">External configuration change rejected: PINs, kiosk mode, operator access and hook commands can only be changed in Settings or through Import</sys:String>
+    <sys:String x:Key="Msg_UnexpectedError">Unexpected error: {0}. AppSwitcher keeps running; details are in the log.</sys:String>
+    <sys:String x:Key="Msg_ExportFailed">Export failed: {0}</sys:String>
+    <sys:String x:Key="Msg_PinsMustDiffer">The admin PIN and the operator PIN must be different</sys:String>
+    <sys:String x:Key="Msg_SignedOut">Signed out</sys:String>
+    <sys:String x:Key="UI_SignOut">Sign out</sys:String>
     <sys:String x:Key="Msg_KioskPartial">Kiosk mode is active with limitations: {0}</sys:String>
     <sys:String x:Key="Msg_KioskWarnKeyboardHook">Keyboard hook could not be installed.</sys:String>
     <sys:String x:Key="Msg_KioskWarnEdgeSwipe">Edge-swipe policy could not be applied for either the machine or the current user.</sys:String>
@@ -237,11 +223,9 @@
     <sys:String x:Key="Settings_SetChangeOperatorPin">Set / Change Operator PIN</sys:String>
     <sys:String x:Key="Settings_RemoveOperatorPin">Remove Operator PIN</sys:String>
     <sys:String x:Key="Settings_OperatorAccess">Operator Access</sys:String>
-    <sys:String x:Key="Settings_OperatorAccessDescription">Choose which apps or groups operators may control.</sys:String>
     <sys:String x:Key="Settings_OperatorAccessHint">With all applications off, only the selected apps and groups are allowed. An empty selection allows none.</sys:String>
     <sys:String x:Key="Settings_OperatorAccessGroups">Allowed groups</sys:String>
     <sys:String x:Key="Settings_OperatorAccessApps">Allowed apps</sys:String>
-    <sys:String x:Key="Settings_AdminOnly">Admin only</sys:String>
 
     <!-- File dialog filters -->
     <sys:String x:Key="Filter_ImagesIcons">Images &amp; Icons (*.ico;*.png;*.jpg)|*.ico;*.png;*.jpg;*.jpeg|All Files (*.*)|*.*</sys:String>
@@ -284,11 +268,8 @@
     <sys:String x:Key="Settings_HealthCheckHint">HTTP(S) address · blank = off</sys:String>
 
     <!-- Scheduled Maintenance -->
-    <sys:String x:Key="Settings_ScheduledMaintenance">Scheduled Maintenance</sys:String>
     <sys:String x:Key="Settings_ScheduleRestartTime">Restart</sys:String>
-    <sys:String x:Key="Settings_ScheduleRestartHint">Daily automatic restart (close + relaunch).</sys:String>
     <sys:String x:Key="Settings_ScheduleShutdownTime">Stop</sys:String>
-    <sys:String x:Key="Settings_ScheduleShutdownHint">Daily automatic shutdown of the app.</sys:String>
     <sys:String x:Key="Msg_ScheduledRestart">{0} was restarted on schedule at {1}</sys:String>
     <sys:String x:Key="Msg_ScheduledShutdown">{0} was shut down on schedule at {1}</sys:String>
 
@@ -300,7 +281,6 @@
 
     <!-- Confirmation -->
     <sys:String x:Key="Settings_RequireConfirmation">Confirm manual termination</sys:String>
-    <sys:String x:Key="Msg_ConfirmKillTitle">Close App?</sys:String>
     <sys:String x:Key="Msg_ConfirmKillApp">Are you sure you want to close "{0}"?</sys:String>
     <sys:String x:Key="Msg_ConfirmKillWarning">The app will be terminated immediately. Unsaved data may be lost.</sys:String>
 
@@ -310,12 +290,9 @@
     <sys:String x:Key="Main_Unpin">Unpin</sys:String>
 
     <!-- Dashboard -->
-    <sys:String x:Key="Main_Dashboard">Dashboard</sys:String>
-    <sys:String x:Key="Dashboard_Title">Health Dashboard</sys:String>
     <sys:String x:Key="Dashboard_Uptime">Uptime</sys:String>
     <sys:String x:Key="Dashboard_CrashesToday">Crashes</sys:String>
     <sys:String x:Key="Dashboard_TotalRestarts">Restarts</sys:String>
-    <sys:String x:Key="Dashboard_BringToFront">Bring to Front</sys:String>
     <sys:String x:Key="Dashboard_AcknowledgeWatchdog">Acknowledge</sys:String>
     <sys:String x:Key="Label_CPU">CPU</sys:String>
     <sys:String x:Key="Label_RAM">RAM</sys:String>
@@ -330,10 +307,8 @@
 
     <!-- Screen Layouts -->
     <sys:String x:Key="Settings_ScreenLayouts">Screen Layouts</sys:String>
-    <sys:String x:Key="Settings_ScreenLayoutsDescription">Save window positions of all running apps and restore them with one click.</sys:String>
     <sys:String x:Key="Settings_SaveLayout">Save Layout</sys:String>
     <sys:String x:Key="Settings_RestoreLayout">Restore</sys:String>
-    <sys:String x:Key="Settings_DeleteLayout">Delete</sys:String>
     <sys:String x:Key="Msg_LayoutSaved">Layout "{0}" saved</sys:String>
     <sys:String x:Key="Msg_LayoutRestored">Layout "{0}" restored</sys:String>
     <sys:String x:Key="Msg_LayoutDeleted">Layout "{0}" deleted</sys:String>
@@ -355,7 +330,6 @@
 
     <!-- Audit Log -->
     <sys:String x:Key="Settings_AuditLog">Audit Log</sys:String>
-    <sys:String x:Key="Settings_AuditLogDescription">Recent administrative actions recorded for configuration changes, backup restores, kiosk toggles, and manual app stops.</sys:String>
     <sys:String x:Key="Audit_Timestamp">Timestamp</sys:String>
     <sys:String x:Key="Audit_Actor">Actor</sys:String>
     <sys:String x:Key="Audit_Action">Action</sys:String>
@@ -363,7 +337,6 @@
     <sys:String x:Key="Audit_Target">Target</sys:String>
 
     <!-- Startup Diagnostics -->
-    <sys:String x:Key="Msg_DiagErrors">Startup diagnostics: {0} errors found — see log for details</sys:String>
     <sys:String x:Key="Msg_DiagWarnings">Startup diagnostics: {0} warnings — see log for details</sys:String>
     <sys:String x:Key="Diag_ExeNotFound">Executable not found: {0}</sys:String>
     <sys:String x:Key="Diag_EmptyAppName">App name is required</sys:String>
@@ -457,7 +430,6 @@
     <sys:String x:Key="UI_DeleteLayout">Delete layout</sys:String>
     <sys:String x:Key="UI_DeleteGroup">Delete group</sys:String>
     <sys:String x:Key="UI_Browse">Browse…</sys:String>
-    <sys:String x:Key="UI_MonitoringHint">Application status and recovery. These indicators describe software, not machine safety.</sys:String>
     <sys:String x:Key="UI_NoApps">No applications are available. Open the workspace to configure applications or review your access.</sys:String>
     <sys:String x:Key="UI_OpenApp">Open application</sys:String>
     <sys:String x:Key="UI_Actions">Actions</sys:String>
@@ -485,7 +457,6 @@
     <sys:String x:Key="UI_ConfirmAcknowledge">Resume automatic recovery for “{0}”? Check the reported failure before continuing.</sys:String>
     <sys:String x:Key="UI_ConfirmStartGroup">Start the applications in “{0}”?</sys:String>
     <sys:String x:Key="UI_ConfirmStopGroup">Stop the applications in “{0}”? Unsaved application data may be lost.</sys:String>
-    <sys:String x:Key="UI_ImportTitle">Review configuration changes</sys:String>
     <sys:String x:Key="UI_Confirm">Continue</sys:String>
     <sys:String x:Key="UI_Delete">Remove</sys:String>
     <sys:String x:Key="UI_EmptyHistory">No history entries yet.</sys:String>
@@ -553,8 +524,8 @@
     <sys:String x:Key="Browser_Check">Check connection</sys:String>
     <sys:String x:Key="Browser_TestSwitch">Test switching</sys:String>
     <sys:String x:Key="Browser_HostInstalled">Native host registration and executable found.</sys:String>
-    <sys:String x:Key="Browser_HostMissing">Native host is not registered. Run Install-BrowserHost.ps1 from the browser package for this Windows user.</sys:String>
-    <sys:String x:Key="Browser_HostBroken">Native host files or registration could not be read. Reinstall the host from the browser package.</sys:String>
+    <sys:String x:Key="Browser_HostMissing">Native host is not registered. Open Settings → Browsers and choose Set up for this browser.</sys:String>
+    <sys:String x:Key="Browser_HostBroken">Native host files or registration could not be read. Choose Set up again for this browser to repair it.</sys:String>
     <sys:String x:Key="Browser_Connected">The selected profile is connected. Open this website once from the launcher, then test switching.</sys:String>
     <sys:String x:Key="Browser_Ready">The selected profile is connected and the original managed tab was found.</sys:String>
     <sys:String x:Key="Browser_SwitchPassed">Switch verified: the existing tab is active and its browser window is restored.</sys:String>
@@ -579,7 +550,6 @@
     <sys:String x:Key="Browser_NoProfile">No paired profile</sys:String>
     <sys:String x:Key="Browser_OverviewDetail">{0} configured websites · Extension {1}</sys:String>
     <sys:String x:Key="Browser_RefreshOverview">Refresh</sys:String>
-    <sys:String x:Key="Browser_ConfigureConnection">Setup / configure</sys:String>
     <sys:String x:Key="Browser_RepairHost">Choose Setup to repair the Windows connection.</sys:String>
     <sys:String x:Key="Browser_RepairConnection">Open the paired browser profile and enable its AppSwitcher extension.</sys:String>
     <sys:String x:Key="Browser_RepairWebsite">Open the website settings to check pairing, identity or switching.</sys:String>

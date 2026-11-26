@@ -60,10 +60,10 @@ The setup bridge uses immutable, versioned directories so a repair does not over
 
 ### Manual installation (advanced)
 
-1. Run the generated `Install-BrowserHost.ps1` as the normal Windows user. It installs under `%LOCALAPPDATA%\Programs\AppSwitcherBrowserHost` and registers HKCU native-messaging manifests for all three browsers. No administrator or listening TCP port is required.
+1. Install the native host with Settings → Browsers → **Set up** for the selected browser, as the normal Windows user. It installs under `%LOCALAPPDATA%\Programs\AppSwitcherBrowserSetup` and registers that browser's HKCU native-messaging manifest. No administrator or listening TCP port is required.
 2. Chrome/Edge development deployment: open `chrome://extensions` / `edge://extensions`, enable developer mode and use **Load unpacked** on the `chromium` directory. The source manifest's public key fixes the unpacked ID to `afmmehaldghpcccgholfklbeemokekoj`.
 3. Firefox development: use `about:debugging` to load `firefox/manifest.json` temporarily. **Temporary installation does not survive restart.** Production Firefox requires a Mozilla-signed XPI (AMO listed or unlisted) with ID `browser@appswitcher.local`. The default build includes the approved signed 1.1.0 XPI and also produces an unsigned ZIP for future submissions. Signing a new extension version requires the distributor's account and is not performed by the build script.
-4. For store-issued Chrome/Edge IDs, run the installer with `-ChromeExtensionId <id> -EdgeExtensionId <id>`. Reinstall the native manifest whenever the distribution ID changes. Chrome/Edge store distribution and enterprise deployment remain distributor actions.
+4. For store-issued Chrome/Edge IDs, put them into the `distribution.json` used with `build-browser-package.ps1 -DistributionFile`, then run **Set up** again. Repeat this whenever the distribution ID changes; setup keeps previously registered IDs. Chrome/Edge store distribution and enterprise deployment remain distributor actions.
 5. Open AppSwitcher and the intended browser profile. Optionally name the profile using the extension popup. In application settings choose **Website in a managed browser tab**, enter the URL, refresh connected profiles and select the correct profile. Save.
 6. Use **Check connection** to verify the host/profile and **Test switching to existing tab** after the first launch. These checks never create tabs.
 7. Enable session restoration in that profile. Launch once, keep its group intact, minimize the window and click the AppSwitcher entry again.
@@ -74,7 +74,7 @@ Optional automatic startup requires the exact browser executable and profile fol
 
 ## Recovery and operation
 
-- **Disconnected:** open the paired profile, enable its extension, check the host registration, then retry. The extension retries every five seconds while active, with an alarm fallback.
+- **Disconnected:** open the paired profile, enable its extension, check the host registration, then retry. The extension retries after five seconds, backing off to at most one minute while AppSwitcher is closed, with a 30-second alarm fallback.
 - **Recovering after restart:** restore the browser session or original closed window. Leave the original group intact. A startup delay is not proof that the website is absent.
 - **Identity conflict:** restore the original two-tab group. Never resolve this by choosing whichever page has the same URL. With Firefox, the session value can still identify the original page when its marker is missing.
 - **Changing profiles:** stop the website through AppSwitcher on the original profile first, then change its pairing. Do not clone a profile containing the same extension identity.
@@ -83,7 +83,7 @@ Optional automatic startup requires the exact browser executable and profile fol
 
 Website entries do not use native window placement, per-process resource control or AppSwitcher kiosk enforcement because browser windows/processes can contain unrelated pages. Validation rejects incompatible placement/kiosk configurations. Browser kiosk deployments need their own restricted profile and policy design.
 
-The legacy `Install-BrowserHost.ps1` and `Uninstall-BrowserHost.ps1` entry points are retired and stop without changing files or registrations. Use Settings → Browsers → Setup for installation/repair and the AppSwitcher installer for removal. These paths preserve browser profiles and the ownership journal, and check registration ownership.
+The legacy `Install-BrowserHost.ps1` and `Uninstall-BrowserHost.ps1` scripts have been removed. Use Settings → Browsers → Setup for installation/repair and the AppSwitcher installer for removal. These paths preserve browser profiles and the ownership journal, and check registration ownership.
 
 ## Implementation
 

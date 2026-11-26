@@ -13,6 +13,13 @@ public sealed class ConfigDiffResult
     public IReadOnlyList<ConfigDiffChange> Changes { get; }
     public bool HasChanges => Changes.Count > 0;
 
+    private static readonly string[] ProtectedHookSuffixes = [":prelaunchhook", ":postlaunchhook", ":prestophook", ":poststophook"];
+
+    /// <summary>Access control and commands that run unprompted; these must not change through an unauthenticated file edit.</summary>
+    public bool TouchesProtectedSettings => Changes.Any(change =>
+        change.Key is "settings.adminpasswordhash" or "settings.operatorpasswordhash" or "settings.kioskmode" or "settings.operatorscope"
+        || ProtectedHookSuffixes.Any(suffix => change.Key.EndsWith(suffix, StringComparison.Ordinal)));
+
     public ConfigDiffResult(IReadOnlyList<ConfigDiffChange> changes)
     {
         Changes = changes;
@@ -181,7 +188,14 @@ public class ConfigDiffService
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         foreach (var name in newByName.Keys.Except(oldByName.Keys, StringComparer.OrdinalIgnoreCase))
+        {
             changes.Add(new($"app.added:{name}", $"App added: {name}"));
+            var added = newByName[name];
+            AddAppPropertyChange(changes, name, "PreLaunchHook", !string.IsNullOrWhiteSpace(added.PreLaunchHookPath));
+            AddAppPropertyChange(changes, name, "PostLaunchHook", !string.IsNullOrWhiteSpace(added.PostLaunchHookPath));
+            AddAppPropertyChange(changes, name, "PreStopHook", !string.IsNullOrWhiteSpace(added.PreStopHookPath));
+            AddAppPropertyChange(changes, name, "PostStopHook", !string.IsNullOrWhiteSpace(added.PostStopHookPath));
+        }
 
         foreach (var name in oldByName.Keys.Except(newByName.Keys, StringComparer.OrdinalIgnoreCase))
             changes.Add(new($"app.removed:{name}", $"App removed: {name}"));

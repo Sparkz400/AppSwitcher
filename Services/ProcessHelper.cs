@@ -25,7 +25,11 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    private static partial bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool IsHungAppWindow(IntPtr hWnd);
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -44,10 +48,6 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
         uint fuFlags,
         uint uTimeout,
         out IntPtr lpdwResult);
-
-    [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool IsWindowVisible(IntPtr hWnd);
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -77,6 +77,7 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
     private const uint SMTO_ABORTIFHUNG = 0x0002;
     private const uint WM_NULL = 0x0000;
     private const uint SWP_NOZORDER = 0x0004;
+    private const uint SWP_ASYNCWINDOWPOS = 0x4000;
 
     private readonly ILogger<ProcessHelper> _logger;
     private readonly BrowserBridgeService? _browserBridge;
@@ -118,7 +119,7 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
             if (hWnd != IntPtr.Zero)
             {
                 if (IsIconic(hWnd))
-                    ShowWindow(hWnd, SW_RESTORE);
+                    ShowWindowAsync(hWnd, SW_RESTORE);
 
                 SetForegroundWindow(hWnd);
             }
@@ -282,7 +283,7 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
                 return;
 
             if (IsIconic(hWnd))
-                ShowWindow(hWnd, SW_RESTORE);
+                ShowWindowAsync(hWnd, SW_RESTORE);
 
             SetForegroundWindow(hWnd);
             _logger.LogDebug("Brought to front: {Path}", target.Path);
@@ -312,28 +313,6 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
         }
     }
 
-    public bool IsWindowOnScreen(AppProcessTarget target)
-    {
-        try
-        {
-            var hWnd = GetMainWindowHandle(target);
-            if (hWnd == IntPtr.Zero)
-                return false;
-
-            if (!IsWindowVisible(hWnd))
-                return false;
-
-            if (!GetWindowRect(hWnd, out var rect))
-                return false;
-
-            return rect.Left > -30000 && rect.Top > -30000;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     public RECT? GetWindowPosition(AppProcessTarget target)
     {
         try
@@ -358,13 +337,13 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
         try
         {
             var hWnd = GetMainWindowHandle(target);
-            if (hWnd == IntPtr.Zero)
+            if (hWnd == IntPtr.Zero || IsHungAppWindow(hWnd))
                 return;
 
             if (IsIconic(hWnd) || IsZoomed(hWnd))
-                ShowWindow(hWnd, SW_RESTORE);
+                ShowWindowAsync(hWnd, SW_RESTORE);
 
-            SetWindowPos(hWnd, IntPtr.Zero, x, y, width, height, SWP_NOZORDER);
+            SetWindowPos(hWnd, IntPtr.Zero, x, y, width, height, SWP_NOZORDER | SWP_ASYNCWINDOWPOS);
             _logger.LogDebug(
                 "Set window position for {Path}: ({X},{Y}) {W}x{H}",
                 target.Path,
@@ -520,7 +499,11 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
 
         try
         {
-            var processPath = process.MainModule?.FileName;
+            string? processPath;
+            try { processPath = process.MainModule?.FileName; }
+            catch (System.ComponentModel.Win32Exception) { processPath = null; }
+            // MainModule is denied for elevated targets; the image name needs only limited query access.
+            processPath ??= QueryImagePath(process.Id);
             if (processPath == null)
                 return ProcessMatchClass.Unverifiable;
 
@@ -546,6 +529,17 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
         {
             return ProcessMatchClass.Unverifiable;
         }
+    }
+
+    internal static string? QueryImagePath(int processId)
+    {
+        using var handle = OpenWindowCatalog.OpenProcess(0x1000 /* QUERY_LIMITED_INFORMATION */, false, (uint)processId);
+        if (handle.IsInvalid)
+            return null;
+
+        var path = new System.Text.StringBuilder(32768);
+        var length = path.Capacity;
+        return OpenWindowCatalog.QueryFullProcessImageName(handle, 0, path, ref length) ? path.ToString() : null;
     }
 
     internal static bool MatchesWindowSnapshot(KioskWindowSnapshot snapshot, AppProcessTarget target)
@@ -611,7 +605,8 @@ public partial class ProcessHelper : IWindowHandleResolver, IDisposable
         if (string.IsNullOrWhiteSpace(configuredPath))
             return null;
 
-        if (Path.IsPathRooted(configuredPath) && File.Exists(configuredPath))
+        // A rooted path names one executable even while its share is offline; never widen it to every same-name process.
+        if (Path.IsPathRooted(configuredPath))
             return Path.GetFullPath(configuredPath);
 
         if (File.Exists(configuredPath))

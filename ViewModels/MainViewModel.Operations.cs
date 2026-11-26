@@ -78,15 +78,24 @@ public partial class MainViewModel
         var key = app.ProcessTarget.Key;
         lock (_watchdogCheckGate)
         {
-            if (_watchdogChecks.TryGetValue(key, out var existing) && !existing.IsCompleted) return;
+            if (_watchdogChecks.TryGetValue(key, out var existing) && !existing.IsCompleted)
+            {
+                // A crash during an in-flight restart (hooks, readiness wait) must not be dropped: run it afterwards,
+                // re-reading the running state because the transition may be minutes old by then.
+                if (wasRunning && !running)
+                    _watchdogChecks[key] = existing.ContinueWith(
+                        _ => RunWatchdogCheckAsync(app, wasRunning, null, ct),
+                        CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).Unwrap();
+                return;
+            }
             _watchdogChecks[key] = Task.Run(() => RunWatchdogCheckAsync(app, wasRunning, running, ct));
             foreach (var old in _watchdogChecks.Where(kv => kv.Value.IsCompleted && kv.Key != key).Select(kv => kv.Key))
                 _watchdogChecks.TryRemove(old, out _);
         }
     }
-    private async Task RunWatchdogCheckAsync(AppItem app, bool wasRunning, bool running, CancellationToken ct)
+    private async Task RunWatchdogCheckAsync(AppItem app, bool wasRunning, bool? running, CancellationToken ct)
     {
-        try { await _watchdogService.CheckAndRestartAsync(app, wasRunning, running, ct).ConfigureAwait(false); }
+        try { await _watchdogService.CheckAndRestartAsync(app, wasRunning, running ?? _processHelper.IsAppRunning(app.ProcessTarget), ct).ConfigureAwait(false); }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (Exception ex) { _logger.LogError(ex, "Watchdog check failed for {Name}", app.Name); }
     }

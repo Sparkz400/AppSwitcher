@@ -150,7 +150,6 @@ internal interface IKioskMachineLockdownService
 {
     Task<KioskMachineLockdownResult> ApplyAsync(CancellationToken cancellationToken = default);
     Task<KioskMachineLockdownResult> RemoveAsync(CancellationToken cancellationToken = default);
-    Task<KioskMachineLockdownResult> QueryAsync(CancellationToken cancellationToken = default);
 }
 
 internal sealed class ElevatedKioskMachineLockdownService : IKioskMachineLockdownService
@@ -167,9 +166,6 @@ internal sealed class ElevatedKioskMachineLockdownService : IKioskMachineLockdow
 
     public Task<KioskMachineLockdownResult> RemoveAsync(CancellationToken cancellationToken = default) =>
         ExecuteAsync(KioskMachineLockdownOperation.Remove, cancellationToken);
-
-    public Task<KioskMachineLockdownResult> QueryAsync(CancellationToken cancellationToken = default) =>
-        ExecuteAsync(KioskMachineLockdownOperation.Status, cancellationToken);
 
     private async Task<KioskMachineLockdownResult> ExecuteAsync(
         KioskMachineLockdownOperation operation,
@@ -209,8 +205,16 @@ internal sealed class ElevatedKioskMachineLockdownService : IKioskMachineLockdow
 
             var json = await File.ReadAllTextAsync(resultPath, cancellationToken);
             var result = KioskMachineLockdownSerialization.DeserializeResult(json);
-            return result ?? KioskMachineLockdownResult.Failed(
-                "The elevated kiosk helper returned an unreadable result payload.");
+            if (result == null)
+            {
+                return KioskMachineLockdownResult.Failed(
+                    "The elevated kiosk helper returned an unreadable result payload.");
+            }
+
+            _logger.LogInformation(
+                "Kiosk machine lockdown {Operation} returned {State}: {Message} ({Details})",
+                operation, result.State, result.Message, result.TechnicalDetails);
+            return result;
         }
         catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
         {
@@ -416,7 +420,8 @@ internal static class KioskMachineLockdownManager
             var scope = CreateManagementScope();
             EnsureAdministratorsExcluded(scope);
 
-            var currentState = LoadMachineState();
+            var currentState = LoadMachineState(out var recoveryNote);
+            var details = AppendNote(editionLabel, recoveryNote);
             var ownedKeys = new HashSet<string>(currentState.OwnedPredefinedKeys, StringComparer.OrdinalIgnoreCase);
             using var loadedKeys = LoadPredefinedKeys(scope);
 
@@ -427,7 +432,7 @@ internal static class KioskMachineLockdownManager
                 {
                     return KioskMachineLockdownResult.Failed(
                         "A required Keyboard Filter predefined key could not be resolved.",
-                        targetKey);
+                        AppendNote(targetKey, recoveryNote));
                 }
 
                 if (IsPredefinedKeyEnabled(keyObject))
@@ -436,29 +441,28 @@ internal static class KioskMachineLockdownManager
                 keyObject["Enabled"] = true;
                 keyObject.Put();
                 ownedKeys.Add(targetKey);
+                // Record ownership right away so an early return or a later Put failure cannot orphan this key.
+                SaveMachineState(ownedKeys);
                 changed = true;
             }
 
-            SaveMachineState(new KioskMachineState
-            {
-                OwnedPredefinedKeys = ownedKeys.OrderBy(key => key, StringComparer.OrdinalIgnoreCase).ToList()
-            });
+            SaveMachineState(ownedKeys);
 
             if (changed)
             {
                 return KioskMachineLockdownResult.Applied(
                     "Keyboard Filter secure-key blocking was applied.",
-                    editionLabel);
+                    details);
             }
 
             return currentState.OwnedPredefinedKeys.Count > 0
                 ? KioskMachineLockdownResult.AlreadyApplied(
                     "Keyboard Filter secure-key blocking was already configured by AppSwitcher.",
-                    editionLabel)
+                    details)
                 : KioskMachineLockdownResult.ExternallyManaged(
                     "Keyboard Filter secure-key blocking is already configured outside AppSwitcher.",
                     configured: true,
-                    technicalDetails: editionLabel);
+                    technicalDetails: details);
         }
         catch (Exception ex)
         {
@@ -470,7 +474,8 @@ internal static class KioskMachineLockdownManager
 
     private static async Task<KioskMachineLockdownResult> RemoveAsync(string editionLabel)
     {
-        var currentState = LoadMachineState();
+        var currentState = LoadMachineState(out var recoveryNote);
+        editionLabel = AppendNote(editionLabel, recoveryNote);
         if (currentState.OwnedPredefinedKeys.Count == 0)
         {
             var queryResult = await QueryAsync(editionLabel);
@@ -575,7 +580,7 @@ internal static class KioskMachineLockdownManager
         {
             var scope = CreateManagementScope();
             using var loadedKeys = LoadPredefinedKeys(scope);
-            var state = LoadMachineState();
+            var state = LoadMachineState(out _);
             var allEnabled = TargetPredefinedKeys.All(targetKey =>
                 loadedKeys.TryGetValue(targetKey, out var keyObject) && IsPredefinedKeyEnabled(keyObject));
 
@@ -603,7 +608,7 @@ internal static class KioskMachineLockdownManager
         }
     }
 
-    private static bool TryGetSupportedEdition(out string editionLabel)
+    internal static bool TryGetSupportedEdition(out string editionLabel)
     {
         using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", writable: false);
         var editionId = key?.GetValue("EditionID") as string ?? string.Empty;
@@ -663,34 +668,62 @@ internal static class KioskMachineLockdownManager
     private static bool IsPredefinedKeyEnabled(ManagementObject managementObject) =>
         managementObject["Enabled"] is bool enabled && enabled;
 
-    private static KioskMachineState LoadMachineState()
+    internal static KioskMachineState LoadMachineState(out string recoveryNote) =>
+        LoadMachineState(AppPaths.KioskMachineStateFilePath, out recoveryNote);
+
+    internal static KioskMachineState LoadMachineState(string path, out string recoveryNote)
     {
+        recoveryNote = string.Empty;
+        if (!File.Exists(path))
+            return new KioskMachineState();
+
         try
         {
-            if (!File.Exists(AppPaths.KioskMachineStateFilePath))
-                return new KioskMachineState();
-
-            var json = File.ReadAllText(AppPaths.KioskMachineStateFilePath);
-            return JsonSerializer.Deserialize<KioskMachineState>(json) ?? new KioskMachineState();
+            var state = JsonSerializer.Deserialize<KioskMachineState>(File.ReadAllText(path));
+            if (state?.OwnedPredefinedKeys != null)
+                return state;
         }
-        catch
+        catch (JsonException)
         {
-            return new KioskMachineState();
         }
+
+        // The file only exists after AppSwitcher enabled keys, so an unreadable one must not mean "nothing owned".
+        var backupPath = $"{path}.corrupt-{DateTime.UtcNow:yyyyMMddHHmmss}";
+        File.Copy(path, backupPath, overwrite: true);
+        recoveryNote = $"Kiosk machine state file was unreadable; preserved as '{backupPath}' and all target keys were treated as AppSwitcher-owned.";
+        return new KioskMachineState { OwnedPredefinedKeys = [.. TargetPredefinedKeys] };
     }
 
-    private static void SaveMachineState(KioskMachineState state)
+    private static void SaveMachineState(IEnumerable<string> ownedKeys) =>
+        SaveMachineState(AppPaths.KioskMachineStateFilePath, ownedKeys);
+
+    internal static void SaveMachineState(string path, IEnumerable<string> ownedKeys)
     {
+        var state = new KioskMachineState
+        {
+            OwnedPredefinedKeys = ownedKeys.OrderBy(key => key, StringComparer.OrdinalIgnoreCase).ToList()
+        };
+
         if (state.OwnedPredefinedKeys.Count == 0)
         {
-            DeleteMachineState();
+            if (File.Exists(path))
+                File.Delete(path);
             return;
         }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(AppPaths.KioskMachineStateFilePath) ?? AppPaths.MachineDataDirectory);
-        var json = JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(AppPaths.KioskMachineStateFilePath, json);
+        Directory.CreateDirectory(Path.GetDirectoryName(path) ?? AppPaths.MachineDataDirectory);
+        var tempPath = path + ".tmp";
+        using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+        {
+            JsonSerializer.Serialize(stream, state, new JsonSerializerOptions { WriteIndented = true });
+            stream.Flush(flushToDisk: true);
+        }
+
+        File.Move(tempPath, path, overwrite: true);
     }
+
+    private static string AppendNote(string details, string note) =>
+        string.IsNullOrEmpty(note) ? details : $"{details}; {note}";
 
     private static void DeleteMachineState()
     {

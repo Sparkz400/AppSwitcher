@@ -4,6 +4,8 @@ public enum NotificationType { Info, Warning, Error }
 
 public class NotificationService
 {
+    // Toasts show one at a time for several seconds; without a cap, repeating warnings would queue up for hours.
+    internal const int MaxQueued = 20;
     private readonly Queue<(string message, NotificationType type)> _queue = new();
     private bool _isShowing;
 
@@ -11,6 +13,8 @@ public class NotificationService
     {
         UiDispatcher.TryBeginInvoke(() =>
         {
+            if (_queue.Contains((message, type))) return;
+            if (_queue.Count >= MaxQueued) _queue.Dequeue();
             _queue.Enqueue((message, type));
             if (!_isShowing) ShowNext();
         });

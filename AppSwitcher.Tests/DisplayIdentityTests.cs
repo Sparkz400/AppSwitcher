@@ -53,7 +53,7 @@ public class DisplayIdentityTests
         using var session = new SessionTimeoutService(NullLogger<SessionTimeoutService>.Instance);
         using var editor = new SettingsViewModel(vm, fixture.ConfigService, new SecurityService(), fixture.NotificationService,
             new ScreenLayoutService(NullLogger<ScreenLayoutService>.Instance, fixture.ProcessHelper),
-            new CrashHistoryService(NullLogger<CrashHistoryService>.Instance), session);
+            session);
         editor.UpdateMonitorChoices([Display(1, "new", 0, true)]);
         Assert.Equal(-1, editor.LauncherMonitorSelection);
         Assert.Equal(-1, editor.AppMonitorSelection);

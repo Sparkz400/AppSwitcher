@@ -58,8 +58,7 @@ public sealed class BrowserBridgeService : IDisposable
     {
         app = Snapshot(app);
         ValidateWebsite(app);
-        var gate = _gates.For(app.AppId);
-        await gate.WaitAsync(ct).ConfigureAwait(false);
+        var gate = await _gates.EnterAsync(app.AppId, ct).ConfigureAwait(false);
         try
         {
             var connection = GetConnection(app.Browser, app.BrowserProfileId);
@@ -76,8 +75,7 @@ public sealed class BrowserBridgeService : IDisposable
     {
         app = Snapshot(app);
         ValidateWebsite(app);
-        var gate = _gates.For(app.AppId);
-        await gate.WaitAsync(ct).ConfigureAwait(false);
+        var gate = await _gates.EnterAsync(app.AppId, ct).ConfigureAwait(false);
         try
         {
             var connection = await ConnectAsync(app, ct).ConfigureAwait(false);
@@ -111,7 +109,14 @@ public sealed class BrowserBridgeService : IDisposable
                 request = request with { Action = "ensure", Generation = owner.Generation, AllowCreate = true };
             }
             else request = request with { Action = "ensure", AllowCreate = false };
-            var reply = await connection.RequestAsync(request, ct).ConfigureAwait(false);
+            BrowserReply reply;
+            try { reply = await connection.RequestAsync(request, ct).ConfigureAwait(false); }
+            catch (Exception ex) when (ex is IOException or ObjectDisposedException)
+            {
+                // Only the write throws these: the request never left, so Issued would block every later click.
+                if (request.AllowCreate) store.Put(owner with { Phase = "Reserved" });
+                throw Failure("ConnectionUnavailable");
+            }
             if (reply.State == "Present") store.Put(owner with { Phase = "Active" });
             if (reply.Code == "CreatedFocusDenied")
                 return new AppLaunchResult(AppLaunchKind.StartedNewProcess, FocusSucceeded: false);
@@ -126,8 +131,7 @@ public sealed class BrowserBridgeService : IDisposable
     {
         app = Snapshot(app);
         ValidateWebsite(app);
-        var gate = _gates.For(app.AppId);
-        await gate.WaitAsync(ct).ConfigureAwait(false);
+        var gate = await _gates.EnterAsync(app.AppId, ct).ConfigureAwait(false);
         try
         {
             var store = _ownership ?? throw Failure("JournalUnavailable");
@@ -136,7 +140,13 @@ public sealed class BrowserBridgeService : IDisposable
             if (owner.ProfileId != app.BrowserProfileId || owner.Browser != app.Browser) throw Failure("ProfileChanged");
             var connection = GetConnection(app.Browser, app.BrowserProfileId);
             store.Put(owner with { Phase = "Closing" });
-            var reply = await connection.RequestAsync(new("close", app.AppId, owner.Generation), ct).ConfigureAwait(false);
+            BrowserReply reply;
+            try { reply = await connection.RequestAsync(new("close", app.AppId, owner.Generation), ct).ConfigureAwait(false); }
+            catch (Exception ex) when (ex is IOException or ObjectDisposedException)
+            {
+                store.Put(owner); // The close request never left; Closing would block every later click.
+                throw Failure("ConnectionUnavailable");
+            }
             if (reply.Code != "Closed") throw Failure(reply.Code);
             store.Put(owner with { Phase = "Closed" });
         }
@@ -168,8 +178,7 @@ public sealed class BrowserBridgeService : IDisposable
     {
         if (MatchingConnections(app.Browser, app.BrowserProfileId).Length > 0) return GetConnection(app.Browser, app.BrowserProfileId);
         // Only bootstrap a browser that is not running; never relaunch an unresponsive existing browser.
-        var processName = app.Browser switch { BrowserKind.Chrome => "chrome", BrowserKind.Edge => "msedge", _ => "firefox" };
-        var processes = Process.GetProcessesByName(processName);
+        var processes = Process.GetProcessesByName(BrowserForeground.ProcessName(app.Browser));
         var running = processes.Length > 0;
         foreach (var process in processes) process.Dispose();
         var bootstrapKey = $"{app.Browser}:{app.BrowserProfileId}";
@@ -183,13 +192,7 @@ public sealed class BrowserBridgeService : IDisposable
                     _bootstraps.TryRemove(expired);
                 _bootstraps[bootstrapKey] = DateTime.UtcNow;
                 var start = new ProcessStartInfo(app.BrowserExecutablePath) { UseShellExecute = false };
-                var profile = Path.GetFullPath(app.BrowserProfileDirectory);
-                if (app.Browser == BrowserKind.Firefox) { start.ArgumentList.Add("-profile"); start.ArgumentList.Add(profile); }
-                else
-                {
-                    start.ArgumentList.Add($"--user-data-dir={Path.GetDirectoryName(profile)}");
-                    start.ArgumentList.Add($"--profile-directory={Path.GetFileName(profile)}");
-                }
+                foreach (var argument in ProfileArguments(app.Browser, app.BrowserProfileDirectory)) start.ArgumentList.Add(argument);
                 using var launched = Process.Start(start);
             }
         }
@@ -199,6 +202,14 @@ public sealed class BrowserBridgeService : IDisposable
             if (MatchingConnections(app.Browser, app.BrowserProfileId).Length > 0) return GetConnection(app.Browser, app.BrowserProfileId);
         }
         throw Failure("ConnectionUnavailable");
+    }
+
+    internal static string[] ProfileArguments(BrowserKind browser, string directory)
+    {
+        // A trailing separator would otherwise give an empty profile name and the profile itself as user-data-dir.
+        var profile = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
+        return browser == BrowserKind.Firefox ? ["-profile", profile]
+            : [$"--user-data-dir={Path.GetDirectoryName(profile)}", $"--profile-directory={Path.GetFileName(profile)}"];
     }
 
     private async Task AcceptLoopAsync()
@@ -241,8 +252,9 @@ public sealed class BrowserBridgeService : IDisposable
             _clients[id] = connection;
             await connection.ReadLoopAsync().ConfigureAwait(false);
         }
-        catch (Exception ex) when (ex is IOException or OperationCanceledException or JsonException or InvalidDataException)
+        catch (Exception ex) when (ex is IOException or OperationCanceledException or JsonException or InvalidDataException or ObjectDisposedException)
         { _logger.LogDebug(ex, "Browser connection ended"); }
+        catch (Exception ex) { _logger.LogWarning(ex, "Browser connection failed unexpectedly"); }
         finally { _clients.TryRemove(id, out _); connection?.Dispose(); pipe.Dispose(); }
     }
 

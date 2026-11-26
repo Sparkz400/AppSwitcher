@@ -13,7 +13,12 @@ public partial class PathToIconConverter : IMultiValueConverter
 {
     private const int MaxCacheSize = 128;
 
-    private static readonly ConcurrentDictionary<string, ImageSource> _iconCache = new();
+    // A missing icon is looked up again after this long, so a file that appears later still gets its icon.
+    internal static readonly TimeSpan MissRetry = TimeSpan.FromSeconds(60);
+
+    private sealed record CacheEntry(ImageSource? Icon, long RetryAfterTicks);
+
+    private static readonly ConcurrentDictionary<string, CacheEntry> _iconCache = new();
     private static readonly ConcurrentQueue<string> _cacheOrder = new();
 
     public object? Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
@@ -22,49 +27,47 @@ public partial class PathToIconConverter : IMultiValueConverter
 
         string? inputPath = values[0] as string;
         string? customIconPath = values[1] as string;
+        if (string.IsNullOrWhiteSpace(inputPath) && string.IsNullOrEmpty(customIconPath)) return null;
 
-        if (!string.IsNullOrEmpty(customIconPath) && File.Exists(customIconPath))
-        {
-            if (_iconCache.TryGetValue(customIconPath, out var cachedCustom)) return cachedCustom;
-            try
-            {
-                var bmp = new BitmapImage();
-                bmp.BeginInit();
-                bmp.UriSource = new Uri(customIconPath);
-                bmp.CacheOption = BitmapCacheOption.OnLoad;
-                bmp.EndInit();
-                bmp.Freeze();
-                AddToCache(customIconPath, bmp);
-                return bmp;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to load custom icon '{customIconPath}': {ex.Message}");
-            }
-        }
+        // Runs on the UI thread for every launcher row on every rebuild (each filter keystroke). Check the cache, misses
+        // included, before touching the disk: File.Exists on an offline network path can block for seconds.
+        var key = $"{inputPath}|{customIconPath}";
+        if (_iconCache.TryGetValue(key, out var cached) && (cached.Icon != null || Environment.TickCount64 < cached.RetryAfterTicks))
+            return cached.Icon;
 
-        if (string.IsNullOrWhiteSpace(inputPath)) return null;
-
-        string? fullPath = ResolvePath(inputPath);
-
-        if (string.IsNullOrEmpty(fullPath) || !File.Exists(fullPath))
-            return null;
-
-        if (_iconCache.TryGetValue(fullPath, out var cachedIcon))
-            return cachedIcon;
-
-        ImageSource? sysIcon = GetIconFromPath(fullPath);
-
-        if (sysIcon != null)
-        {
-            AddToCache(fullPath, sysIcon);
-            return sysIcon;
-        }
-
-        return null;
+        var icon = LoadCustomIcon(customIconPath) ?? LoadExecutableIcon(inputPath);
+        AddToCache(key, new CacheEntry(icon, Environment.TickCount64 + (long)MissRetry.TotalMilliseconds));
+        return icon;
     }
 
-    private static void AddToCache(string key, ImageSource icon)
+    private static ImageSource? LoadCustomIcon(string? customIconPath)
+    {
+        if (string.IsNullOrEmpty(customIconPath) || !File.Exists(customIconPath)) return null;
+        try
+        {
+            var bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.UriSource = new Uri(customIconPath);
+            bmp.CacheOption = BitmapCacheOption.OnLoad;
+            bmp.EndInit();
+            bmp.Freeze();
+            return bmp;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load custom icon '{customIconPath}': {ex.Message}");
+            return null;
+        }
+    }
+
+    private static ImageSource? LoadExecutableIcon(string? inputPath)
+    {
+        if (string.IsNullOrWhiteSpace(inputPath)) return null;
+        var fullPath = ResolvePath(inputPath);
+        return string.IsNullOrEmpty(fullPath) || !File.Exists(fullPath) ? null : GetIconFromPath(fullPath);
+    }
+
+    private static void AddToCache(string key, CacheEntry icon)
     {
         _iconCache[key] = icon;
         _cacheOrder.Enqueue(key);

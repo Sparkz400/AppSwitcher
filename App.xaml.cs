@@ -17,6 +17,8 @@ public partial class App : Application
     {
         base.OnStartup(e);
         SystemParameters.StaticPropertyChanged += OnSystemParametersChanged;
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
         try
         {
@@ -291,16 +293,54 @@ public partial class App : Application
         });
     }
 
+    // A launcher that supervises other apps must outlive a failed UI action. Before startup finishes, fail as before.
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        if (!_ready) return;
+        e.Handled = true;
+        ReportUnexpectedError(e.Exception);
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        e.SetObserved();
+        ReportUnexpectedError(e.Exception);
+    }
+
+    private void ReportUnexpectedError(Exception ex)
+    {
+        try
+        {
+            _serviceProvider?.GetService<ILogger<App>>()?.LogError(ex, "Unhandled exception");
+            _ = Dispatcher.BeginInvoke(() => _serviceProvider?.GetService<NotificationService>()?.Show(
+                LocalizationService.T("Msg_UnexpectedError", ex.GetBaseException().Message), NotificationType.Error));
+        }
+        catch (ObjectDisposedException)
+        {
+            // Shutting down; nothing left to report to.
+        }
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
         SystemParameters.StaticPropertyChanged -= OnSystemParametersChanged;
+        DispatcherUnhandledException -= OnDispatcherUnhandledException;
+        TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
         if (_serviceProvider != null)
         {
             try
             {
                 var mainVm = _serviceProvider.GetRequiredService<MainViewModel>();
                 using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                mainVm.ShutdownAsync(shutdownCts.Token, stopManagedApps: !_restartRequested).GetAwaiter().GetResult();
+                var shutdown = mainVm.ShutdownAsync(shutdownCts.Token, stopManagedApps: !_restartRequested);
+                // Blocking here would deadlock: shutdown continuations need this dispatcher. Pump it until done.
+                var frame = new System.Windows.Threading.DispatcherFrame();
+                _ = shutdown.ContinueWith(_ => frame.Continue = false, TaskScheduler.Default);
+                using var hardStop = new CancellationTokenSource(TimeSpan.FromSeconds(35));
+                using var stopPumping = hardStop.Token.Register(() => frame.Continue = false);
+                if (!shutdown.IsCompleted) System.Windows.Threading.Dispatcher.PushFrame(frame);
+                if (shutdown.IsCompleted) shutdown.GetAwaiter().GetResult();
+                else Debug.WriteLine("Shutdown did not finish within its deadline.");
             }
             catch (OperationCanceledException)
             {

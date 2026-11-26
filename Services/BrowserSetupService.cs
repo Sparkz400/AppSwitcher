@@ -83,7 +83,10 @@ internal sealed class BrowserSetupService : IBrowserSetupService
         var hostFiles = Directory.GetFiles(hostSource).Order(StringComparer.Ordinal).ToArray();
         var version = Fingerprint(hostFiles, origins, ct);
         var hostDirectory = Path.Combine(_destination, "hosts", browser.ToString(), version);
-        if (!FilesMatch(hostFiles, hostDirectory, ct)) hostDirectory += "-" + Guid.NewGuid().ToString("N");
+        // An interrupted setup leaves an incomplete folder; reuse a complete sibling instead of copying again.
+        if (!FilesMatch(hostFiles, hostDirectory, ct))
+            hostDirectory = Directory.GetDirectories(Path.GetDirectoryName(hostDirectory)!, version + "-*").Order(StringComparer.Ordinal)
+                .FirstOrDefault(sibling => FilesMatch(hostFiles, sibling, ct)) ?? hostDirectory + "-" + Guid.NewGuid().ToString("N");
         Directory.CreateDirectory(hostDirectory);
         foreach (var source in hostFiles) CopyIfDifferent(source, Path.Combine(hostDirectory, Path.GetFileName(source)), ct);
         WriteAtomic(Path.Combine(hostDirectory, "allowed-origins.json"), origins, ct);

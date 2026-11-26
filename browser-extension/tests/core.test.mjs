@@ -189,10 +189,51 @@ test("duplicated marker or extra primary is a conflict, never an arbitrary choic
     const existing = [...state.tabs.values()][duplicateMarker ? 0 : 1];
     const duplicate = await api.tabs.create({ url: existing.url });
     if (!duplicateMarker) state.tabs.get(duplicate.id).groupId = existing.groupId;
-    assert.equal((await controller.handle(r)).code, "IdentityConflict");
+    // An extra group member is only ambiguous when the primary is unknown (here: after a restart).
+    const handler = duplicateMarker ? controller : new AppSwitcherManagedTabs(api, "session-2");
+    assert.equal((await handler.handle(r)).code, "IdentityConflict");
     assert.equal(state.tabs.size, 3);
   }
 });
+
+test("a child tab opened into the group resolves to the known primary", async () => {
+  const { state, api, controller } = fakeBrowser(), r = request();
+  const first = await controller.handle(r);
+  const child = await api.tabs.create({ url: "https://192.168.1.78:8443/popup" });
+  state.tabs.get(child.id).groupId = state.tabs.get(first.tabId).groupId;
+  const result = await controller.handle({ ...r, allowCreate: false });
+  assert.equal(result.code, "ActivatedExisting"); assert.equal(result.tabId, first.tabId);
+  assert.deepEqual((await controller.snapshot()).map(s => s.state), ["Present"]);
+});
+
+test("a child tab left after closing the primary is never bound after a restart", async () => {
+  const { state, api, controller } = fakeBrowser(), r = request();
+  const first = await controller.handle(r);
+  const child = await api.tabs.create({ url: "https://192.168.1.78:8443/popup" });
+  state.tabs.get(child.id).groupId = state.tabs.get(first.tabId).groupId;
+  await api.tabs.remove(first.tabId); await controller.removed(first.tabId, { isWindowClosing: false });
+  const restarted = new AppSwitcherManagedTabs(api, "session-2");
+  assert.equal((await restarted.handle({ ...r, allowCreate: false })).code, "IdentityConflict");
+  assert.notEqual(state.storage[`appswitcher.tab.${r.appId}`].primaryId, child.id);
+});
+
+for (const order of ["anchor first", "anchor first, then a click", "primary first"]) {
+  test(`closing both managed tabs (${order}) permits a deliberate new generation`, async () => {
+    const { state, api, controller } = fakeBrowser(), r = request();
+    const first = await controller.handle(r);
+    const anchorId = [...state.tabs.keys()].find(id => id !== first.tabId);
+    const close = async id => { await api.tabs.remove(id); await controller.removed(id, { isWindowClosing: false }); };
+    await close(order === "primary first" ? first.tabId : anchorId);
+    if (order === "anchor first, then a click") {
+      const result = await controller.handle({ ...r, allowCreate: false });
+      assert.equal(result.code, "ActivatedExisting"); assert.equal(result.tabId, first.tabId);
+    }
+    await close(order === "primary first" ? anchorId : first.tabId);
+    assert.equal((await controller.handle({ ...r, action: "inspect", allowCreate: false })).state, "Absent");
+    assert.equal((await controller.handle({ ...r, generation: randomUUID() })).code, "CreatedNew");
+    assert.equal(state.tabs.size, 2);
+  });
+}
 
 test("moving only the primary cannot cause activation of a stranger", async () => {
   const { state, api, controller } = fakeBrowser(), r = request();
@@ -275,6 +316,7 @@ for (const firefox of [false, true]) test(`snapshot uses one inventory for 20 ma
   const primary = pages(state)[0];
   const intruder = await api.tabs.create({ url: "https://stranger.example/" });
   state.tabs.get(intruder.id).groupId = primary.groupId;
+  state.tabs.get(primary.id).groupId = -1; // A known primary plus a child tab is not a conflict; a replaced primary is.
   const result = await controller.handle({ ...requests[0], action: "activate", allowCreate: false });
   assert.equal(result.state, "Conflict");
   assert.equal(state.counts["tabs.query"], 2);

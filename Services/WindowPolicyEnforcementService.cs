@@ -164,6 +164,10 @@ internal class WindowPolicyEnforcementService : IDisposable
             return;
         }
 
+        // A hung owner would block style changes under _syncRoot; keep its state and retry next tick.
+        if (_platform.IsHung(hwnd))
+            return;
+
         var appKey = app.ProcessTarget.Key;
         if (_windowStates.TryGetValue(hwnd, out var reusedState)
             && !string.Equals(reusedState.AppKey, appKey, StringComparison.Ordinal))
@@ -184,6 +188,12 @@ internal class WindowPolicyEnforcementService : IDisposable
             // A periodic observation is not a request to activate a manually minimized app.
             if (!firstObservation && !immediateRequested && !app.ReapplyPlacementContinuously) return;
             _platform.RestoreWindow(hwnd);
+            // The restore is asynchronous; apply geometry on a later tick, once the window rect is real.
+            if (_platform.IsWindowMinimized(hwnd))
+            {
+                state.LastGeometrySignature = null;
+                return;
+            }
         }
 
         var monitors = _platform.GetMonitors();
@@ -247,6 +257,9 @@ internal class WindowPolicyEnforcementService : IDisposable
                 _windowStates.Remove(hwnd);
                 continue;
             }
+
+            if (_platform.IsHung(hwnd))
+                continue;
 
             if (!appsByKey.ContainsKey(state.AppKey))
             {

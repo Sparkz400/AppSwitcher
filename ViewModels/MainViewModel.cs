@@ -28,6 +28,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public MaintenanceService? Maintenance { get; }
 
     private readonly HashSet<Window> _privilegedWindows = [];
+    private readonly PinSignIn _pinSignIn;
+    internal PinSignIn PinSignIn => _pinSignIn;
     private readonly SemaphoreSlim _kioskStateLock = new(1, 1);
     private CancellationTokenSource? _monitorCts;
     private Task? _monitorTask;
@@ -97,6 +99,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _watchdogService = watchdogService;
         _notificationService = notificationService;
         _securityService = securityService;
+        _pinSignIn = new PinSignIn(securityService);
         _themeService = themeService;
         _localizationService = localizationService;
         _schedulerService = schedulerService;
@@ -325,6 +328,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private void OnSessionTimedOut()
     {
+        // The timer also runs while nobody is signed in; there is no session to end then.
+        if (CurrentAccessLevel == AccessLevel.None) return;
+        EndSession("Msg_SessionTimedOut");
+    }
+
+    [RelayCommand]
+    private void SignOut()
+    {
+        if (CurrentAccessLevel == AccessLevel.None) return;
+        RecordAudit("SignOut", CreateAuditActor(CurrentAccessLevel), "Success", "Access");
+        IsMenuOpen = false;
+        EndSession("Msg_SignedOut");
+    }
+
+    private void EndSession(string messageKey)
+    {
         CurrentAccessLevel = AccessLevel.None;
 
         foreach (var window in _privilegedWindows.ToArray())
@@ -339,7 +358,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
         }
 
-        _notificationService.Show(LocalizationService.T("Msg_SessionTimedOut"), NotificationType.Warning);
+        _notificationService.Show(LocalizationService.T(messageKey), NotificationType.Warning);
     }
 
     private void OnConfigHotReloaded(ConfigRoot config)
@@ -379,6 +398,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var oldConfig = BuildCurrentConfigRoot();
             var diff = _configDiffService.Compute(oldConfig, config);
             _configDiffService.Log(diff);
+
+            // The config file is writable by the signed-in Windows user, so a file edit is not proof of PIN access.
+            if (diff.TouchesProtectedSettings)
+            {
+                RecordAudit("ConfigChanged", CreateExternalAuditActor(), "Denied", "Configuration", diff.BuildDetails());
+                _notificationService.Show(LocalizationService.T("Msg_ConfigHotReloadProtected"), NotificationType.Error);
+                _logger.LogWarning("Rejected hot-reloaded configuration because it changes PINs, kiosk mode, operator scope or hooks");
+                return;
+            }
+
+            // Nothing changed (e.g. a scanner touched the file): keep live app state instead of rebuilding it.
+            if (!diff.HasChanges)
+                return;
 
             await ApplyConfigAsync(config, showNotifications: false);
             MarkConfigAsPersisted(config);
@@ -688,8 +720,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
             groups.Add(new AppGroup("", "") { Apps = new(ungrouped) });
 
         foreach (var g in visibleApps.Where(a => !string.IsNullOrEmpty(a.Group) && !a.IsPinned)
-                     .GroupBy(a => a.Group)
-                     .OrderBy(g => g.Key))
+                     .GroupBy(a => a.Group, StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase))
         {
             var sorted = g.OrderBy(a => a.SortOrder).ThenBy(a => a.Name).ToList();
             var groupDef = Groups.FirstOrDefault(gd => string.Equals(gd.Key, g.Key, StringComparison.OrdinalIgnoreCase));
@@ -833,6 +865,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(config);
         EnsureConfigCanBeApplied(config, notifyFailure: false);
 
+        // Import and restore can switch kiosk; announce and audit that like a direct toggle (not the first load at startup).
+        var kioskSwitched = _observedSettings != null && config.Settings.KioskMode != Settings.KioskMode;
+        showNotifications |= kioskSwitched;
         _suppressSettingsNotifications = true;
         try
         {
@@ -841,7 +876,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             else
                 CopySettings(config.Settings, Settings);
 
-            SyncCollection(Apps, config.Apps);
+            SyncCollection(Apps, MergeAppsById(config.Apps));
             SyncCollection(Groups, config.Groups);
             SyncCollection(Layouts, config.Layouts ?? []);
             RefreshAppsSnapshot();
@@ -1087,7 +1122,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
             _securityService,
             _notificationService,
             _screenLayoutService,
-            _crashHistoryService,
             _sessionTimeoutService,
             accessLevel);
 
@@ -1108,61 +1142,26 @@ public partial class MainViewModel : ObservableObject, IDisposable
             return CurrentAccessLevel;
         }
 
-        AccessLevel accessLevel;
-        if (!_securityService.IsPinConfigured(Settings.AdminPasswordHash))
-        {
-            var setupDialog = new PasswordDialog { IsSetMode = true };
-            PrepareDialog(setupDialog);
-            if (setupDialog.ShowDialog() != true)
-                return AccessLevel.None;
+        var outcome = _pinSignIn.SignIn(Settings, minimumLevel, PromptPin);
+        if (outcome.Message != null)
+            _notificationService.Show(outcome.Message, outcome.MessageType);
+        if (outcome.Denied)
+            RecordAudit("Authentication", CreateAuditActor(AccessLevel.None), "Denied", "Access");
+        if (outcome.Level == AccessLevel.None)
+            return AccessLevel.None;
+        if (outcome.HashesChanged)
+            SaveConfigInBackground(new ConfigSaveAuditOptions(ActorOverride: CreateAuditActor(outcome.Level)));
 
-            Settings.AdminPasswordHash = _securityService.HashPassword(setupDialog.Password);
-            _notificationService.Show(LocalizationService.T("Msg_PinSet"), NotificationType.Info);
-            SaveConfigInBackground(new ConfigSaveAuditOptions(
-                ActorOverride: CreateAuditActor(AccessLevel.Admin)));
-            accessLevel = AccessLevel.Admin;
-        }
-        else
-        {
-            if (_securityService.RetryAfter > TimeSpan.Zero)
-            {
-                _notificationService.Show(_securityService.AuthenticationFailureMessage, NotificationType.Error);
-                return AccessLevel.None;
-            }
-            var dialog = new PasswordDialog();
-            PrepareDialog(dialog);
-            if (dialog.ShowDialog() != true)
-                return AccessLevel.None;
-
-            accessLevel = _securityService.GetAccessLevel(
-                dialog.Password,
-                Settings.AdminPasswordHash,
-                Settings.OperatorPasswordHash);
-
-            if (accessLevel == AccessLevel.None || accessLevel < minimumLevel)
-            {
-                RecordAudit("Authentication", CreateAuditActor(AccessLevel.None), "Denied", "Access");
-                _notificationService.Show(_securityService.AuthenticationFailureMessage, NotificationType.Error);
-                return AccessLevel.None;
-            }
-
-            if (accessLevel == AccessLevel.Admin && _securityService.NeedsRehash(Settings.AdminPasswordHash))
-            {
-                Settings.AdminPasswordHash = _securityService.HashPassword(dialog.Password);
-                _logger.LogInformation("Password hash migrated to PBKDF2");
-            }
-
-            if (accessLevel == AccessLevel.Operator)
-            {
-                if (_securityService.NeedsRehash(Settings.OperatorPasswordHash))
-                    Settings.OperatorPasswordHash = _securityService.HashPassword(dialog.Password);
-                _notificationService.Show(LocalizationService.T("Msg_OperatorAccess"), NotificationType.Info);
-            }
-        }
-
-        CurrentAccessLevel = accessLevel;
+        CurrentAccessLevel = outcome.Level;
         _sessionTimeoutService.ResetTimer();
-        return accessLevel;
+        return outcome.Level;
+    }
+
+    private string? PromptPin(bool setNewPin)
+    {
+        var dialog = new PasswordDialog { IsSetMode = setNewPin };
+        PrepareDialog(dialog);
+        return dialog.ShowDialog() == true ? dialog.Password : null;
     }
 
     public async Task ShutdownAsync(CancellationToken ct = default, bool stopManagedApps = true)
@@ -1484,7 +1483,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var requestedState = Settings.KioskMode;
             if (Settings.KioskMode)
             {
-                var result = await _kioskService.ActivateAsync();
+                // The machine-level step needs a UAC prompt. Only a signed-in admin turning kiosk on should see it, never an
+                // unattended start: the key blocks it sets already survive reboots.
+                var result = await _kioskService.ActivateAsync(applyMachineLockdown: CurrentAccessLevel == AccessLevel.Admin);
                 if (showNotifications)
                 {
                     _notificationService.Show(LocalizationService.T("Msg_KioskActivated"), NotificationType.Info);

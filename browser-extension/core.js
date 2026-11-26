@@ -44,7 +44,7 @@
       }
       return { tabs, identities };
     }
-    async inventory(r, captured) {
+    async inventory(r, captured, primaryId) {
       const { tabs, identities } = captured || await this.captureInventory();
       const markers = tabs.filter(t => this.marker(t)?.appId === r.appId);
       if (markers.some(t => this.marker(t).generation !== r.generation)) return { state: "Conflict", tabs };
@@ -65,20 +65,26 @@
       }
       if (anchor && anchor.groupId >= 0) {
         const members = tabs.filter(t => t.groupId === anchor.groupId && t.windowId === anchor.windowId && t.id !== anchor.id);
-        if (members.length > 1 || members.some(t => this.marker(t)?.role === "anchor")) return { state: "Conflict", tabs };
-        const primary = members[0];
+        // Chromium adds tabs opened from the page to its group; a primary known in this session is not ambiguous.
+        const known = members.find(t => t.id === primaryId);
+        if ((!known && members.length > 1) || members.some(t => this.marker(t)?.role === "anchor")) return { state: "Conflict", tabs };
+        const primary = known || members[0];
         if (primary && tagged.length && tagged[0].id !== primary.id) return { state: "Conflict", tabs };
         if (primary) return { state: "Present", tabs, anchor, primary };
       }
+      // Tab IDs are stable within a session, so the primary stays identifiable after its anchor was closed.
+      const known = anchor ? undefined : tabs.find(t => t.id === primaryId);
+      if (known && (!tagged.length || tagged[0].id === known.id)) return { state: "Present", tabs, primary: known };
       // Firefox's tab value is a stronger identity than group membership and survives session restore.
       if (tagged.length === 1 && !anchor) return { state: "Present", tabs, primary: tagged[0] };
       return { state: anchor || placeholders.length ? "Incomplete" : "Missing", tabs, anchor, placeholder: placeholders[0] };
     }
     async resolve(r, record, captured) {
-      const found = await this.inventory(r, captured);
+      const found = await this.inventory(r, captured, record?.sessionId === this.sessionId ? record.primaryId : undefined);
       if (found.state === "Conflict") return { ...found, code: "IdentityConflict" };
       if (found.state === "Present") {
-        if (record?.phase === "closed") return { ...found, state: "Conflict", code: "IdentityConflict" };
+        // After a closed primary, whatever is left in the group (e.g. a child tab) is a stranger, even after a restart.
+        if (record?.phase === "closed" || record?.phase === "primaryClosed") return { ...found, state: "Conflict", code: "IdentityConflict" };
         // A primary moved to a different group must not make a stranger in the old group the primary.
         if (record?.sessionId === this.sessionId && record.primaryId != null && record.primaryId !== found.primary.id)
           return { ...found, state: "Conflict", code: "IdentityConflict" };
@@ -247,9 +253,13 @@
         if (info.isWindowClosing) return; // Browser shutdown and window closure are not explicit website stops.
         const all = await this.api.storage.local.get(null);
         for (const [k, record] of Object.entries(all)) {
-          if (!k.startsWith("appswitcher.tab.") || record.sessionId !== this.sessionId || record.primaryId !== tabId || record.phase !== "open") continue;
-          const anchor = await this.api.tabs.get(record.anchorId).catch(() => null);
-          if (!anchor || this.marker(anchor)?.generation !== record.generation) continue;
+          if (!k.startsWith("appswitcher.tab.") || record.sessionId !== this.sessionId) continue;
+          // Both halves explicitly closed in this session, in either order: nothing is left to recover.
+          if (record.phase === "primaryClosed" && record.anchorId === tabId) { await this.save({ ...record, phase: "closed" }); continue; }
+          if (record.primaryId !== tabId || record.phase !== "open") continue;
+          const anchor = record.anchorId == null ? null : await this.api.tabs.get(record.anchorId).catch(() => null);
+          if (!anchor) { await this.save({ ...record, phase: "closed" }); continue; }
+          if (this.marker(anchor)?.generation !== record.generation) continue;
           // Keep the marker: a future click may safely create a new generation only after an explicit close cleanup.
           await this.save({ ...record, phase: "primaryClosed" });
         }

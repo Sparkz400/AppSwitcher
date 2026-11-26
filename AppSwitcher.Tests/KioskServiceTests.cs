@@ -162,6 +162,54 @@ public class KioskServiceTests
         Assert.Empty(platform.ShownHandles);
     }
 
+    [Fact]
+    public async Task DeactivateAsync_Skips_Machine_Removal_When_Nothing_Was_Locked_Down()
+    {
+        var platform = new FakeKioskPlatform();
+        platform.QueueKeyboardInstall(success: true);
+        var machineLockdown = new FakeMachineLockdownService
+        {
+            RemoveResult = KioskMachineLockdownResult.Cancelled("cancelled")
+        };
+
+        var service = CreateService(platform, machineLockdown, machineStateExists: false);
+
+        await service.ActivateAsync();
+        await service.DeactivateAsync();
+
+        Assert.False(service.IsActive);
+        Assert.Equal(0, machineLockdown.RemoveCalls);
+    }
+
+    [Fact]
+    public async Task ActivateAsync_Without_Machine_Lockdown_Does_Not_Call_Elevated_Helper()
+    {
+        var platform = new FakeKioskPlatform();
+        platform.QueueKeyboardInstall(success: true);
+        var machineLockdown = new FakeMachineLockdownService();
+
+        var service = CreateService(platform, machineLockdown);
+
+        await service.ActivateAsync(applyMachineLockdown: false);
+
+        Assert.True(service.IsActive);
+        Assert.Equal(0, machineLockdown.ApplyCalls);
+    }
+
+    [Fact]
+    public async Task EnforceNow_Refreshes_KeyboardHook_Periodically()
+    {
+        var platform = new FakeKioskPlatform();
+        var service = CreateService(platform, new FakeMachineLockdownService());
+
+        await service.ActivateAsync();
+        service.KeyboardHookRefreshInterval = TimeSpan.Zero;
+        service.EnforceNow();
+
+        Assert.Equal(2, platform.InstallKeyboardHookCalls);
+        Assert.True(service.Status.KeyboardHookInstalled);
+    }
+
     [Theory]
     [InlineData(0x5B, false, false, false, true)]  // Left Win
     [InlineData(0x09, true, false, false, true)]   // Alt+Tab
@@ -178,13 +226,15 @@ public class KioskServiceTests
 
     private static KioskService CreateService(
         FakeKioskPlatform platform,
-        FakeMachineLockdownService machineLockdown) =>
+        FakeMachineLockdownService machineLockdown,
+        bool machineStateExists = true) =>
         new(
             NullLogger<KioskService>.Instance,
             platform,
             new FakeConfiguredAppMatcher(),
             new KioskForegroundPolicy(),
-            machineLockdown);
+            machineLockdown,
+            machineLockdownStateExists: () => machineStateExists);
 
     private sealed class FakeConfiguredAppMatcher : IKioskConfiguredAppMatcher
     {
@@ -199,17 +249,20 @@ public class KioskServiceTests
         public KioskMachineLockdownResult RemoveResult { get; set; } =
             KioskMachineLockdownResult.AlreadyRemoved("already removed");
 
-        public KioskMachineLockdownResult QueryResult { get; set; } =
-            KioskMachineLockdownResult.NotConfigured("not configured");
+        public int ApplyCalls { get; private set; }
+        public int RemoveCalls { get; private set; }
 
-        public Task<KioskMachineLockdownResult> ApplyAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult(ApplyResult);
+        public Task<KioskMachineLockdownResult> ApplyAsync(CancellationToken cancellationToken = default)
+        {
+            ApplyCalls++;
+            return Task.FromResult(ApplyResult);
+        }
 
-        public Task<KioskMachineLockdownResult> RemoveAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult(RemoveResult);
-
-        public Task<KioskMachineLockdownResult> QueryAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult(QueryResult);
+        public Task<KioskMachineLockdownResult> RemoveAsync(CancellationToken cancellationToken = default)
+        {
+            RemoveCalls++;
+            return Task.FromResult(RemoveResult);
+        }
     }
 
     private sealed class FakeKioskPlatform : IKioskPlatform
